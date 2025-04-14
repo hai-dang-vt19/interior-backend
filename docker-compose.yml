@@ -1,0 +1,50 @@
+version: '3'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: interior_app
+    restart: unless-stopped
+    working_dir: /var/www
+    volumes:
+      - ./:/var/www
+    networks:
+      - interior_network
+
+  nginx:
+    image: nginx:alpine
+    container_name: interior_nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - interior_network
+
+  db:
+    image: mysql:8.0
+    container_name: interior_db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: interior_db
+      MYSQL_ROOT_PASSWORD: secret
+      MYSQL_PASSWORD: secret
+      MYSQL_USER: interior
+      MYSQL_ROOT_HOST: '%'
+    ports:
+      - "3306:3306"
+    volumes:
+      - dbdata:/var/lib/mysql
+    networks:
+      - interior_network
+
+networks:
+  interior_network:
+    driver: bridge
+
+volumes:
+  dbdata:
+    driver: local
