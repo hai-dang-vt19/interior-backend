@@ -660,6 +660,11 @@ jiti@^2.4.2:
   resolved "https://registry.yarnpkg.com/jiti/-/jiti-2.4.2.tgz#d19b7732ebb6116b06e2038da74a55366faef560"
   integrity sha512-rg9zJN+G4n2nfJl5MW3BMygZX56zKPNVEYYqq7adpmMh4Jn2QNEwhvQlFy6jPVdcod7txZtKHWnyZiA3a0zP7A==
 
+jquery@^3.7.1:
+  version "3.7.1"
+  resolved "https://registry.yarnpkg.com/jquery/-/jquery-3.7.1.tgz#083ef98927c9a6a74d05a6af02806566d16274de"
+  integrity sha512-m4avr8yL8kmFN8psrbFFFmB/If14iN5o9nw/NgnnM+kybDJpRsAynV2BsfpTYrTRysYUdADVD7CkUUizgkpLfg==
+
 laravel-vite-plugin@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/laravel-vite-plugin/-/laravel-vite-plugin-1.2.0.tgz#7a82e850fba9ca2359fa64f70e0647478ea5fde3"
@@ -867,6 +872,11 @@ supports-color@^8.1.1:
   integrity sha512-MpUEN2OodtUzxvKQl72cUF7RQ5EiHsGvSsVG0ia9c5RbWGL2CI4C7EpPS8UTBIplnlzZiNuV56w+FuNxy3ty2Q==
   dependencies:
     has-flag "^4.0.0"
+
+sweetalert2@^11.18.0:
+  version "11.18.0"
+  resolved "https://registry.yarnpkg.com/sweetalert2/-/sweetalert2-11.18.0.tgz#9e98e0c38d01df641bb355ccf2a71a9469533837"
+  integrity sha512-6LD1KTFuPi+rQzx2fETFJAFjZEsBsvDU+ORIwRq5kS/qXcpCXFoJzHXP3RjgclkhEZmkVafCL/jfaLK7UlrBYQ==
 
 tailwindcss@4.1.4, tailwindcss@^4.0.0:
   version "4.1.4"
