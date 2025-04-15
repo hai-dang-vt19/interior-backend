@@ -71,3 +71,7 @@ docker-compose up -d
 composer install
 php artisan key:generate
 php artisan migrate
+
+## run with dev
+docker-compose up -d
+yarn dev
