@@ -16,7 +16,7 @@ class AdminMiddleware
      */
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->role !== UserRole::ADMIN->value) {
+        if (!auth()->check() || auth()->user()->role->value != UserRole::ADMIN->value) {
             return redirect()->route('admin.login');
         }
 
