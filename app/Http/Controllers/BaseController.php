@@ -7,11 +7,19 @@ use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Foundation\Validation\ValidatesRequests;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Controller;
 
 class BaseController extends Controller
 {
     use AuthorizesRequests, DispatchesJobs, ValidatesRequests;
     
+    public function sendRedirectAjax($routeName, $param = null)
+    {
+        return response()->json([
+            'redirect' => route($routeName, $param)
+        ], 200);
+    }
+
     protected function sendSuccess($routeName, $data = null, $message = null, $param = null)
     {
         $response = [

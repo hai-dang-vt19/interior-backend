@@ -8,4 +8,10 @@ export default defineConfig({
             refresh: true,
         }),
     ],
+    // resolve: {
+    //     alias: {
+    //         '@': path.resolve(__dirname, './resources'),
+    //         '~': path.resolve(__dirname, './node_modules'),
+    //     }
+    // },
 });
