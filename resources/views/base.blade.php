@@ -7,8 +7,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body>
-        <div class="container">
+        <div class="header">
+            @include('component.navbar')
+        </div>
+        
+        <div class="container-fluid">
             @yield('content')
         </div>
+
+        @yield('scripts')
     </body>
 </html>

@@ -1,0 +1,20 @@
+@import 'bootstrap/dist/css/bootstrap.css';
+@import 'functions';
+
+// Theme variables
+$font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+    'Segoe UI Symbol', 'Noto Color Emoji';
+
+:root {
+    --font-sans: #{$font-sans};
+}
+
+/* Custom styles can be added below */
+
+// Example usage of rem mixin
+.example-element {
+    @include rem(font-size, 16px);
+    @include rem(padding, 20px 30px);
+    @include rem(margin, 10px auto);
+    @include rem(border-radius, 8px);
+} 
