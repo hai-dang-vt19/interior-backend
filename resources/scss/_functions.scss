@@ -1,0 +1,29 @@
+// Base font size for rem calculations
+$base-font-size: 16px;
+
+// Simple function to convert px to rem
+@function rem($px) {
+    @return calc($px / $base-font-size) * 1rem;
+}
+
+// Mixin for easy rem usage
+@mixin rem($property, $values...) {
+    $rem-values: ();
+    
+    @each $value in $values {
+        @if type-of($value) == number and unit($value) == 'px' {
+            $rem-values: append($rem-values, rem($value));
+        } @else {
+            $rem-values: append($rem-values, $value);
+        }
+    }
+    
+    #{$property}: $rem-values;
+}
+
+// Example usage:
+// .element {
+//     @include rem(font-size, 16px);
+//     @include rem(padding, 20px 30px);
+//     @include rem(margin, 10px auto);
+// } 

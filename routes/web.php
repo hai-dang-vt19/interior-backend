@@ -11,12 +11,13 @@ Route::prefix('admin')->group(function () {
         Route::post('login', [AuthAdminController::class, 'login'])->name('admin.login.submit');
     });
 
-    Route::post('logout', [AuthAdminController::class, 'logout'])->name('admin.logout');
-
+    
     // Protected routes
     Route::middleware(['auth:web', 'admin'])->group(function () {
         Route::get('', function () {
-            return view('base');
+            return view('dashboard.index');
         })->name('admin.dashboard');
+        
+        Route::post('logout', [AuthAdminController::class, 'logout'])->name('admin.logout');
     });
 });

@@ -48,6 +48,6 @@ class AuthAdminController extends BaseController
         $request->session()->invalidate();
         $request->session()->regenerateToken();
         
-        return $this->sendRedirectAjax('admin.login');
+        return $this->sendSuccess('admin.login');
     }
 }
