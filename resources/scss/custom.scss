@@ -1,5 +1,5 @@
-@import "variable";
-@import "functions";
+@use "variable" as *;
+@use "functions" as *;
 
 // example
 // body {
@@ -7,3 +7,24 @@
 //     font-size: rem(15px);
 // }
 
+.custom-navbar {
+    background-color: $bg-main-dark;
+    backdrop-filter: blur(10px);
+    .navbar-brand {
+        color: $white;
+    }
+    .navbar-nav {
+        .nav-link {
+            color: $white;
+        }
+    }
+}
+.card {
+    background-color: $bg-light;
+    border: 1px solid $border-color;
+    color: $txt-main;
+    
+    &:hover {
+        box-shadow: 0 2px 4px $shadow-color;
+    }
+}

@@ -1,3 +1,37 @@
-$txt-main: #000;
+@use "sass:color";
+
+// Main colors
+$bg-main: #EAF0F6; // Light blue background
+$bg-main-dark: #2C3E50; // Dark blue background
+$txt-main: #2C3E50; // Dark blue text
+$accent: #7F8C8D; // Stone gray accent
+$secondary: #BDC3C7; // Silver gray secondary
+$white: #FDFEFE; // Pure white
+
+// Text colors
 $txt-sub: #666;
-$bg-main: #fff;
+$txt-light: #BDC3C7;
+$txt-dark: #2C3E50;
+
+// Border colors
+$border-color: #BDC3C7;
+$border-light: #EAF0F6;
+
+// Background colors
+$bg-light: #FDFEFE;
+$bg-gray: #BDC3C7;
+$bg-accent: #7F8C8D;
+
+// Button colors
+$btn-primary: #2C3E50;
+$btn-secondary: #BDC3C7;
+$btn-accent: #7F8C8D;
+
+// Hover states
+$hover-primary: color.adjust($btn-primary, $lightness: -10%);
+$hover-secondary: color.adjust($btn-secondary, $lightness: -10%);
+$hover-accent: color.adjust($btn-accent, $lightness: -10%);
+
+// Shadow colors
+$shadow-color: rgba(44, 62, 80, 0.1);
+$shadow-light: rgba(253, 254, 254, 0.1);

@@ -4,14 +4,21 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <title>{{ config('app.name', 'Laravel') }}</title>
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
+        @vite([
+            'resources/css/app.css',
+            'resources/js/app.js',
+            'resources/scss/custom.scss',
+        ])
     </head>
     <body>
         <div class="header">
             @include('component.navbar')
         </div>
         
-        <div class="container-fluid">
+        <div class="container-fluid px-5 pt-3">
+            <div>
+                @yield('breadcrumb')
+            </div>
             @yield('content')
         </div>
 

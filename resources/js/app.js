@@ -4,6 +4,7 @@ import Alert from './common/sweetalert';
 import { Loading } from './common/loading';
 import { Common } from './common/common';
 import { Validation } from './common/validation';
+import { FlatpickrConfig } from './common/flatpickr';
 import $ from 'jquery';
 
 // Make Alert, Loading, Ajax and jQuery available globally
@@ -16,6 +17,7 @@ window.jQuery = $;
 $(function() {
     Common.init();
     Validation.init();
+    FlatpickrConfig.init();
 });
 
 // Example usage alert
