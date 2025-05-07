@@ -13,7 +13,7 @@
             <a class="nav-link" href="#">Sản phẩm</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="#">Khách hàng</a>
+            <a class="nav-link" href="{{ route('admin.customer.index') }}">Khách hàng</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Đơn hàng</a>
