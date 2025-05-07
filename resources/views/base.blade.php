@@ -23,5 +23,15 @@
         </div>
 
         @yield('scripts')
+        @if (session('dataSuccess'))
+            <script type="module">
+                Alert.success('{{ session('dataSuccess') }}');
+            </script>
+        @endif
+        @if (session('dataError'))
+            <script type="module">
+                Alert.error('{{ session('dataError') }}');
+            </script>
+        @endif
     </body>
 </html>
