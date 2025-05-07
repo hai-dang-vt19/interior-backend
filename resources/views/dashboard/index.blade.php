@@ -26,8 +26,12 @@
                 </select>
             </div>
             <div class="col-md-3">
+                <label for="dateFrom" class="form-label">Ngày đến ngày</label>
+                <input type="text" class="form-control flatpickr-range" id="dateFrom" name="dateFrom" placeholder="Chọn ngày...">
+            </div>
+            <div class="col-md-3">
                 <label for="date" class="form-label">Ngày</label>
-                <input type="text" class="form-control flatpickr-range" id="date" name="date" placeholder="Chọn ngày...">
+                <input type="text" class="form-control flatpickr-date" id="date" name="date" placeholder="Chọn ngày...">
             </div>
             <div class="col-md-3 d-flex align-items-end">
                 <button type="submit" class="btn btn-primary me-2">Lọc</button>

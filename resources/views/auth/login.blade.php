@@ -2,31 +2,27 @@
 
 @section('content')
 <div class="container">
-    <div class="row justify-content-center">
-        <div class="col-md-6">
-            <div class="card mt-5">
-                <div class="card-header">
-                    <h3 class="text-center">Admin Login</h3>
-                </div>
-                <div class="card-body">
-                    <form id="loginForm" action="{{ route('admin.login.submit') }}">
-                        @csrf
-                        <div class="mb-3">
-                            <label for="phone" class="form-label">Số điện thoại</label>
-                            <input type="text" class="form-control input-number" id="phone" name="phone" value="0947508288" required>
-                            <div class="invalid-feedback" id="phone-error"></div>
-                        </div>
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Mật khẩu</label>
-                            <input type="password" class="form-control" id="password" name="password" value="12345678" required>
-                            <div class="invalid-feedback" id="password-error"></div>
-                        </div>
+    <div class="row justify-content-center align-items-center vh-100">
+        <div class="col-md-4">
+            <div class="login-form">
+                <h3 class="text-center mb-4">Chung Si Interior <br> Admintration</h3>
+                <form id="loginForm" action="{{ route('admin.login.submit') }}">
+                    @csrf
+                    <div class="mb-3">
+                        <label for="phone" class="form-label">Số điện thoại</label>
+                        <input type="text" class="form-control input-number" id="phone" name="phone" value="0947508288" required>
+                        <div class="invalid-feedback" id="phone-error"></div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Mật khẩu</label>
+                        <input type="password" class="form-control" id="password" name="password" value="12345678" required>
+                        <div class="invalid-feedback" id="password-error"></div>
+                    </div>
 
-                        <div class="d-grid">
-                            <button type="submit" class="btn btn-primary">Đăng nhập</button>
-                        </div>
-                    </form>
-                </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">Đăng nhập</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
@@ -39,8 +35,6 @@
         $('#loginForm').on('submit', function(e) {
             e.preventDefault();
             
-            Loading.show();
-            
             // Reset error states
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').text('');
@@ -50,7 +44,6 @@
                 type: 'POST',
                 data: $(this).serialize(),
                 success: function(response) {
-                    // Loading.hide();
                     if (response.redirect) {
                         window.location.href = response.redirect;
                     }

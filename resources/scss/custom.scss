@@ -7,6 +7,18 @@
 //     font-size: rem(15px);
 // }
 
+.login-form {
+    // background-color: $secondary;
+    padding: 20px;
+    border-radius: 10px;
+
+    #loginForm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
 .custom-navbar {
     background-color: $bg-main-dark;
     backdrop-filter: blur(10px);

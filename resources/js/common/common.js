@@ -3,6 +3,7 @@ import $ from 'jquery';
 export const Common = {
     init: function() {
         this.handleFormErrors();
+        this.handleFormLoading();
     },
 
     handleFormErrors: function() {
@@ -12,6 +13,12 @@ export const Common = {
                 $(this).removeClass('is-invalid');
                 $(`#${$(this).attr('id')}-error`).text('');
             }
+        });
+    },
+
+    handleFormLoading: function() {
+        $('form').on('submit', function() {
+            Loading.show();
         });
     }
 };
