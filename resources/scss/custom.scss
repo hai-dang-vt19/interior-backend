@@ -40,3 +40,29 @@
         box-shadow: 0 2px 4px $shadow-color;
     }
 }
+
+// button
+.btn-delete {
+    scale: 0.8;
+    line-height: 0 !important;
+    svg {
+        fill: $white;
+    }
+    &:hover {
+        scale: 0.9;
+        transition: all 0.3s ease;
+    }
+}
+.btn-edit {
+    scale: 0.8;
+    line-height: 0 !important;
+    background-color: $btn-primary !important;
+    svg {
+        fill: $white;
+    }
+    &:hover {
+        background-color: $hover-primary !important;
+        scale: 0.9;
+        transition: all 0.3s ease;
+    }
+}

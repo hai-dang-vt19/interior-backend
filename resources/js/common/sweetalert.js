@@ -59,6 +59,19 @@ const Alert = {
             confirmButtonText: options.confirmButtonText || 'Đồng ý',
             cancelButtonText: options.cancelButtonText || 'Hủy'
         });
+    },
+    
+    delete: (options) => {
+        return Swal.fire({
+            title: options.title || 'Bạn có chắc chắn xóa không?',
+            text: options.text || 'Bạn sẽ không thể hoàn tác hành động này!',
+            icon: options.icon || 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: options.confirmButtonText || 'Đồng ý',
+            denyButtonText: options.cancelButtonText || 'Hủy'
+        });
     }
 };
 
