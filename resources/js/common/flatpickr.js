@@ -36,7 +36,10 @@ class FlatpickrConfig {
             dateFormat: "d/m/Y",
             locale: "vn",
             allowInput: true,
-            disableMobile: true
+            disableMobile: true,
+            locale: {
+                rangeSeparator: " - "
+            }
         });
     }
 

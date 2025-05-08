@@ -26,18 +26,22 @@ export const Common = {
 
     handlePerPageSelect: function() {
         $('#per_page_select').on('change', function() {
-            if ($(this).data('submit-form')) {                
+            if ($(this).data('submit-form')) {
                 $('#per_page').val($(this).val());
                 $($(this).data('submit-form')).submit();
             }
         });
+
+        $('#focus_page_loading .page-link').on('click', function() {
+            Loading.show();
+        });
     },
-    
+
     handleResetForm: function() {
-        $('.resetForm').on('click', function() {
+        $('.reset-form').on('click', function() {
             $('#per_page').val('');
             let getForm = $(this).closest('form');
-            
+
             getForm.find('input').each(function() {
                 $(this).val('');
             });
@@ -49,4 +53,4 @@ export const Common = {
 };
 
 // Make Common available globally
-window.Common = Common; 
+window.Common = Common;

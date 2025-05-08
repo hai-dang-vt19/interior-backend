@@ -27,5 +27,5 @@ class CustomerService extends BaseService
     {
         $this->customerRepository->destroy($id);
     }
-    
+
 }

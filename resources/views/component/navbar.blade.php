@@ -7,13 +7,13 @@
       <div class="collapse navbar-collapse" id="navbarText">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0">
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page" href="#">Dashboard</a>
+            <a class="nav-link" aria-current="page" href="#">Dashboard</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Sản phẩm</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="{{ route('admin.customer.index') }}">Khách hàng</a>
+            <a class="nav-link {{ Route::is('admin.customer.*') ? 'active' : '' }}" href="{{ route('admin.customer.index') }}">Khách hàng</a>
           </li>
           <li class="nav-item">
             <a class="nav-link" href="#">Đơn hàng</a>

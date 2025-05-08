@@ -41,11 +41,11 @@
                 </div>
                 <div class="col-md-3">
                     <label for="dateFrom" class="form-label">Ngày tạo</label>
-                    <input type="text" class="form-control flatpickr-range" id="dateFrom" name="dateFrom" placeholder="Chọn ngày...">
+                    <input type="text" class="form-control flatpickr-range" id="dateFrom" name="dateFrom" value="{{ request('dateFrom') }}" placeholder="Chọn ngày...">
                 </div>
                 <div class="col-auto d-flex align-items-end justify-content-md-start justify-content-center">
                     <button type="submit" class="btn btn-primary me-2">Tìm kiếm</button>
-                    <button type="button" class="btn btn-secondary resetForm">Đặt lại</button>
+                    <button type="button" class="btn btn-secondary reset-form">Đặt lại</button>
                 </div>
                 <input type="hidden" name="per_page" id="per_page" value="{{ request('per_page') }}">
             </div>
@@ -122,7 +122,9 @@
                 </tbody>
             </table>
         </div>
-        {{ $customers->links('vendor.pagination.bootstrap-5') }}
+        <div id="focus_page_loading">
+            {{ $customers->links('vendor.pagination.bootstrap-5') }}
+        </div>
     </div>
 </div>
 @endsection
@@ -146,11 +148,11 @@
         });
         $('#loginForm').on('submit', function(e) {
             e.preventDefault();
-            
+
             // Reset error states
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').text('');
-            
+
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
@@ -168,7 +170,7 @@
                         for (const field in errors) {
                             const input = $(`#${field}`);
                             const errorDiv = $(`#${field}-error`);
-                            
+
                             input.addClass('is-invalid');
                             errorDiv.text(errors[field][0]);
                         }
@@ -181,4 +183,4 @@
         });
     });
 </script>
-@endsection 
+@endsection
