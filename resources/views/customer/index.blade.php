@@ -104,7 +104,14 @@
                             <td>
                                 <div class="d-flex flex-warp">
                                     <div>
-                                        <button class="btn btn-sm btn-edit">
+                                        <button class="btn btn-sm btn-edit" 
+                                            data-bs-toggle="modal" data-bs-target="#modalEdit"
+                                            data-route="{{ route('admin.customer.update', $customer->id) }}"
+                                            data-full-name="{{ $customer->full_name }}"
+                                            data-email="{{ $customer->email }}"
+                                            data-phone="{{ $customer->phone }}"
+                                            data-status="{{ $customer->getIDStatus() }}"
+                                        >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="m7 17.013 4.413-.015 9.632-9.54c.378-.378.586-.88.586-1.414s-.208-1.036-.586-1.414l-1.586-1.586c-.756-.756-2.075-.752-2.825-.003L7 12.583v4.43zM18.045 4.458l1.589 1.583-1.597 1.582-1.586-1.585 1.594-1.58zM9 13.417l6.03-5.973 1.586 1.586-6.029 5.971L9 15.006v-1.589z"></path><path d="M5 21h14c1.103 0 2-.897 2-2v-8.668l-2 2V19H8.158c-.026 0-.053.01-.079.01-.033 0-.066-.009-.1-.01H5V5h6.847l2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2z"></path></svg>
                                         </button>
                                     </div>
@@ -127,6 +134,8 @@
         </div>
     </div>
 </div>
+
+@include('customer.modal.edit')
 @endsection
 
 @section('scripts')
@@ -146,40 +155,22 @@
                 }
             });
         });
-        $('#loginForm').on('submit', function(e) {
-            e.preventDefault();
+        $('.btn-edit').on('click', function() {
+            let status = $(this).data('status');
+            let targetModal = '#modalEdit form';
+            
+            $(targetModal).attr('action', $(this).data('route'));
+            $(`${targetModal} input[name=full_name]`).val($(this).data('full-name'));
+            $(`${targetModal} input[name=email]`).val($(this).data('email'));
+            $(`${targetModal} input[name=phone]`).val($(this).data('phone'));
 
-            // Reset error states
-            $('.is-invalid').removeClass('is-invalid');
-            $('.invalid-feedback').text('');
+            if ($(`${targetModal} select[name=status] option[value="` + status + '"]').length) {
+                $(`${targetModal} select[name=status]`).val(status).trigger('change');
+            }
+        });
 
-            $.ajax({
-                url: $(this).attr('action'),
-                type: 'POST',
-                data: $(this).serialize(),
-                success: function(response) {
-                    if (response.redirect) {
-                        window.location.href = response.redirect;
-                    }
-                },
-                error: function(xhr) {
-                    Loading.hide();
-                    if (xhr.status === 422) {
-                        // Validation errors
-                        const errors = xhr.responseJSON.errors;
-                        for (const field in errors) {
-                            const input = $(`#${field}`);
-                            const errorDiv = $(`#${field}-error`);
-
-                            input.addClass('is-invalid');
-                            errorDiv.text(errors[field][0]);
-                        }
-                    } else if (xhr.status === 401 || xhr.status === 403) {
-                        // Authentication errors
-                        Alert.error(xhr.responseJSON.error.msg);
-                    }
-                }
-            });
+        $('.btn-submit-edit').on('click', function() {
+            $('#modalEdit form').submit();
         });
     });
 </script>

@@ -23,6 +23,8 @@ Route::prefix('admin')->group(function () {
 
         // Customer
         Route::prefix('customer')->name('admin.customer.')->group(function () {
+            Route::get('{id}', [CustomerController::class, 'edit'])->name('edit');
+            Route::post('{id}', [CustomerController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [CustomerController::class, 'destroy'])->name('destroy');
             Route::get('', [CustomerController::class, 'index'])->name('index');
         });

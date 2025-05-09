@@ -35,11 +35,12 @@ class CustomerRepository implements CustomerRepositoryInterface
                 }
             })
             ->when(isset($params['dateFrom']), function (Builder $query) use ($params) {
+                // chức năng này chưa hoạt động đúng
                 $explodeDate = explode(' - ', $params['dateFrom']);
                 if (count($explodeDate) == 1) {
                     // $startTime = Carbon::parse($explodeDate[0])->startOfDay();
                     // $endTime = Carbon::parse($explodeDate[0])->endOfDay();
-                    return $query->where('created_at', Carbon::parse($explodeDate[0])->toDateString());
+                    return $query->whereDate('created_at', Carbon::parse($explodeDate[0])->toDateString());
                 }
 
                 if (count($explodeDate) == 2) {
@@ -51,6 +52,11 @@ class CustomerRepository implements CustomerRepositoryInterface
 
         return $customers->paginate(isset($params['per_page']) ? $params['per_page'] : PerPage::PER_PAGE_10->value)
             ->withQueryString();
+    }
+
+    public function updateCustomerByID(int $id, array $params): bool
+    {
+        return $this->model->withTrashed()->findOrFail($id)->update($params);
     }
 
     public function getCustomerByID(int $id): Customer
