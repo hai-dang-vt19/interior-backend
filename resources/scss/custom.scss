@@ -78,3 +78,7 @@
         transition: all 0.3s ease;
     }
 }
+.custom-tooltip {
+    --bs-tooltip-bg: #2C3E50;
+    --bs-tooltip-color: #FDFEFE;
+}

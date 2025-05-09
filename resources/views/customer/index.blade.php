@@ -52,7 +52,6 @@
         </form>
     </div>
 </div>
-
 <!-- Table Section -->
 <div class="card mb-3">
     <div class="card-header">
@@ -93,7 +92,13 @@
                 </thead>
                 <tbody>
                     @foreach ($customers as $key => $customer)
-                        <tr>
+                        <tr
+                            @if ($customer->deleted_at)
+                                data-bs-toggle="tooltip" data-bs-placement="top"
+                                data-bs-custom-class="custom-tooltip"
+                                data-bs-title="Ngừng hoạt động: {{ $customer->deleted_at->format('H:i d/m/Y') }}"
+                            @endif
+                        >
                             <td class="text-center">{{ ($customers->currentPage() - 1) * $customers->perPage() + 1 + $key }}</td>
                             <td class="text-center">{{ $customer->id }}</td>
                             <td>{{ $customer->full_name }}</td>
