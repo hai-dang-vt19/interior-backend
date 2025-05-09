@@ -5,6 +5,7 @@ import { Loading } from './common/loading';
 import { Common } from './common/common';
 import { Validation } from './common/validation';
 import { FlatpickrConfig } from './common/flatpickr';
+import { TooltipConfig } from './common/tooltip';
 import $ from 'jquery';
 
 // Make Alert, Loading, Ajax and jQuery available globally
@@ -14,10 +15,11 @@ window.$ = $;
 window.jQuery = $;
 
 // Initialize common functions
-$(function() {
+$(function () {
     Common.init();
     Validation.init();
     FlatpickrConfig.init();
+    TooltipConfig.init();
 });
 
 // Example usage alert
