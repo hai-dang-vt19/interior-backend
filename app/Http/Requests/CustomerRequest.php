@@ -29,7 +29,11 @@ class CustomerRequest extends FormRequest
         return [
             'full_name' => ['required', 'string', 'min:8'],
             'email' => ['required', 'string'],
-            'phone' => ['required', 'string', 'regex:/^[0-9]{10,11}$/'],
+            'phone' => [
+                'required',
+                'string',
+                // 'regex:/^[0-9]{10,11}$/'
+            ],
             'status' => ['required', new Enum(CustomerStatus::class)]
         ];
     }
@@ -51,10 +55,10 @@ class CustomerRequest extends FormRequest
             'input' => $this->all(),
             'url' => request()->fullUrl(),
         ]);
-        
+
         $this->flash();
         session()->flash('dataError', 'Không thành công');
 
         throw new ValidationException($validator);
     }
-} 
+}
