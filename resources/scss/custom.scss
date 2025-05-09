@@ -26,8 +26,20 @@
         color: $white;
     }
     .navbar-nav {
-        .nav-link {
-            color: $white;
+        .nav-item {
+            .nav-link {
+                color: $accent;
+            }
+            .active {
+                color: $white;
+            }
+
+            &:hover {
+                .nav-link {
+                    color: $white;
+                    transition: all 0.3s ease;
+                }
+            }
         }
     }
 }
@@ -35,7 +47,7 @@
     background-color: $bg-light;
     border: 1px solid $border-color;
     color: $txt-main;
-    
+
     &:hover {
         box-shadow: 0 2px 4px $shadow-color;
     }

@@ -18,7 +18,7 @@ class CustomerController extends BaseController
         return view('customer.index', compact('customers'));
     }
 
-    public function destroy(Request $request, int $id)
+    public function destroy(int $id)
     {
         $this->customerService->destroy($id);
         return redirect()->back()->with('dataSuccess', 'Xóa khách hàng thành công');

@@ -7,6 +7,7 @@ namespace App\Repositories\Customer;
 use App\Enums\CustomerStatus;
 use App\Enums\PerPage;
 use App\Models\Customer;
+use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 
@@ -31,6 +32,20 @@ class CustomerRepository implements CustomerRepositoryInterface
             ->when(isset($params['status']), function (Builder $query) use ($params) {
                 if ($params['status'] == CustomerStatus::INACTIVE->value) {
                     return $query->onlyTrashed();
+                }
+            })
+            ->when(isset($params['dateFrom']), function (Builder $query) use ($params) {
+                $explodeDate = explode(' - ', $params['dateFrom']);
+                if (count($explodeDate) == 1) {
+                    // $startTime = Carbon::parse($explodeDate[0])->startOfDay();
+                    // $endTime = Carbon::parse($explodeDate[0])->endOfDay();
+                    return $query->where('created_at', Carbon::parse($explodeDate[0])->toDateString());
+                }
+
+                if (count($explodeDate) == 2) {
+                    $startTime = Carbon::parse($explodeDate[0])->toDateString();
+                    $endTime = Carbon::parse($explodeDate[1])->toDateString();
+                    return $query->whereBetween('created_at', [$startTime, $endTime]);
                 }
             });
 
