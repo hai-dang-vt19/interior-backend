@@ -35,19 +35,15 @@ class CustomerRepository implements CustomerRepositoryInterface
                 }
             })
             ->when(isset($params['dateFrom']), function (Builder $query) use ($params) {
-                // chức năng này chưa hoạt động đúng
-                $explodeDate = explode(' - ', $params['dateFrom']);
-                if (count($explodeDate) == 1) {
-                    // $startTime = Carbon::parse($explodeDate[0])->startOfDay();
-                    // $endTime = Carbon::parse($explodeDate[0])->endOfDay();
-                    return $query->whereDate('created_at', Carbon::parse($explodeDate[0])->toDateString());
+                $dates = explode(' - ', $params['dateFrom']);
+                if (count($dates) === 2) {
+                    return $query->whereBetween('created_at', [
+                        Carbon::createFromFormat('d/m/Y', trim($dates[0]))->startOfDay(),
+                        Carbon::createFromFormat('d/m/Y', trim($dates[1]))->endOfDay()
+                    ]);
                 }
-
-                if (count($explodeDate) == 2) {
-                    $startTime = Carbon::parse($explodeDate[0])->toDateString();
-                    $endTime = Carbon::parse($explodeDate[1])->toDateString();
-                    return $query->whereBetween('created_at', [$startTime, $endTime]);
-                }
+                $date = Carbon::createFromFormat('d/m/Y', $params['dateFrom']);
+                return $query->whereDate('created_at', $date->format('Y-m-d'));
             });
 
         return $customers->paginate(isset($params['per_page']) ? $params['per_page'] : PerPage::PER_PAGE_10->value)
