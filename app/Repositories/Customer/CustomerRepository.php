@@ -54,6 +54,11 @@ class CustomerRepository implements CustomerRepositoryInterface
             ->withQueryString();
     }
 
+    public function updateCustomerByID(int $id, array $params): bool
+    {
+        return $this->model->withTrashed()->findOrFail($id)->update($params);
+    }
+
     public function getCustomerByID(int $id): Customer
     {
         return $this->model->findOrFail($id);

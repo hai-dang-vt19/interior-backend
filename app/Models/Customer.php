@@ -20,6 +20,7 @@ class Customer extends Authenticatable
         'full_name',
         'phone',
         'address',
+        'deleted_at'
     ];
 
     protected $hidden = [
@@ -52,5 +53,10 @@ class Customer extends Authenticatable
         return $this->deleted_at 
             ? '<span class="text-danger">' . CustomerStatus::INACTIVE->label() . '</span>' 
             : '<span class="text-success">' . CustomerStatus::ACTIVE->label() . '</span>';
+    }
+
+    public function getIDStatus()
+    {
+        return $this->deleted_at ? CustomerStatus::INACTIVE->value : CustomerStatus::ACTIVE->value;
     }
 } 
