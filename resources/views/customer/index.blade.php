@@ -12,7 +12,7 @@
 <!-- Filter Section -->
 <div class="card mb-4">
     <div class="card-body">
-        <form action="{{ route('admin.customer.index') }}" method="GET" id="searchForm" class="d-flex flex-column gap-3">
+        <form action="{{ route('admin.customer.index') }}" method="GET" id="searchForm" class="d-flex flex-column gap-3" autocomplete="off">
             <div class="row g-3">
                 <div class="col-md-3">
                     <label for="full_name" class="form-label">Tên khách hàng</label>
@@ -109,7 +109,7 @@
                             <td>
                                 <div class="d-flex flex-warp justify-content-center">
                                     <div>
-                                        <button class="btn btn-sm btn-edit" 
+                                        <button class="btn btn-sm btn-edit"
                                             data-bs-toggle="modal" data-bs-target="#modalEdit"
                                             data-route="{{ route('admin.customer.update', $customer->id) }}"
                                             data-full-name="{{ $customer->full_name }}"
@@ -165,14 +165,18 @@
         $('.btn-edit').on('click', function() {
             let status = $(this).data('status');
             let targetModal = '#modalEdit form';
-            
+
             $(targetModal).attr('action', $(this).data('route'));
             $(`${targetModal} input[name=full_name]`).val($(this).data('full-name'));
             $(`${targetModal} input[name=email]`).val($(this).data('email'));
             $(`${targetModal} input[name=phone]`).val($(this).data('phone'));
 
-            if ($(`${targetModal} select[name=status] option[value="` + status + '"]').length) {
-                $(`${targetModal} select[name=status]`).val(status).trigger('change');
+            if (status == 1) {
+                $(`${targetModal} .select-select`).hide();
+            } else {
+                if ($(`${targetModal} select[name=status] option[value="` + status + '"]').length) {
+                    $(`${targetModal} select[name=status]`).val(status).trigger('change');
+                }
             }
         });
 
