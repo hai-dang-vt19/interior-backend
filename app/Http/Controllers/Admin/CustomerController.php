@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\BaseController;
+use App\Http\Requests\CustomerEditRequest;
 use App\Http\Requests\CustomerRequest;
 use App\Services\CustomerService;
 use Illuminate\Http\Request;
@@ -24,7 +25,7 @@ class CustomerController extends BaseController
         return $this->customerService->getCustomerByID($id);
     }
 
-    public function update(int $id, CustomerRequest $request)
+    public function update(int $id, CustomerEditRequest $request)
     {
         $params = $request->validated();
         $this->customerService->updateCustomerByID($id, $params);

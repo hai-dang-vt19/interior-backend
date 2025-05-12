@@ -9,7 +9,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 
-class CustomerRequest extends FormRequest
+class CustomerEditRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -34,7 +34,7 @@ class CustomerRequest extends FormRequest
                 'string',
                 // 'regex:/^[0-9]{10,11}$/'
             ],
-            'status' => ['required', new Enum(CustomerStatus::class)]
+            'status' => ['nullable', new Enum(CustomerStatus::class)]
         ];
     }
 

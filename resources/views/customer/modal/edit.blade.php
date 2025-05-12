@@ -20,16 +20,16 @@
               <label for="phone" class="form-label">Phone</label>
               <input type="text" class="form-control input-number" id="phone" name="phone" readonly>
             </div>
-            <div class="col-12">
-              <label for="status" class="form-label">Trạng thái</label>
-              <select class="form-select" id="status" name="status">
-                  <option value="{{ App\Enums\CustomerStatus::ACTIVE->value }}">
-                      {{ App\Enums\CustomerStatus::ACTIVE->label() }}
-                  </option>
-                  <option value="{{ App\Enums\CustomerStatus::INACTIVE->value }}">
-                      {{ App\Enums\CustomerStatus::INACTIVE->label() }}
-                  </option>
-              </select>
+            <div class="col-12 select-select">
+                <label for="status" class="form-label">Trạng thái</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="{{ App\Enums\CustomerStatus::ACTIVE->value }}">
+                        {{ App\Enums\CustomerStatus::ACTIVE->label() }}
+                    </option>
+                    <option value="{{ App\Enums\CustomerStatus::INACTIVE->value }}">
+                        {{ App\Enums\CustomerStatus::INACTIVE->label() }}
+                    </option>
+                </select>
             </div>
           </form>
         </div>
