@@ -1,0 +1,84 @@
+@use "variable" as *;
+@use "functions" as *;
+
+// example
+// body {
+//     background-color: $bg-main;
+//     font-size: rem(15px);
+// }
+
+.login-form {
+    // background-color: $secondary;
+    padding: 20px;
+    border-radius: 10px;
+
+    #loginForm {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+.custom-navbar {
+    background-color: $bg-main-dark;
+    backdrop-filter: blur(10px);
+    .navbar-brand {
+        color: $white;
+    }
+    .navbar-nav {
+        .nav-item {
+            .nav-link {
+                color: $accent;
+            }
+            .active {
+                color: $white;
+            }
+
+            &:hover {
+                .nav-link {
+                    color: $white;
+                    transition: all 0.3s ease;
+                }
+            }
+        }
+    }
+}
+.card {
+    background-color: $bg-light;
+    border: 1px solid $border-color;
+    color: $txt-main;
+
+    &:hover {
+        box-shadow: 0 2px 4px $shadow-color;
+    }
+}
+
+// button
+.btn-delete {
+    scale: 0.8;
+    line-height: 0 !important;
+    svg {
+        fill: $white;
+    }
+    &:hover {
+        scale: 0.9;
+        transition: all 0.3s ease;
+    }
+}
+.btn-edit {
+    scale: 0.8;
+    line-height: 0 !important;
+    background-color: $btn-primary !important;
+    svg {
+        fill: $white;
+    }
+    &:hover {
+        background-color: $hover-primary !important;
+        scale: 0.9;
+        transition: all 0.3s ease;
+    }
+}
+.custom-tooltip {
+    --bs-tooltip-bg: #2C3E50;
+    --bs-tooltip-color: #FDFEFE;
+}

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\CustomerStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -19,6 +20,7 @@ class Customer extends Authenticatable
         'full_name',
         'phone',
         'address',
+        'deleted_at'
     ];
 
     protected $hidden = [
@@ -39,5 +41,22 @@ class Customer extends Authenticatable
     public function orders()
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function formatCreatedAt()
+    {
+        return $this->created_at->format('d/m/Y');
+    }
+
+    public function formatStatus()
+    {
+        return $this->deleted_at 
+            ? '<span class="text-danger">' . CustomerStatus::INACTIVE->label() . '</span>' 
+            : '<span class="text-success">' . CustomerStatus::ACTIVE->label() . '</span>';
+    }
+
+    public function getIDStatus()
+    {
+        return $this->deleted_at ? CustomerStatus::INACTIVE->value : CustomerStatus::ACTIVE->value;
     }
 } 
