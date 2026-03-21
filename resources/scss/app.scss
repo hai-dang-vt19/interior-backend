@@ -1,6 +1,6 @@
-@import "bootstrap/dist/css/bootstrap.css";
-@use "functions";
+@use "functions" as *;
 @use "variable";
+@import "bootstrap/dist/css/bootstrap.css";
 
 // Theme variables
 $font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
