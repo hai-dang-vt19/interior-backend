@@ -57,4 +57,24 @@ class Product extends Model
     {
         return $this->hasMany(InventoryHistory::class);
     }
+
+    public function formatCreatedAt()
+    {
+        return $this->created_at->format('d/m/Y');
+    }
+
+    public function formatStatus()
+    {
+        return match ($this->status) {
+            ProductStatus::ACTIVE => '<span class="text-success">' . ProductStatus::ACTIVE->label() . '</span>',
+            ProductStatus::INACTIVE => '<span class="text-secondary">' . ProductStatus::INACTIVE->label() . '</span>',
+            ProductStatus::OUT_OF_STOCK => '<span class="text-danger">' . ProductStatus::OUT_OF_STOCK->label() . '</span>',
+            default => '<span>-</span>',
+        };
+    }
+
+    public function getPriceDisplay()
+    {
+        return number_format((float) $this->price, 0, ',', '.') . ' đ';
+    }
 } 

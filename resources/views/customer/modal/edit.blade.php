@@ -20,6 +20,19 @@
               <label for="phone" class="form-label">Phone</label>
               <input type="text" class="form-control input-number" id="phone" name="phone" readonly>
             </div>
+            <div class="col-12">
+                <label for="loyalty_tier" class="form-label">Hạng khách hàng</label>
+                <select class="form-select" id="loyalty_tier" name="loyalty_tier">
+                    <option value="standard">Standard</option>
+                    <option value="silver">Silver</option>
+                    <option value="gold">Gold</option>
+                    <option value="platinum">Platinum</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <label for="reward_points" class="form-label">Điểm thưởng</label>
+                <input type="number" min="0" class="form-control" id="reward_points" name="reward_points">
+            </div>
             <div class="col-12 select-select">
                 <label for="status" class="form-label">Trạng thái</label>
                 <select class="form-select" id="status" name="status">

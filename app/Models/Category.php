@@ -30,4 +30,9 @@ class Category extends Model
     {
         return $this->hasMany(Product::class);
     }
+
+    public function formatCreatedAt()
+    {
+        return $this->created_at->format('d/m/Y');
+    }
 } 

@@ -1,0 +1,142 @@
+@extends('base')
+
+@section('breadcrumb')
+    <nav aria-label="breadcrumb">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item active" aria-current="page">Nhân viên</li>
+        </ol>
+    </nav>
+@endsection
+
+@section('content')
+<div class="card mb-4">
+    <div class="card-body">
+        <form action="{{ route('admin.staff.index') }}" method="GET" class="row g-3" id="searchFormStaff">
+            <div class="col-md-4">
+                <label class="form-label">Từ khóa</label>
+                <input type="text" class="form-control" name="keyword" value="{{ request('keyword') }}" placeholder="Tên, username, email, phone">
+            </div>
+            <div class="col-md-4">
+                <label class="form-label">Bản ghi</label>
+                <select class="form-select" name="deleted">
+                    <option value="active" {{ request('deleted', 'active') === 'active' ? 'selected' : '' }}>Đang hoạt động</option>
+                    <option value="trashed" {{ request('deleted') === 'trashed' ? 'selected' : '' }}>Đã vô hiệu</option>
+                    <option value="all" {{ request('deleted') === 'all' ? 'selected' : '' }}>Tất cả</option>
+                </select>
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary me-2">Tìm kiếm</button>
+                <a class="btn btn-secondary" href="{{ route('admin.staff.index') }}">Đặt lại</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Danh sách nhân viên</h5>
+        <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#modalCreateStaff">
+            <i class="fas fa-plus"></i> Thêm mới
+        </button>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th class="text-center">ID</th>
+                        <th>Username</th>
+                        <th>Họ tên</th>
+                        <th>Email</th>
+                        <th>Phone</th>
+                        <th class="text-center">Thao tác</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($staffs as $staff)
+                        <tr>
+                            <td class="text-center">{{ $staff->id }}</td>
+                            <td>{{ $staff->username }}</td>
+                            <td>{{ $staff->full_name }}</td>
+                            <td>{{ $staff->email }}</td>
+                            <td>{{ $staff->phone }}</td>
+                            <td>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <button class="btn btn-sm btn-edit btn-edit-staff"
+                                        data-bs-toggle="modal"
+                                        data-bs-target="#modalEditStaff"
+                                        data-route="{{ route('admin.staff.update', $staff->id) }}"
+                                        data-username="{{ $staff->username }}"
+                                        data-full-name="{{ $staff->full_name }}"
+                                        data-email="{{ $staff->email }}"
+                                        data-phone="{{ $staff->phone }}">
+                                        <i class="fas fa-pen"></i>
+                                    </button>
+                                    @if (!$staff->deleted_at)
+                                        <form action="{{ route('admin.staff.destroy', $staff->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-danger btn-sm btn-delete-staff" type="button">
+                                                <i class="fas fa-user-slash"></i>
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form action="{{ route('admin.staff.restore', $staff->id) }}" method="POST">
+                                            @csrf
+                                            @method('PATCH')
+                                            <button class="btn btn-success btn-sm btn-restore-staff" type="button">
+                                                <i class="fas fa-undo"></i>
+                                            </button>
+                                        </form>
+                                        <form action="{{ route('admin.staff.force-destroy', $staff->id) }}" method="POST">
+                                            @csrf
+                                            @method('DELETE')
+                                            <button class="btn btn-dark btn-sm btn-force-delete-staff" type="button">
+                                                <i class="fas fa-trash-alt"></i>
+                                            </button>
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr><td colspan="6" class="text-center">Không có dữ liệu</td></tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+        {{ $staffs->links('vendor.pagination.bootstrap-5') }}
+    </div>
+</div>
+
+@include('staff.modal.create')
+@include('staff.modal.edit')
+@endsection
+
+@section('scripts')
+<script type="module">
+$(document).ready(function() {
+    $('.btn-submit-create-staff').on('click', function() {
+        $('#modalCreateStaff form').submit();
+    });
+
+    $('.btn-edit-staff').on('click', function() {
+        const target = '#modalEditStaff form';
+        $(target).attr('action', $(this).data('route'));
+        $(`${target} input[name=username]`).val($(this).data('username'));
+        $(`${target} input[name=full_name]`).val($(this).data('full-name'));
+        $(`${target} input[name=email]`).val($(this).data('email'));
+        $(`${target} input[name=phone]`).val($(this).data('phone'));
+        $(`${target} input[name=password]`).val('');
+    });
+
+    $('.btn-submit-edit-staff').on('click', function() {
+        $('#modalEditStaff form').submit();
+    });
+
+    $('.btn-delete-staff, .btn-restore-staff, .btn-force-delete-staff').on('click', function() {
+        $(this).closest('form').submit();
+    });
+});
+</script>
+@endsection

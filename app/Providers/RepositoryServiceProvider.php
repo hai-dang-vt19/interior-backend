@@ -12,7 +12,12 @@ class RepositoryServiceProvider extends ServiceProvider
     public function register(): void
     {
         $repositories = [
-            'Customer'
+            'Customer',
+            'Product',
+            'Category',
+            'Order',
+            'Dashboard',
+            'Staff',
         ];
 
         foreach ($repositories as $repo) {

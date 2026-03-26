@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\CustomerStatus;
+use App\Models\Customer;
 use App\Repositories\Customer\CustomerRepositoryInterface;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerService extends BaseService
 {
@@ -19,6 +21,20 @@ class CustomerService extends BaseService
     public function getCustomers(array $params) : LengthAwarePaginator
     {
         return $this->customerRepository->getCustomers($params);
+    }
+
+    // Chuẩn hóa dữ liệu và tạo mới khách hàng
+    public function createCustomer(array $params): Customer
+    {
+        $params['password'] = Hash::make('12345678');
+        $params['loyalty_tier'] = $params['loyalty_tier'] ?? 'standard';
+        $params['reward_points'] = $params['reward_points'] ?? 0;
+        if (($params['status'] ?? null) == CustomerStatus::INACTIVE->value) {
+            $params['deleted_at'] = now();
+        }
+        unset($params['status']);
+
+        return $this->customerRepository->createCustomer($params);
     }
 
     public function updateCustomerByID(int $id, array $params)
@@ -49,6 +65,36 @@ class CustomerService extends BaseService
     public function destroy(int $id) : void
     {
         $this->customerRepository->destroy($id);
+    }
+
+    public function restore(int $id): bool
+    {
+        return $this->customerRepository->restore($id);
+    }
+
+    public function forceDelete(int $id): bool
+    {
+        return $this->customerRepository->forceDelete($id);
+    }
+
+    public function getCustomerProfile(int $id): Customer
+    {
+        return $this->customerRepository->getCustomerProfile($id);
+    }
+
+    public function addAddress(int $customerId, array $params): bool
+    {
+        return $this->customerRepository->addAddress($customerId, $params);
+    }
+
+    public function deleteAddress(int $customerId, int $addressId): bool
+    {
+        return $this->customerRepository->deleteAddress($customerId, $addressId);
+    }
+
+    public function addContactLog(int $customerId, array $params): bool
+    {
+        return $this->customerRepository->addContactLog($customerId, $params);
     }
 
 }
