@@ -34,7 +34,9 @@ class CustomerEditRequest extends FormRequest
                 'string',
                 // 'regex:/^[0-9]{10,11}$/'
             ],
-            'status' => ['nullable', new Enum(CustomerStatus::class)]
+            'status' => ['nullable', new Enum(CustomerStatus::class)],
+            'loyalty_tier' => ['nullable', 'in:standard,silver,gold,platinum'],
+            'reward_points' => ['nullable', 'integer', 'min:0'],
         ];
     }
 

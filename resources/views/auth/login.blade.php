@@ -22,6 +22,9 @@
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Đăng nhập</button>
                     </div>
+                    <div class="text-center mt-3">
+                        <a href="{{ route('admin.register') }}">Chưa có tài khoản? Đăng ký</a>
+                    </div>
                 </form>
             </div>
         </div>

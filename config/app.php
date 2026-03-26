@@ -123,6 +123,36 @@ return [
         'store' => env('APP_MAINTENANCE_STORE', 'database'),
     ],
 
-    // custom domain
+    // custom domain (giữ nguyên giá trị .env; dùng *_host cho Route::domain — chỉ hostname, không gồm scheme/path)
     'admin_domain' => env('ADMIN_DOMAIN', 'interior.admin'),
+    'admin_domain_host' => (static function () {
+        $v = (string) env('ADMIN_DOMAIN', 'interior.admin');
+        if ($v === '') {
+            return 'interior.admin';
+        }
+        if (str_contains($v, '://')) {
+            return parse_url($v, PHP_URL_HOST) ?: preg_replace('#^https?://#i', '', $v);
+        }
+
+        return $v;
+    })(),
+
+    'customer_domain' => env('CUSTOMER_DOMAIN', 'localhost'),
+    'customer_domain_host' => (static function () {
+        $v = (string) env('CUSTOMER_DOMAIN', 'localhost');
+        if ($v === '') {
+            return 'localhost';
+        }
+        if (str_contains($v, '://')) {
+            return parse_url($v, PHP_URL_HOST) ?: preg_replace('#^https?://#i', '', $v);
+        }
+
+        return $v;
+    })(),
+
+    /*
+     * Khi false: không dùng Route::domain(), site + admin cùng chạy trên một host (vd: http://localhost).
+     * Hữu ích khi không chỉnh được file hosts trên Windows — không cần chungsi.*.localhost.
+     */
+    'use_domain_routing' => env('USE_DOMAIN_ROUTING', true),
 ];

@@ -8,6 +8,7 @@ use Illuminate\Validation\Rules\Enum;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Validation\Rule;
 
 class CustomerRequest extends FormRequest
 {
@@ -28,13 +29,15 @@ class CustomerRequest extends FormRequest
     {
         return [
             'full_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string'],
+            'email' => ['required', 'email', 'max:100', Rule::unique('customers', 'email')],
             'phone' => [
                 'required',
                 'string',
                 // 'regex:/^[0-9]{10,11}$/'
             ],
-            'status' => ['required', new Enum(CustomerStatus::class)]
+            'status' => ['required', new Enum(CustomerStatus::class)],
+            'loyalty_tier' => ['nullable', 'in:standard,silver,gold,platinum'],
+            'reward_points' => ['nullable', 'integer', 'min:0'],
         ];
     }
 

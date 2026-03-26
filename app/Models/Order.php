@@ -18,6 +18,10 @@ class Order extends Model
         'total_amount',
         'shipping_address',
         'shipping_phone',
+        'shipping_provider',
+        'tracking_number',
+        'shipped_at',
+        'delivered_at',
         'status',
         'payment_method',
         'payment_status',
@@ -29,6 +33,8 @@ class Order extends Model
         'status' => OrderStatus::class,
         'payment_method' => PaymentMethod::class,
         'payment_status' => PaymentStatus::class,
+        'shipped_at' => 'datetime',
+        'delivered_at' => 'datetime',
     ];
 
     public function customer()
@@ -40,4 +46,24 @@ class Order extends Model
     {
         return $this->hasMany(OrderItem::class);
     }
-} 
+
+    public function histories()
+    {
+        return $this->hasMany(OrderHistory::class);
+    }
+
+    public function returnRequests()
+    {
+        return $this->hasMany(OrderReturnRequest::class);
+    }
+
+    public function formatCreatedAt()
+    {
+        return $this->created_at->format('d/m/Y');
+    }
+
+    public function getTotalDisplay()
+    {
+        return number_format((float) $this->total_amount, 0, ',', '.') . ' đ';
+    }
+}

@@ -20,6 +20,8 @@ class Customer extends Authenticatable
         'full_name',
         'phone',
         'address',
+        'loyalty_tier',
+        'reward_points',
         'deleted_at'
     ];
 
@@ -43,6 +45,16 @@ class Customer extends Authenticatable
         return $this->hasMany(Order::class);
     }
 
+    public function addresses()
+    {
+        return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function contactLogs()
+    {
+        return $this->hasMany(CustomerContactLog::class);
+    }
+
     public function formatCreatedAt()
     {
         return $this->created_at->format('d/m/Y');
@@ -58,5 +70,25 @@ class Customer extends Authenticatable
     public function getIDStatus()
     {
         return $this->deleted_at ? CustomerStatus::INACTIVE->value : CustomerStatus::ACTIVE->value;
+    }
+
+    public function formatLoyaltyTier()
+    {
+        return match ($this->loyalty_tier) {
+            'silver' => 'Silver',
+            'gold' => 'Gold',
+            'platinum' => 'Platinum',
+            default => 'Standard',
+        };
+    }
+
+    public function getLoyaltyBenefit()
+    {
+        return match ($this->loyalty_tier) {
+            'silver' => 'Giảm 2%',
+            'gold' => 'Giảm 5%',
+            'platinum' => 'Giảm 8%',
+            default => 'Giảm 0%',
+        };
     }
 } 
