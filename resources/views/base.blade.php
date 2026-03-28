@@ -7,7 +7,6 @@
         @vite([
             'resources/scss/app.scss',
             'resources/js/app.js',
-            'resources/scss/custom.scss',
         ])
     </head>
     <body>

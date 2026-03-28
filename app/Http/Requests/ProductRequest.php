@@ -25,7 +25,6 @@ class ProductRequest extends FormRequest
             'price' => ['required', 'numeric', 'min:0'],
             'discount_price' => ['nullable', 'numeric', 'min:0', 'lte:price'],
             'quantity' => ['required', 'integer', 'min:0'],
-            'image_url' => ['nullable', 'string'],
             'status' => ['required', new Enum(ProductStatus::class)],
         ];
     }

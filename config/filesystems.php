@@ -33,7 +33,8 @@ return [
         'local' => [
             'driver' => 'local',
             'root' => storage_path('app/private'),
-            'serve' => true,
+            // Bật serve sẽ đăng ký GET /storage/{path} và bắt buộc signed URL → ảnh public (disk public + symlink) bị 403.
+            'serve' => false,
             'throw' => false,
             'report' => false,
         ],

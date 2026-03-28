@@ -76,6 +76,12 @@ class ProductService extends BaseService
         return $this->productRepository->addProductImage($productId, $params);
     }
 
+    // Đặt ảnh đại diện (primary) cho sản phẩm
+    public function setPrimaryProductImage(int $productId, int $imageId): bool
+    {
+        return $this->productRepository->setPrimaryProductImage($productId, $imageId);
+    }
+
     // Xóa ảnh phụ của sản phẩm
     public function deleteProductImage(int $productId, int $imageId): bool
     {

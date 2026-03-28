@@ -32,7 +32,7 @@
               <label class="form-label">Số lượng</label>
               <input type="number" class="form-control" name="quantity" min="0">
             </div>
-            <div class="col-md-6">
+            <div class="col-md-12">
               <label class="form-label">Trạng thái</label>
               <select class="form-select" name="status">
                 @foreach (App\Enums\ProductStatus::cases() as $status)
@@ -40,9 +40,8 @@
                 @endforeach
               </select>
             </div>
-            <div class="col-md-6">
-              <label class="form-label">Ảnh đại diện (URL)</label>
-              <input type="text" class="form-control" name="image_url">
+            <div class="col-12">
+              <p class="form-text text-muted mb-0">Ảnh sản phẩm quản lý tại <strong>Quản lý ảnh</strong>.</p>
             </div>
             <div class="col-12">
               <label class="form-label">Mô tả</label>

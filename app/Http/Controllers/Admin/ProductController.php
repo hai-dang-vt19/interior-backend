@@ -9,7 +9,9 @@ use App\Http\Requests\ProductInventoryRequest;
 use App\Http\Requests\ProductRequest;
 use App\Services\ProductService;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 
 class ProductController extends BaseController
 {
@@ -80,12 +82,53 @@ class ProductController extends BaseController
         return view('product.images', compact('product'));
     }
 
-    // Thêm ảnh phụ theo URL
+    // Thêm một hoặc nhiều ảnh: storage/public/product/{product_id}/{timestamp}_{tên}.{ext}
     public function storeImage(int $id, ProductImageRequest $request)
     {
-        $this->productService->addProductImage($id, $request->validated());
+        $files = $request->file('images', []);
+        $count = 0;
+        foreach ($files as $index => $file) {
+            if (! $file instanceof UploadedFile || ! $file->isValid()) {
+                continue;
+            }
+            $this->storeOneProductImageFile($id, $file, $index);
+            $count++;
+        }
 
-        return redirect()->back()->with('dataSuccess', 'Thêm ảnh thành công');
+        if ($count === 0) {
+            return redirect()->back()->with('dataError', 'Không có file hợp lệ để tải lên');
+        }
+
+        $message = $count === 1 ? 'Đã tải lên 1 ảnh' : "Đã tải lên {$count} ảnh";
+
+        return redirect()->back()->with('dataSuccess', $message);
+    }
+
+    // Đặt ảnh primary (đại diện) trong admin
+    public function setPrimaryImage(int $id, int $imageId)
+    {
+        $ok = $this->productService->setPrimaryProductImage($id, $imageId);
+
+        return $ok
+            ? redirect()->back()->with('dataSuccess', 'Đã đặt làm ảnh chính')
+            : redirect()->back()->with('dataError', 'Không thành công');
+    }
+
+    /**
+     * Lưu một file upload vào disk public và tạo bản ghi product_images.
+     */
+    private function storeOneProductImageFile(int $productId, UploadedFile $file, int $uploadIndex = 0): void
+    {
+        $base = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $ext = strtolower($file->getClientOriginalExtension() ?: $file->guessExtension() ?: 'jpg');
+        $slug = Str::slug($base, '_');
+        if ($slug === '') {
+            $slug = 'image';
+        }
+        $ts = (int) (microtime(true) * 1000);
+        $filename = $ts.'_'.$uploadIndex.'_'.$slug.'.'.$ext;
+        $relativePath = $file->storeAs('product/'.$productId, $filename, 'public');
+        $this->productService->addProductImage($productId, ['image_url' => $relativePath]);
     }
 
     // Xóa ảnh phụ

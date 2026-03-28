@@ -23,6 +23,9 @@ RUN docker-php-ext-install pdo_mysql zip exif pcntl
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg
 RUN docker-php-ext-install gd
 
+# Cho phép upload ảnh sản phẩm (đồng bộ với client_max_body_size nginx)
+RUN printf "upload_max_filesize = 20M\npost_max_size = 25M\n" > /usr/local/etc/php/conf.d/uploads.ini
+
 # Cài đặt composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 

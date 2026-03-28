@@ -6,6 +6,7 @@ import { Common } from './common/common';
 import { Validation } from './common/validation';
 import { FlatpickrConfig } from './common/flatpickr';
 import { TooltipConfig } from './common/tooltip';
+import { SwiperConfig } from './common/swipers';
 import $ from 'jquery';
 
 // Make Alert, Loading, Ajax and jQuery available globally
@@ -20,6 +21,7 @@ $(function () {
     Validation.init();
     FlatpickrConfig.init();
     TooltipConfig.init();
+    SwiperConfig.init();
 });
 
 // Example usage alert

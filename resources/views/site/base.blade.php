@@ -4,10 +4,13 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Chung Si Interior') }}</title>
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
+    />
     @vite([
         'resources/scss/app.scss',
         'resources/js/app.js',
-        'resources/scss/custom.scss',
     ])
     <script>
         (() => {
@@ -23,24 +26,32 @@
     @php($siteCartCount = $siteCustomer ? \App\Models\CartItem::query()->whereHas('cart', fn($q) => $q->where('customer_id', $siteCustomer->id))->count() : 0)
     <nav class="navbar navbar-expand-lg navbar-light site-navbar sticky-top">
         <div class="container">
-            <a class="navbar-brand site-brand" href="{{ route('site.home') }}">Chung Si Interior</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#siteNavbar" aria-controls="siteNavbar" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
+            <a class="navbar-brand site-brand site-nav-logo" href="{{ route('site.home') }}" title="Trang chủ">icon</a>
+            <button class="navbar-toggler site-navbar-toggler border-0 shadow-none px-2" type="button" data-bs-toggle="collapse" data-bs-target="#siteNavbar" aria-controls="siteNavbar" aria-expanded="false" aria-label="Mở menu">
+                <span class="site-nav-menu-icon">icon</span>
             </button>
             <div class="collapse navbar-collapse" id="siteNavbar">
-                <div class="ms-auto d-flex flex-column flex-lg-row align-items-start align-items-lg-center gap-2 py-2 py-lg-0">
+                <div class="d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2 py-3 py-lg-0 ms-lg-auto flex-lg-wrap">
+                    @if ($siteCustomer)
+                        <span class="site-nav-auth text-nowrap small me-lg-2 pb-2 pb-lg-0 site-nav-auth-sep">
+                            <a href="{{ route('site.orders.index') }}" class="link-body-emphasis text-decoration-none">Đơn hàng</a>
+                            <span class="site-muted"> / </span>
+                            <a href="{{ route('site.cart.index') }}" class="link-body-emphasis text-decoration-none">Giỏ hàng ({{ $siteCartCount }})</a>
+                        </span>
+                    @else
+                        <span class="site-nav-auth text-nowrap small me-lg-2 pb-2 pb-lg-0 site-nav-auth-sep">
+                            <a href="{{ route('site.register') }}" class="link-body-emphasis text-decoration-none">Đăng ký</a>
+                            <span class="site-muted"> / </span>
+                            <a href="{{ route('site.login') }}" class="link-body-emphasis text-decoration-none">Đăng nhập</a>
+                        </span>
+                    @endif
                     <a href="{{ route('site.home') }}" class="btn btn-sm btn-outline-dark">Trang chủ</a>
                     <button type="button" class="btn btn-sm btn-outline-secondary" id="siteThemeToggle">Dark mode</button>
                     @if ($siteCustomer)
-                        <a href="{{ route('site.orders.index') }}" class="btn btn-sm btn-outline-primary">Đơn hàng của tôi</a>
-                        <a href="{{ route('site.cart.index') }}" class="btn btn-sm btn-outline-success">Giỏ hàng ({{ $siteCartCount }})</a>
                         <form action="{{ route('site.logout') }}" method="POST" class="d-inline">
                             @csrf
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Đăng xuất</button>
+                            <button type="submit" class="btn btn-sm btn-outline-danger w-100 w-lg-auto">Đăng xuất</button>
                         </form>
-                    @else
-                        <a href="{{ route('site.login') }}" class="btn btn-sm btn-outline-primary">Đăng nhập</a>
-                        <a href="{{ route('site.register') }}" class="btn btn-sm btn-outline-success">Đăng ký</a>
                     @endif
                     <a href="{{ route('admin.login') }}" class="btn btn-sm btn-dark">Quản trị</a>
                 </div>
@@ -71,6 +82,8 @@
             </div>
         @endif
     </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.js"></script>
     @yield('scripts')
     <script type="module">
         document.querySelectorAll('.site-toast').forEach((el) => {
