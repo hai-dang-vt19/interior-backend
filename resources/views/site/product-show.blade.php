@@ -1,7 +1,7 @@
 @extends('site.base')
 
 @section('content')
-    @php($mainImage = $product->image_url ?: optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url)
+    @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
 
     <div class="mb-3">
         <a href="{{ route('site.home') }}" class="text-decoration-none">&larr; Quay lại trang sản phẩm</a>
@@ -9,8 +9,8 @@
 
     <div class="row g-4">
         <div class="col-md-5">
-            @if ($mainImage)
-                <img src="{{ asset('storage/' . $mainImage) }}" class="img-fluid rounded border shadow-sm site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+            @if ($mainImageUrl)
+                <img src="{{ $mainImageUrl }}" class="img-fluid rounded border shadow-sm site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
             @else
                 <div class="border rounded p-5 text-center text-muted">Chưa có hình ảnh</div>
             @endif
@@ -55,11 +55,11 @@
         <h5 class="mb-3 site-section-title">Sản phẩm liên quan</h5>
         <div class="row g-3">
             @foreach ($relatedProducts as $related)
-                @php($relatedImage = $related->image_url ?: optional($related->images->firstWhere('is_primary', true))->image_url ?: optional($related->images->first())->image_url)
+                @php($relatedImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($related->images->firstWhere('is_primary', true))->image_url ?: optional($related->images->first())->image_url))
                 <div class="col-md-3 col-sm-6">
                     <div class="card h-100 site-product-card">
-                        @if ($relatedImage)
-                            <img src="{{ asset('storage/' . $relatedImage) }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $related->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                        @if ($relatedImageUrl)
+                            <img src="{{ $relatedImageUrl }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $related->name }}" loading="lazy" onload="this.classList.add('loaded')">
                         @endif
                         <div class="card-body">
                             <h6 class="card-title">{{ $related->name }}</h6>

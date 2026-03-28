@@ -11,6 +11,7 @@
     + flatpickr: 4.6.13
     + jquery: 3.7.1 (ajax)
     + sweetalert2: 11.18.0
+    + Swiper: 12
 ## khác
 - Docker
 - Vite

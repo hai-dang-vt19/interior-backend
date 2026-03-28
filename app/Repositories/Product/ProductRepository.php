@@ -16,6 +16,7 @@ use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 class ProductRepository implements ProductRepositoryInterface
 {
@@ -95,13 +96,19 @@ class ProductRepository implements ProductRepositoryInterface
 
     public function forceDelete(int $id): bool
     {
-        return (bool) $this->model->withTrashed()->findOrFail($id)->forceDelete();
+        $product = $this->model->withTrashed()->with('images')->findOrFail($id);
+
+        foreach ($product->images as $image) {
+            $this->removeProductImageFile($image->image_url);
+        }
+
+        return (bool) $product->forceDelete();
     }
 
     public function getProductImages(int $productId): Product
     {
         return $this->model->with(['images' => function ($query) {
-            $query->orderByDesc('id');
+            $query->orderByDesc('is_primary')->orderByDesc('id');
         }])->withTrashed()->findOrFail($productId);
     }
 
@@ -114,12 +121,67 @@ class ProductRepository implements ProductRepositoryInterface
         ]);
     }
 
+    /**
+     * Đặt một ảnh làm primary, gỡ primary các ảnh khác của cùng sản phẩm.
+     */
+    public function setPrimaryProductImage(int $productId, int $imageId): bool
+    {
+        return (bool) DB::transaction(function () use ($productId, $imageId) {
+            $exists = ProductImage::query()
+                ->where('product_id', $productId)
+                ->where('id', $imageId)
+                ->exists();
+
+            if (! $exists) {
+                return false;
+            }
+
+            ProductImage::query()->where('product_id', $productId)->update(['is_primary' => false]);
+            ProductImage::query()
+                ->where('product_id', $productId)
+                ->where('id', $imageId)
+                ->update(['is_primary' => true]);
+
+            return true;
+        });
+    }
+
     public function deleteProductImage(int $productId, int $imageId): bool
     {
-        return (bool) ProductImage::query()
+        $image = ProductImage::query()
             ->where('product_id', $productId)
             ->where('id', $imageId)
-            ->delete();
+            ->first();
+
+        if (! $image) {
+            return false;
+        }
+
+        $wasPrimary = (bool) $image->is_primary;
+        $this->removeProductImageFile($image->image_url);
+        $deleted = (bool) $image->delete();
+
+        if ($deleted && $wasPrimary) {
+            $next = ProductImage::query()
+                ->where('product_id', $productId)
+                ->orderByDesc('id')
+                ->first();
+            $next?->update(['is_primary' => true]);
+        }
+
+        return $deleted;
+    }
+
+    /**
+     * Xóa file ảnh trên disk public (nhiều ảnh cùng thư mục product/{id} — chỉ xóa file, không xóa cả thư mục).
+     */
+    private function removeProductImageFile(?string $storedPath): void
+    {
+        if ($storedPath === null || $storedPath === '' || preg_match('#^https?://#i', $storedPath)) {
+            return;
+        }
+
+        Storage::disk('public')->delete($storedPath);
     }
 
     public function getProductInventory(int $productId): Product

@@ -21,6 +21,7 @@ interface ProductRepositoryInterface
     public function forceDelete(int $id): bool;
     public function getProductImages(int $productId): Product;
     public function addProductImage(int $productId, array $params): ProductImage;
+    public function setPrimaryProductImage(int $productId, int $imageId): bool;
     public function deleteProductImage(int $productId, int $imageId): bool;
     public function getProductInventory(int $productId): Product;
     public function adjustInventory(int $productId, array $params, int $createdBy): bool;

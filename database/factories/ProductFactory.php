@@ -16,7 +16,6 @@ class ProductFactory extends Factory
             'price' => fake()->randomFloat(0, 100000, 10000000), // 100k - 10tr
             'discount_price' => fake()->optional(0.3)->randomFloat(0, 50000, 5000000), // 50k - 5tr
             'quantity' => fake()->numberBetween(0, 100),
-            'image_url' => fake()->imageUrl(),
             'status' => fake()->randomElement([ProductStatus::ACTIVE->value, ProductStatus::INACTIVE->value, ProductStatus::OUT_OF_STOCK->value]),
         ];
     }

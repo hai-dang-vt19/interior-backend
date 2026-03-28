@@ -17,7 +17,8 @@ class ProductImageRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'image_url' => ['required', 'url'],
+            'images' => ['required', 'array', 'min:1', 'max:30'],
+            'images.*' => ['file', 'image', 'max:5120'],
         ];
     }
 

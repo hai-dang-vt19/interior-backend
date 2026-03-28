@@ -1,6 +1,100 @@
 @extends('site.base')
 
+{{-- Style SCSS (nested): resources/scss/pages/_site-home.scss — import qua resources/scss/custom.scss --}}
 @section('content')
+    {{-- Hero + slider danh mục; danh sách SP + lọc trong .container bên dưới --}}
+    <div class="site-full-header mb-4">
+        <div class="site-hero">
+            <div class="site-hero_title">
+                <h1 class="h2">Chung Si Interior</h1>
+            </div>
+            <div class="site-hero_swiper_front">
+                <div class="swiper" id="site-hero-swiper-front">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="site-hero-slide">
+                                <div class="site-hero-visual" aria-hidden="true">
+                                    <img src="https://picsum.photos/200/300" alt="">
+                                </div>
+                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="site-hero-slide">
+                                <div class="site-hero-visual" aria-hidden="true">
+                                    <img src="https://picsum.photos/200/300" alt="">
+                                </div>
+                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="site-hero_swiper_back">
+                <div class="swiper" id="site-hero-swiper-back">
+                    <div class="swiper-wrapper">
+                        <div class="swiper-slide">
+                            <div class="site-hero-slide">
+                                <div class="site-hero-visual" aria-hidden="true">
+                                    <img src="https://picsum.photos/200/300" alt="">
+                                </div>
+                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                            </div>
+                        </div>
+                        <div class="swiper-slide">
+                            <div class="site-hero-slide">
+                                <div class="site-hero-visual" aria-hidden="true">
+                                    <img src="https://picsum.photos/200/300" alt="">
+                                </div>
+                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        @foreach ($homeCategorySlides as $index => $block)
+            @php($cat = $block['category'])
+            @php($catProducts = $block['products'])
+            <section class="site-home-category-block py-4">
+                <div class="container">
+                    <h2 class="h5 site-section-title mb-3">{{ $cat->name }}</h2>
+                </div>
+                <div class="container">
+                    @if ($catProducts->isEmpty())
+                        <p class="site-muted small mb-0">Chưa có sản phẩm trong danh mục này.</p>
+                    @else
+                        <div class="swiper site-category-swiper site-category-swiper--{{ $index }}" data-category-swiper>
+                            <div class="swiper-wrapper">
+                                @foreach ($catProducts as $product)
+                                    @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
+                                    <div class="swiper-slide">
+                                        <a href="{{ route('site.products.show', $product->id) }}" class="text-decoration-none text-body">
+                                            <div class="site-category-card">
+                                                @if ($mainImageUrl)
+                                                    <div class="site-category-card-img-wrap">
+                                                        <img src="{{ $mainImageUrl }}" class="site-category-card-img" alt="{{ $product->name }}" loading="lazy">
+                                                    </div>
+                                                @else
+                                                    <div class="site-category-card-placeholder">{{ $product->name }}</div>
+                                                @endif
+                                                <div class="site-category-card-body">
+                                                    <span class="small fw-semibold d-block text-truncate">{{ $product->name }}</span>
+                                                    <span class="small site-muted">{{ number_format((float) ($product->discount_price ?? $product->price), 0, ',', '.') }} đ</span>
+                                                </div>
+                                            </div>
+                                        </a>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @endif
+                </div>
+            </section>
+        @endforeach
+    </div>
+
     <div class="d-flex justify-content-between align-items-center site-page-head">
         <div>
             <h4 class="mb-0 site-section-title">Sản phẩm nội thất</h4>
@@ -33,11 +127,11 @@
 
     <div class="row g-3">
         @forelse ($products as $product)
-            @php($mainImage = $product->image_url ?: optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url)
+            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
             <div class="col-md-3 col-sm-6">
                 <div class="card h-100 site-product-card">
-                    @if ($mainImage)
-                        <img src="{{ asset('storage/' . $mainImage) }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                    @if ($mainImageUrl)
+                        <img src="{{ $mainImageUrl }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
                     @endif
                     <div class="card-body">
                         <div class="small mb-1">

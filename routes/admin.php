@@ -44,6 +44,7 @@ Route::prefix('admin')->group(function () {
             Route::post('', [ProductController::class, 'store'])->name('store');
             Route::get('{id}/images', [ProductController::class, 'images'])->name('images');
             Route::post('{id}/images', [ProductController::class, 'storeImage'])->name('images.store');
+            Route::patch('{id}/images/{imageId}/primary', [ProductController::class, 'setPrimaryImage'])->name('images.primary');
             Route::delete('{id}/images/{imageId}', [ProductController::class, 'destroyImage'])->name('images.destroy');
             Route::get('{id}/inventory', [ProductController::class, 'inventory'])->name('inventory');
             Route::post('{id}/inventory', [ProductController::class, 'adjustInventory'])->name('inventory.adjust');

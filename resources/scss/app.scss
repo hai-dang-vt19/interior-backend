@@ -1,6 +1,8 @@
 @use "functions" as *;
 @use "variable";
 @import "bootstrap/dist/css/bootstrap.css";
+// Site + admin UI: import sau Bootstrap để override; gộp vào entry app.scss (một file build) — sửa xong chạy `npm run dev` hoặc `npm run build`
+@import "custom";
 
 // Theme variables
 $font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
@@ -18,4 +20,4 @@ $font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Colo
     @include rem(padding, 20px 30px);
     @include rem(margin, 10px auto);
     @include rem(border-radius, 8px);
-} 
+}

@@ -1,4 +1,6 @@
 @use "sass:math";
+@use "sass:list";
+@use "sass:meta";
 
 // Base font size for rem calculations
 $base-font-size: 16px;
@@ -13,10 +15,10 @@ $base-font-size: 16px;
     $rem-values: ();
     
     @each $value in $values {
-        @if type-of($value) == number and unit($value) == 'px' {
-            $rem-values: append($rem-values, rem($value));
+        @if meta.type-of($value) == "number" and math.unit($value) == "px" {
+            $rem-values: list.append($rem-values, rem($value));
         } @else {
-            $rem-values: append($rem-values, $value);
+            $rem-values: list.append($rem-values, $value);
         }
     }
     

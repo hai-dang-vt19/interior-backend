@@ -9,3 +9,5 @@
 # kiểm tra controller liên quan
 -> Chưa tồn tại thì tạo và đăng ký để sử dụng
 # kiểm tra có cần sử dụng Enums không
+# User sử dụng router site
+# Admin với staff sử dụng router admin
