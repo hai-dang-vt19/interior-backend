@@ -152,12 +152,14 @@
                     <div class="card-footer bg-white border-0 pt-0 pb-3">
                         <a href="{{ route('site.products.show', $product->id) }}" class="btn btn-sm btn-outline-dark w-100 mb-2">Xem chi tiết</a>
                         @if (auth()->guard('customer')->check())
-                            <form action="{{ route('site.cart.items.store') }}" method="POST">
-                                @csrf
-                                <input type="hidden" name="product_id" value="{{ $product->id }}">
-                                <input type="hidden" name="quantity" value="1">
-                                <button type="submit" class="btn btn-sm btn-primary w-100">Thêm vào giỏ</button>
-                            </form>
+                            <button
+                                type="button"
+                                class="btn btn-sm btn-primary w-100 btn-add-to-cart-ajax"
+                                data-product-id="{{ $product->id }}"
+                                data-quantity="1"
+                            >
+                                Thêm vào giỏ
+                            </button>
                         @else
                             <a href="{{ route('site.login') }}" class="btn btn-sm btn-primary w-100">Đăng nhập để mua</a>
                         @endif
@@ -179,4 +181,44 @@
     <div class="mt-4">
         {{ $products->links() }}
     </div>
+@endsection
+
+@section('scripts')
+<script type="module">
+    $(document).ready(function () {
+        $('.btn-add-to-cart-ajax').on('click', function () {
+            const $btn = $(this);
+            const originalText = $btn.text();
+            const productId = Number($btn.data('product-id'));
+            const quantity = Number($btn.data('quantity') || 1);
+
+            $btn.prop('disabled', true).text('Đang thêm...');
+
+            $.ajax({
+                url: @json(route('site.cart.items.store')),
+                method: 'POST',
+                headers: {
+                    'Accept': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'X-CSRF-TOKEN': @json(csrf_token()),
+                },
+                data: {
+                    product_id: productId,
+                    quantity: quantity,
+                },
+            }).done((res) => {
+                if (window.Alert?.success) {
+                    Alert.success(res?.message || 'Đã thêm vào giỏ hàng');
+                }
+            }).fail((xhr) => {
+                const message = xhr?.responseJSON?.message || 'Không thể thêm vào giỏ hàng';
+                if (window.Alert?.error) {
+                    Alert.error(message);
+                }
+            }).always(() => {
+                $btn.prop('disabled', false).text(originalText);
+            });
+        });
+    });
+</script>
 @endsection

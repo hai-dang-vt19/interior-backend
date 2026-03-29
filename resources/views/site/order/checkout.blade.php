@@ -10,6 +10,7 @@
             <div class="card-body">
                 <form action="{{ route('site.checkout.submit') }}" method="POST">
                     @csrf
+                    <input type="hidden" name="selected_items" value="{{ old('selected_items', $selectedItemsCsv ?? '') }}">
                     <div class="mb-3">
                         <label class="form-label">Địa chỉ nhận hàng</label>
                         <textarea class="form-control" name="shipping_address" rows="3" required>{{ old('shipping_address', auth()->guard('customer')->user()->address) }}</textarea>
@@ -39,7 +40,7 @@
         <div class="card site-panel">
             <div class="card-header">Tóm tắt giỏ hàng</div>
             <ul class="list-group list-group-flush">
-                @foreach ($cart->items as $item)
+                @foreach (($checkoutItems ?? $cart->items) as $item)
                     @php($line = ((float) $item->price) * ((int) $item->quantity))
                     @php($total += $line)
                     <li class="list-group-item d-flex justify-content-between">

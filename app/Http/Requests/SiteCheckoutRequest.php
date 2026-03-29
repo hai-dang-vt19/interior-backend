@@ -20,6 +20,7 @@ class SiteCheckoutRequest extends FormRequest
             'shipping_phone' => ['required', 'string', 'max:20'],
             'payment_method' => ['required', new Enum(PaymentMethod::class)],
             'notes' => ['nullable', 'string'],
+            'selected_items' => ['nullable', 'string'],
         ];
     }
 }
