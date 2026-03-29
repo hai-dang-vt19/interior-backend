@@ -77,4 +77,12 @@ class SiteController extends Controller
 
         return view('site.product-show', compact('product', 'relatedProducts'));
     }
+
+    /**
+     * Trang thông tin cá nhân khách hàng (nội dung chi tiết sẽ bổ sung sau).
+     */
+    public function account()
+    {
+        return view('site.account');
+    }
 }
