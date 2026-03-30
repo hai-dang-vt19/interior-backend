@@ -6,13 +6,17 @@ namespace App\Repositories\Dashboard;
 
 use App\Enums\OrderStatus;
 use App\Enums\PaymentStatus;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Database\DatabaseManager;
 
 class DashboardRepository implements DashboardRepositoryInterface
 {
+    public function __construct(
+        private DatabaseManager $db
+    ) {}
+
     public function getRevenueByDateRange(string $from, string $to): array
     {
-        return DB::table('orders')
+        return $this->db->table('orders')
             ->selectRaw("DATE(created_at) as date, COUNT(*) as orders_count, COALESCE(SUM(total_amount), 0) as revenue")
             ->whereNull('deleted_at')
             ->where('payment_status', PaymentStatus::PAID->value)
@@ -30,7 +34,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getTopSellingProducts(string $from, string $to, int $limit = 10): array
     {
-        return DB::table('order_items as oi')
+        return $this->db->table('order_items as oi')
             ->join('orders as o', 'o.id', '=', 'oi.order_id')
             ->join('products as p', 'p.id', '=', 'oi.product_id')
             ->selectRaw('p.id, p.name, SUM(oi.quantity) as sold_qty, COALESCE(SUM(oi.quantity * oi.price), 0) as sold_revenue')
@@ -51,7 +55,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getTopCustomers(string $from, string $to, int $limit = 10): array
     {
-        return DB::table('orders as o')
+        return $this->db->table('orders as o')
             ->join('customers as c', 'c.id', '=', 'o.customer_id')
             ->selectRaw('c.id, c.full_name, c.phone, COUNT(o.id) as orders_count, COALESCE(SUM(o.total_amount), 0) as total_spent')
             ->whereNull('o.deleted_at')
@@ -72,7 +76,7 @@ class DashboardRepository implements DashboardRepositoryInterface
 
     public function getSummary(string $from, string $to): array
     {
-        $summary = DB::table('orders')
+        $summary = $this->db->table('orders')
             ->selectRaw('COUNT(*) as orders_total')
             ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as delivered_total', [OrderStatus::DELIVERED->value])
             ->selectRaw('SUM(CASE WHEN payment_status = ? THEN total_amount ELSE 0 END) as paid_revenue', [PaymentStatus::PAID->value])

@@ -25,4 +25,7 @@ interface ProductRepositoryInterface
     public function deleteProductImage(int $productId, int $imageId): bool;
     public function getProductInventory(int $productId): Product;
     public function adjustInventory(int $productId, array $params, int $createdBy): bool;
+    public function getActiveProductsForBanner(): Collection;
+    public function getHomeBannerProductsBySide(): array;
+    public function updateHomeBannerProducts(array $payload): void;
 }

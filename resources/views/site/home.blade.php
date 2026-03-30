@@ -11,44 +11,58 @@
             <div class="site-hero_swiper_front">
                 <div class="swiper" id="site-hero-swiper-front">
                     <div class="swiper-wrapper">
-                        <div class="swiper-slide">
-                            <div class="site-hero-slide">
-                                <div class="site-hero-visual" aria-hidden="true">
-                                    <img src="https://picsum.photos/200/300" alt="">
-                                </div>
-                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                        @forelse ($heroBannerBySide['left'] ?? [] as $bannerItem)
+                            @php($bannerProduct = $bannerItem->product)
+                            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($bannerProduct->images->firstWhere('is_primary', true))->image_url ?: optional($bannerProduct->images->first())->image_url))
+                            <div class="swiper-slide">
+                                <a href="{{ route('site.products.show', $bannerProduct->id) }}" class="site-hero-slide text-decoration-none">
+                                    <div class="site-hero-visual" aria-hidden="true">
+                                        @if ($mainImageUrl)
+                                            <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
+                                        @endif
+                                    </div>
+                                    <p class="site-hero-text">{{ $bannerProduct->description }}</p>
+                                </a>
                             </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="site-hero-slide">
-                                <div class="site-hero-visual" aria-hidden="true">
-                                    <img src="https://picsum.photos/200/300" alt="">
+                        @empty
+                            <div class="swiper-slide">
+                                <div class="site-hero-slide">
+                                    <div class="site-hero-visual" aria-hidden="true">
+                                        <img src="https://picsum.photos/200/300" alt="">
+                                    </div>
+                                    <p class="site-hero-text">Chưa có dữ liệu</p>
                                 </div>
-                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
                             </div>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>
             <div class="site-hero_swiper_back">
                 <div class="swiper" id="site-hero-swiper-back">
                     <div class="swiper-wrapper">
-                        <div class="swiper-slide">
-                            <div class="site-hero-slide">
-                                <div class="site-hero-visual" aria-hidden="true">
-                                    <img src="https://picsum.photos/200/300" alt="">
-                                </div>
-                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
+                        @forelse ($heroBannerBySide['right'] ?? [] as $bannerItem)
+                            @php($bannerProduct = $bannerItem->product)
+                            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($bannerProduct->images->firstWhere('is_primary', true))->image_url ?: optional($bannerProduct->images->first())->image_url))
+                            <div class="swiper-slide">
+                                <a href="{{ route('site.products.show', $bannerProduct->id) }}" class="site-hero-slide text-decoration-none">
+                                    <div class="site-hero-visual" aria-hidden="true">
+                                        @if ($mainImageUrl)
+                                            <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
+                                        @endif
+                                    </div>
+                                    <p class="site-hero-text">{{ $bannerProduct->name }}</p>
+                                </a>
                             </div>
-                        </div>
-                        <div class="swiper-slide">
-                            <div class="site-hero-slide">
-                                <div class="site-hero-visual" aria-hidden="true">
-                                    <img src="https://picsum.photos/200/300" alt="">
+                        @empty
+                            <div class="swiper-slide">
+                                <div class="site-hero-slide">
+                                    <div class="site-hero-visual" aria-hidden="true">
+                                        <img src="https://picsum.photos/200/300" alt="">
+                                    </div>
+                                    <p class="site-hero-text">Chưa có dữ liệu banner cột phải.</p>
                                 </div>
-                                <p class="site-hero-text">Lorem Ipsum is simply dummy text of the printing and typesetting industry. Lorem Ipsum has been the industry's standard dummy text ever since the 1500s, when an unknown printer took a galley of type and scrambled it to make a type specimen book. It has survived not only five centuries, but also the leap</p>
                             </div>
-                        </div>
+                        @endforelse
                     </div>
                 </div>
             </div>

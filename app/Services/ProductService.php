@@ -99,4 +99,22 @@ class ProductService extends BaseService
     {
         return $this->productRepository->adjustInventory($productId, $params, $createdBy);
     }
+
+    // Danh sách sản phẩm active để chọn banner trang chủ
+    public function getActiveProductsForBanner(): Collection
+    {
+        return $this->productRepository->getActiveProductsForBanner();
+    }
+
+    // Lấy dữ liệu banner theo 2 bên trái/phải
+    public function getHomeBannerProductsBySide(): array
+    {
+        return $this->productRepository->getHomeBannerProductsBySide();
+    }
+
+    // Cập nhật danh sách sản phẩm banner theo từng bên và vị trí
+    public function updateHomeBannerProducts(array $payload): void
+    {
+        $this->productRepository->updateHomeBannerProducts($payload);
+    }
 }

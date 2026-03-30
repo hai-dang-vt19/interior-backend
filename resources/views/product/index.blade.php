@@ -75,6 +75,9 @@
                 </div>
             </div>
             <div class="col-auto justify-content-end">
+                <button class="btn btn-primary" type="button" data-bs-toggle="modal" data-bs-target="#modalPickupProductSlider">
+                    <i class="fas fa-plus"></i> Chọn sản phẩm banner
+                </button>
                 <button class="btn btn-success" type="button" data-bs-toggle="modal" data-bs-target="#modalCreateProduct">
                     <i class="fas fa-plus"></i> Thêm mới
                 </button>
@@ -185,6 +188,8 @@
 
 @include('product.modal.create')
 @include('product.modal.edit')
+@include('product.modal.pickup')
+
 @endsection
 
 @section('scripts')
@@ -249,6 +254,68 @@
                     $(this).closest('form').submit();
                 }
             });
+        });
+
+        const renderBannerPreview = function() {
+            const renderColumn = function(column, previewSelector) {
+                const selected = [];
+                $(`.js-banner-select[data-column="${column}"]`).each(function() {
+                    const value = $(this).val();
+                    const label = $(this).find('option:selected').text();
+                    if (value) {
+                        selected.push(label);
+                    }
+                });
+
+                const $preview = $(previewSelector);
+                if (selected.length === 0) {
+                    $preview.html('<li class="list-group-item text-muted">Chưa chọn sản phẩm</li>');
+                    return;
+                }
+
+                const html = selected.map((text) => `<li class="list-group-item">${text}</li>`).join('');
+                $preview.html(html);
+            };
+
+            renderColumn('left', '#bannerPreviewLeft');
+            renderColumn('right', '#bannerPreviewRight');
+        };
+
+        $('.js-banner-select').on('change', function() {
+            const currentValue = $(this).val();
+            const column = $(this).data('column');
+
+            if (!currentValue) {
+                renderBannerPreview();
+                return;
+            }
+
+            let duplicateCount = 0;
+            $(`.js-banner-select[data-column="${column}"]`).each(function() {
+                if ($(this).val() === currentValue) {
+                    duplicateCount++;
+                }
+            });
+
+            if (duplicateCount > 1) {
+                Alert.error('Mỗi cột không được chọn trùng sản phẩm');
+                $(this).val('');
+            }
+
+            renderBannerPreview();
+        });
+
+        renderBannerPreview();
+
+        $('#bannerPickupForm').on('submit', function(event) {
+            const leftCount = $('.js-banner-select[data-column="left"]').filter(function() { return !!$(this).val(); }).length;
+            const rightCount = $('.js-banner-select[data-column="right"]').filter(function() { return !!$(this).val(); }).length;
+
+            if (leftCount > 3 || rightCount > 3) {
+                event.preventDefault();
+                Alert.error('Mỗi cột chỉ được chọn tối đa 3 sản phẩm');
+                return;
+            }
         });
     });
 </script>

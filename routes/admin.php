@@ -42,6 +42,7 @@ Route::prefix('admin')->group(function () {
 
         Route::middleware('role:ADMIN')->prefix('product')->name('admin.product.')->group(function () {
             Route::post('', [ProductController::class, 'store'])->name('store');
+            Route::post('banner-products', [ProductController::class, 'updateBannerProducts'])->name('banner-products.update');
             Route::get('{id}/images', [ProductController::class, 'images'])->name('images');
             Route::post('{id}/images', [ProductController::class, 'storeImage'])->name('images.store');
             Route::patch('{id}/images/{imageId}/primary', [ProductController::class, 'setPrimaryImage'])->name('images.primary');
