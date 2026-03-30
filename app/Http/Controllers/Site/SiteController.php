@@ -2,87 +2,113 @@
 
 namespace App\Http\Controllers\Site;
 
-use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Product;
+use App\Models\Customer;
+use App\Services\SiteService;
 use Illuminate\Http\Request;
 
 class SiteController extends Controller
 {
+    public function __construct(
+        private SiteService $siteService
+    ) {}
+
     public function home(Request $request)
     {
         $keyword = trim((string) $request->input('keyword', ''));
         $categoryId = (int) $request->input('category_id', 0);
+        $homeData = $this->siteService->getHomeData($request->query());
 
-        $categories = Category::query()
-            ->orderBy('name')
-            ->get(['id', 'name']);
-
-        $products = Product::query()
-            ->with(['category:id,name', 'images'])
-            ->where('status', ProductStatus::ACTIVE->value)
-            ->when($keyword !== '', function ($query) use ($keyword) {
-                $query->where('name', 'like', '%'.$keyword.'%');
-            })
-            ->when($categoryId > 0, function ($query) use ($categoryId) {
-                $query->where('category_id', $categoryId);
-            })
-            ->orderByDesc('id')
-            ->paginate(12)
-            ->appends($request->query());
-
-        /**
-         * Slider danh mục trên trang chủ: tối đa 2 danh mục (sắp xếp theo tên) có ít nhất 1 SP đang bán,
-         * mỗi slider tối đa 12 sản phẩm — không ảnh hưởng phân trang / lọc danh sách phía dưới.
-         */
-        $homeCategorySlides = [];
-        $slideCategories = Category::query()
-            ->whereHas('products', fn ($q) => $q->where('status', ProductStatus::ACTIVE->value))
-            ->orderBy('name')
-            ->limit(2)
-            ->get(['id', 'name']);
-
-        foreach ($slideCategories as $cat) {
-            $homeCategorySlides[] = [
-                'category' => $cat,
-                'products' => Product::query()
-                    ->with('images')
-                    ->where('status', ProductStatus::ACTIVE->value)
-                    ->where('category_id', $cat->id)
-                    ->orderByDesc('id')
-                    ->limit(12)
-                    ->get(),
-            ];
-        }
-
-        return view('site.home', compact('products', 'categories', 'keyword', 'categoryId', 'homeCategorySlides'));
+        return view('site.home', [
+            'products' => $homeData['products'],
+            'categories' => $homeData['categories'],
+            'homeCategorySlides' => $homeData['homeCategorySlides'],
+            'heroBannerBySide' => $homeData['heroBannerBySide'],
+            'keyword' => $keyword,
+            'categoryId' => $categoryId,
+        ]);
     }
 
     public function showProduct(int $id)
     {
-        $product = Product::query()
-            ->with(['category:id,name', 'images'])
-            ->where('status', ProductStatus::ACTIVE->value)
-            ->findOrFail($id);
+        $productData = $this->siteService->getProductDetailData($id);
 
-        $relatedProducts = Product::query()
-            ->with('images')
-            ->where('status', ProductStatus::ACTIVE->value)
-            ->where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->orderByDesc('id')
-            ->limit(4)
-            ->get();
-
-        return view('site.product-show', compact('product', 'relatedProducts'));
+        return view('site.product-show', [
+            'product' => $productData['product'],
+            'relatedProducts' => $productData['relatedProducts'],
+        ]);
     }
 
     /**
-     * Trang thông tin cá nhân khách hàng (nội dung chi tiết sẽ bổ sung sau).
+     * Trang thông tin tài khoản khách hàng.
      */
     public function account()
     {
-        return view('site.account');
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+
+        return view('site.account', [
+            'customer' => $customer,
+        ]);
+    }
+
+    public function updateAccount(Request $request)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $payload = $request->validate([
+            'full_name' => ['required', 'string', 'max:255'],
+            'phone' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
+        ], [], [
+            'full_name' => 'họ tên',
+            'phone' => 'số điện thoại',
+            'address' => 'địa chỉ',
+        ]);
+
+        $this->siteService->updateAccountProfile($customer, $payload);
+
+        return redirect()
+            ->route('site.account', ['tab' => 'info'])
+            ->with('dataSuccess', 'Cập nhật thông tin thành công');
+    }
+
+    public function updateAccountPassword(Request $request)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $payload = $request->validate([
+            'current_password' => ['required', 'string'],
+            'new_password' => ['required', 'string', 'min:6', 'confirmed'],
+        ], [], [
+            'current_password' => 'mật khẩu hiện tại',
+            'new_password' => 'mật khẩu mới',
+        ]);
+
+        $changed = $this->siteService->changeAccountPassword(
+            $customer,
+            $payload['current_password'],
+            $payload['new_password']
+        );
+
+        if (!$changed) {
+            return redirect()
+                ->route('site.account', ['tab' => 'password'])
+                ->with('dataError', 'Mật khẩu hiện tại không đúng');
+        }
+
+        return redirect()
+            ->route('site.account', ['tab' => 'password'])
+            ->with('dataSuccess', 'Đổi mật khẩu thành công');
     }
 }

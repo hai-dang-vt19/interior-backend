@@ -18,6 +18,11 @@ class RepositoryServiceProvider extends ServiceProvider
             'Order',
             'Dashboard',
             'Staff',
+            'Site',
+            'SiteCart',
+            'SiteOrder',
+            'SiteAuth',
+            'AdminAuth',
         ];
 
         foreach ($repositories as $repo) {

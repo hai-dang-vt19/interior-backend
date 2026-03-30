@@ -7,14 +7,15 @@ use App\Http\Controllers\BaseController;
 use App\Http\Requests\ChangePasswordRequest;
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
-use App\Models\AuthActivityLog;
-use App\Models\User;
-use App\Enums\UserRole;
+use App\Services\AdminAuthService;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 
 class AuthAdminController extends BaseController
 {
+    public function __construct(
+        private AdminAuthService $adminAuthService
+    ) {}
+
     public function showLoginForm()
     {
         return view('auth.login');
@@ -27,21 +28,11 @@ class AuthAdminController extends BaseController
 
     public function register(RegisterRequest $request)
     {
-        $user = User::query()->create([
-            'full_name' => $request->input('full_name'),
-            'phone' => $request->input('phone'),
-            'email' => $request->input('email'),
-            'password' => Hash::make($request->input('password')),
-            'role' => UserRole::STAFF,
-        ]);
-
-        AuthActivityLog::query()->create([
-            'user_id' => $user->id,
-            'action' => 'register',
-            'description' => 'Đăng ký tài khoản staff',
-            'ip_address' => $request->ip(),
-            'user_agent' => (string) $request->userAgent(),
-        ]);
+        $this->adminAuthService->registerStaff(
+            $request->validated(),
+            (string) $request->ip(),
+            (string) $request->userAgent()
+        );
 
         return redirect()->route('admin.login')->with('dataSuccess', 'Đăng ký thành công, vui lòng đăng nhập');
     }
@@ -49,47 +40,30 @@ class AuthAdminController extends BaseController
     public function login(LoginRequest $request)
     {
         $credentials = $request->validated();
-        $user = User::where('phone', $credentials['phone'])->first();
+        $result = $this->adminAuthService->attemptLogin(
+            $credentials['phone'],
+            $credentials['password'],
+            (string) $request->ip(),
+            (string) $request->userAgent()
+        );
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
+        if (!$result['ok']) {
             return response()->json([
                 'error' => [
-                    'msg' => 'Số điện thoại hoặc mật khẩu không đúng'
+                    'msg' => $result['message'],
                 ]
-            ], 401);
+            ], (int) $result['code']);
         }
 
-        if (!in_array($user->role->value, [UserRole::ADMIN->value, UserRole::STAFF->value], true)) {
-            return response()->json([
-                'error' => [
-                    'msg' => 'Bạn không có quyền truy cập vào trang quản trị'
-                ]
-            ], 403);
-        }
-
-        Auth::login($user);
-
-        AuthActivityLog::query()->create([
-            'user_id' => $user->id,
-            'action' => 'login',
-            'description' => 'Đăng nhập hệ thống',
-            'ip_address' => $request->ip(),
-            'user_agent' => (string) $request->userAgent(),
-        ]);
+        Auth::login($result['user']);
 
         return $this->sendRedirectAjax('admin.dashboard');
     }
 
     public function logout(Request $request)
     {
-        $userId = Auth::id();
-        AuthActivityLog::query()->create([
-            'user_id' => $userId,
-            'action' => 'logout',
-            'description' => 'Đăng xuất hệ thống',
-            'ip_address' => $request->ip(),
-            'user_agent' => (string) $request->userAgent(),
-        ]);
+        $userId = (int) Auth::id();
+        $this->adminAuthService->writeLogoutLog($userId, (string) $request->ip(), (string) $request->userAgent());
 
         Auth::logout();
         $request->session()->invalidate();
@@ -106,15 +80,7 @@ class AuthAdminController extends BaseController
     public function activityLogs(Request $request)
     {
         $keyword = trim((string) $request->input('keyword', ''));
-        $logs = AuthActivityLog::query()
-            ->with('user')
-            ->when($keyword !== '', function ($query) use ($keyword) {
-                $query->where('action', 'like', '%' . $keyword . '%')
-                    ->orWhere('description', 'like', '%' . $keyword . '%');
-            })
-            ->latest('id')
-            ->paginate(20)
-            ->appends($request->query());
+        $logs = $this->adminAuthService->getActivityLogs($keyword);
 
         return view('auth.activity-log', compact('logs', 'keyword'));
     }
@@ -122,21 +88,21 @@ class AuthAdminController extends BaseController
     public function changePassword(ChangePasswordRequest $request)
     {
         $user = Auth::user();
-        if (!$user || !Hash::check($request->input('current_password'), $user->password)) {
-            return redirect()->back()->with('dataError', 'Mật khẩu hiện tại không đúng');
+        if (!$user) {
+            return redirect()->back()->with('dataError', 'Không tìm thấy tài khoản đăng nhập');
         }
 
-        $user->update([
-            'password' => Hash::make($request->input('new_password')),
-        ]);
+        $changed = $this->adminAuthService->changePassword(
+            $user,
+            (string) $request->input('current_password'),
+            (string) $request->input('new_password'),
+            (string) $request->ip(),
+            (string) $request->userAgent()
+        );
 
-        AuthActivityLog::query()->create([
-            'user_id' => $user->id,
-            'action' => 'change_password',
-            'description' => 'Đổi mật khẩu tài khoản',
-            'ip_address' => $request->ip(),
-            'user_agent' => (string) $request->userAgent(),
-        ]);
+        if (!$changed) {
+            return redirect()->back()->with('dataError', 'Mật khẩu hiện tại không đúng');
+        }
 
         return redirect()->back()->with('dataSuccess', 'Đổi mật khẩu thành công');
     }

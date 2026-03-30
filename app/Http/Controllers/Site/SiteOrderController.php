@@ -2,149 +2,60 @@
 
 namespace App\Http\Controllers\Site;
 
-use App\Enums\OrderStatus;
-use App\Enums\PaymentMethod;
-use App\Enums\PaymentStatus;
-use App\Enums\ProductStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteCheckoutRequest;
-use App\Models\Cart;
-use App\Models\Order;
-use App\Models\OrderItem;
-use App\Models\Product;
+use App\Services\SiteOrderService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
 
 class SiteOrderController extends Controller
 {
+    public function __construct(
+        private SiteOrderService $siteOrderService
+    ) {}
+
     public function checkout(Request $request)
     {
-        $cart = $this->resolveCart();
-        $cart->load(['items.product']);
+        $customerId = (int) auth()->guard('customer')->id();
+        $selectedItemsCsv = (string) $request->query('selected_items', '');
+        $checkoutData = $this->siteOrderService->getCheckoutData($customerId, $selectedItemsCsv);
+        $cart = $checkoutData['cart'];
+        $checkoutItems = $checkoutData['checkoutItems'];
+
         if ($cart->items->isEmpty()) {
             return redirect()->route('site.cart.index')->with('dataError', 'Giỏ hàng đang trống');
         }
-
-        $selectedItemsCsv = (string) $request->query('selected_items', '');
-        $checkoutItems = $this->resolveCheckoutItems($cart, $selectedItemsCsv);
         if ($checkoutItems->isEmpty()) {
             return redirect()->route('site.cart.index')->with('dataError', 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán');
         }
 
-        $paymentMethods = PaymentMethod::cases();
+        $paymentMethods = $checkoutData['paymentMethods'];
         return view('site.order.checkout', compact('cart', 'paymentMethods', 'checkoutItems', 'selectedItemsCsv'));
     }
 
     public function placeOrder(SiteCheckoutRequest $request)
     {
-        $cart = $this->resolveCart();
-        $cart->load(['items.product']);
-        if ($cart->items->isEmpty()) {
-            return redirect()->route('site.cart.index')->with('dataError', 'Giỏ hàng đang trống');
-        }
-
         $payload = $request->validated();
-        $customerId = auth()->guard('customer')->id();
-        $selectedItemsCsv = (string) ($payload['selected_items'] ?? '');
-        $checkoutItems = $this->resolveCheckoutItems($cart, $selectedItemsCsv);
-        if ($checkoutItems->isEmpty()) {
-            return redirect()->route('site.cart.index')->with('dataError', 'Vui lòng chọn ít nhất 1 sản phẩm để thanh toán');
+        $customerId = (int) auth()->guard('customer')->id();
+        try {
+            $order = $this->siteOrderService->placeOrder($customerId, $payload);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('site.cart.index')->with('dataError', $e->getMessage());
         }
-
-        $order = DB::transaction(function () use ($cart, $payload, $customerId, $checkoutItems) {
-            $total = 0;
-            foreach ($checkoutItems as $item) {
-                $product = Product::query()->lockForUpdate()->find($item->product_id);
-                if (!$product || (int) $product->status->value !== ProductStatus::ACTIVE->value) {
-                    throw new \RuntimeException('Sản phẩm không còn khả dụng: ' . ($item->product?->name ?? 'N/A'));
-                }
-                if ((int) $item->quantity > (int) $product->quantity) {
-                    throw new \RuntimeException('Sản phẩm vượt tồn kho: ' . $product->name);
-                }
-                $total += ((int) $item->quantity) * ((float) $item->price);
-            }
-
-            $order = Order::query()->create([
-                'customer_id' => $customerId,
-                'total_amount' => $total,
-                'shipping_address' => $payload['shipping_address'],
-                'shipping_phone' => $payload['shipping_phone'],
-                'status' => OrderStatus::PENDING,
-                'payment_method' => (int) $payload['payment_method'],
-                'payment_status' => PaymentStatus::PENDING,
-                'notes' => $payload['notes'] ?? null,
-            ]);
-
-            foreach ($checkoutItems as $item) {
-                OrderItem::query()->create([
-                    'order_id' => $order->id,
-                    'product_id' => $item->product_id,
-                    'quantity' => $item->quantity,
-                    'price' => $item->price,
-                ]);
-
-                $product = Product::query()->find($item->product_id);
-                $nextQty = max(0, ((int) $product->quantity) - ((int) $item->quantity));
-                $product->quantity = $nextQty;
-                if ($nextQty === 0) {
-                    $product->status = ProductStatus::OUT_OF_STOCK;
-                }
-                $product->save();
-            }
-
-            $cart->items()->whereIn('id', $checkoutItems->pluck('id')->all())->delete();
-            return $order;
-        });
 
         return redirect()->route('site.orders.show', $order->id)->with('dataSuccess', 'Đặt hàng thành công');
     }
 
     public function index()
     {
-        $orders = Order::query()
-            ->with('items')
-            ->where('customer_id', auth()->guard('customer')->id())
-            ->latest('id')
-            ->paginate(10);
+        $orders = $this->siteOrderService->getOrdersByCustomer((int) auth()->guard('customer')->id());
 
         return view('site.order.index', compact('orders'));
     }
 
     public function show(int $id)
     {
-        $order = Order::query()
-            ->with(['items.product.images'])
-            ->where('customer_id', auth()->guard('customer')->id())
-            ->findOrFail($id);
+        $order = $this->siteOrderService->getOrderDetailByCustomer((int) auth()->guard('customer')->id(), $id);
 
         return view('site.order.show', compact('order'));
-    }
-
-    private function resolveCart(): Cart
-    {
-        return Cart::query()->firstOrCreate([
-            'customer_id' => auth()->guard('customer')->id(),
-        ]);
-    }
-
-    /**
-     * Lọc danh sách item checkout theo selected_items (csv id cart_item).
-     */
-    private function resolveCheckoutItems(Cart $cart, string $selectedItemsCsv): Collection
-    {
-        $selectedIds = collect(explode(',', $selectedItemsCsv))
-            ->map(fn ($id) => (int) trim($id))
-            ->filter(fn ($id) => $id > 0)
-            ->unique()
-            ->values();
-
-        if ($selectedIds->isEmpty()) {
-            return collect();
-        }
-
-        return $cart->items
-            ->whereIn('id', $selectedIds->all())
-            ->values();
     }
 }

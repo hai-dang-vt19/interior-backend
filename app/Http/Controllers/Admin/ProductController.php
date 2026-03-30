@@ -24,8 +24,10 @@ class ProductController extends BaseController
     {
         $products = $this->productService->getProducts($request->all());
         $categories = $this->productService->getCategories();
+        $bannerCandidateProducts = $this->productService->getActiveProductsForBanner();
+        $bannerBySide = $this->productService->getHomeBannerProductsBySide();
 
-        return view('product.index', compact('products', 'categories'));
+        return view('product.index', compact('products', 'categories', 'bannerCandidateProducts', 'bannerBySide'));
     }
 
     // Tạo mới sản phẩm
@@ -153,5 +155,27 @@ class ProductController extends BaseController
         $this->productService->adjustInventory($id, $request->validated(), (int) Auth::id());
 
         return redirect()->back()->with('dataSuccess', 'Cập nhật tồn kho thành công');
+    }
+
+    // Cập nhật danh sách sản phẩm banner trang chủ theo 2 bên trái/phải
+    public function updateBannerProducts(Request $request)
+    {
+        $payload = $request->validate([
+            'left' => ['nullable', 'array'],
+            'left.*' => ['nullable', 'integer', 'exists:products,id'],
+            'right' => ['nullable', 'array'],
+            'right.*' => ['nullable', 'integer', 'exists:products,id'],
+        ]);
+
+        foreach (['left', 'right'] as $side) {
+            $values = array_filter($payload[$side] ?? [], fn ($id) => (int) $id > 0);
+            if (count($values) !== count(array_unique($values))) {
+                return redirect()->back()->with('dataError', 'Mỗi cột không được chọn trùng sản phẩm');
+            }
+        }
+
+        $this->productService->updateHomeBannerProducts($payload);
+
+        return redirect()->back()->with('dataSuccess', 'Cập nhật sản phẩm banner thành công');
     }
 }

@@ -17,6 +17,8 @@ Route::middleware('guest:customer')->group(function () {
 Route::middleware('customer.auth')->group(function () {
     Route::post('logout', [SiteAuthController::class, 'logout'])->name('site.logout');
     Route::get('account', [SiteController::class, 'account'])->name('site.account');
+    Route::patch('account', [SiteController::class, 'updateAccount'])->name('site.account.update');
+    Route::patch('account/password', [SiteController::class, 'updateAccountPassword'])->name('site.account.password.update');
     Route::get('cart', [SiteCartController::class, 'index'])->name('site.cart.index');
     Route::post('cart/items', [SiteCartController::class, 'store'])->name('site.cart.items.store');
     Route::patch('cart/items/{id}', [SiteCartController::class, 'update'])->name('site.cart.items.update');

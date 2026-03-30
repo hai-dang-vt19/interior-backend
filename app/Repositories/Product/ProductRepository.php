@@ -7,6 +7,7 @@ namespace App\Repositories\Product;
 use App\Enums\PerPage;
 use App\Enums\InventoryType;
 use App\Models\Category;
+use App\Models\HomeBannerProduct;
 use App\Models\Inventory;
 use App\Models\InventoryHistory;
 use App\Models\Product;
@@ -230,6 +231,64 @@ class ProductRepository implements ProductRepositoryInterface
             ]);
 
             return true;
+        });
+    }
+
+    public function getActiveProductsForBanner(): Collection
+    {
+        return $this->model
+            ->query()
+            ->whereNull('deleted_at')
+            ->orderBy('name')
+            ->get(['id', 'name']);
+    }
+
+    public function getHomeBannerProductsBySide(): array
+    {
+        $items = HomeBannerProduct::query()
+            ->with([
+                'product' => function ($query) {
+                    $query->with(['images' => function ($imageQuery) {
+                        $imageQuery->orderByDesc('is_primary')->orderByDesc('id');
+                    }]);
+                },
+            ])
+            ->orderBy('side')
+            ->orderBy('position')
+            ->get();
+
+        return [
+            'left' => $items->where('side', 'left')->values(),
+            'right' => $items->where('side', 'right')->values(),
+        ];
+    }
+
+    public function updateHomeBannerProducts(array $payload): void
+    {
+        DB::transaction(function () use ($payload) {
+            foreach (['left', 'right'] as $side) {
+                $rows = $payload[$side] ?? [];
+                for ($position = 1; $position <= 3; $position++) {
+                    $productId = isset($rows[$position]) ? (int) $rows[$position] : 0;
+                    if ($productId <= 0) {
+                        HomeBannerProduct::query()
+                            ->where('side', $side)
+                            ->where('position', $position)
+                            ->delete();
+                        continue;
+                    }
+
+                    HomeBannerProduct::query()->updateOrCreate(
+                        [
+                            'side' => $side,
+                            'position' => $position,
+                        ],
+                        [
+                            'product_id' => $productId,
+                        ]
+                    );
+                }
+            }
         });
     }
 }
