@@ -1,5 +1,7 @@
 import './bootstrap';
-import 'bootstrap/dist/js/bootstrap.bundle.js';
+import * as bootstrap from 'bootstrap';
+
+window.bootstrap = bootstrap;
 import Alert from './common/sweetalert';
 import { Loading } from './common/loading';
 import { Common } from './common/common';

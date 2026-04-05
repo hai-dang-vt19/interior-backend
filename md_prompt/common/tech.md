@@ -1,6 +1,7 @@
 ### Kiểm tra và tuần thủ theo đùng ngôn ngữ và phiên bản:
 ## Backend
-- Laravel: 5.2.1
+- Laravel: 12.0
+- php 8.2
 - axios: 1.8.2
 ## Frontend
 - Blade

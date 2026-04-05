@@ -13,7 +13,7 @@
                     <input type="hidden" name="selected_items" value="{{ old('selected_items', $selectedItemsCsv ?? '') }}">
                     <div class="mb-3">
                         <label class="form-label">Địa chỉ nhận hàng</label>
-                        <textarea class="form-control" name="shipping_address" rows="3" required>{{ old('shipping_address', auth()->guard('customer')->user()->address) }}</textarea>
+                        <textarea class="form-control" name="shipping_address" rows="3" required>{{ old('shipping_address', $defaultShippingAddress ?? '') }}</textarea>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Số điện thoại nhận hàng</label>

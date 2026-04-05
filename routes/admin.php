@@ -5,6 +5,7 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\OrderController;
 use App\Http\Controllers\Admin\ProductController;
+use App\Http\Controllers\Admin\ProductReviewController;
 use App\Http\Controllers\Admin\StaffController;
 use App\Http\Controllers\AuthAdminController;
 use Illuminate\Support\Facades\Route;
@@ -55,6 +56,13 @@ Route::prefix('admin')->group(function () {
             Route::post('{id}', [ProductController::class, 'update'])->name('update');
             Route::delete('destroy/{id}', [ProductController::class, 'destroy'])->name('destroy');
             Route::get('', [ProductController::class, 'index'])->name('index');
+        });
+
+        Route::middleware('role:ADMIN')->prefix('product-review')->name('admin.product-review.')->group(function () {
+            Route::get('{id}/edit', [ProductReviewController::class, 'edit'])->name('edit');
+            Route::patch('{id}', [ProductReviewController::class, 'update'])->name('update');
+            Route::delete('{id}', [ProductReviewController::class, 'destroy'])->name('destroy');
+            Route::get('', [ProductReviewController::class, 'index'])->name('index');
         });
 
         Route::middleware('role:ADMIN')->prefix('category')->name('admin.category.')->group(function () {

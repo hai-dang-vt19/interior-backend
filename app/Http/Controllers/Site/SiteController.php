@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SiteAccountAddressRequest;
 use App\Models\Customer;
 use App\Services\SiteService;
 use Illuminate\Http\Request;
@@ -31,12 +32,13 @@ class SiteController extends Controller
 
     public function showProduct(int $id)
     {
-        $productData = $this->siteService->getProductDetailData($id);
+        $customerId = auth()->guard('customer')->id();
+        $productData = $this->siteService->getProductDetailData(
+            $id,
+            $customerId !== null ? (int) $customerId : null
+        );
 
-        return view('site.product-show', [
-            'product' => $productData['product'],
-            'relatedProducts' => $productData['relatedProducts'],
-        ]);
+        return view('site.product-show', $productData);
     }
 
     /**
@@ -47,8 +49,11 @@ class SiteController extends Controller
         /** @var Customer|null $customer */
         $customer = auth()->guard('customer')->user();
 
+        $addresses = $this->siteService->getCustomerAddresses((int) $customer->id);
+
         return view('site.account', [
             'customer' => $customer,
+            'addresses' => $addresses,
         ]);
     }
 
@@ -64,11 +69,9 @@ class SiteController extends Controller
         $payload = $request->validate([
             'full_name' => ['required', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
-            'address' => ['nullable', 'string', 'max:500'],
         ], [], [
             'full_name' => 'họ tên',
             'phone' => 'số điện thoại',
-            'address' => 'địa chỉ',
         ]);
 
         $this->siteService->updateAccountProfile($customer, $payload);
@@ -110,5 +113,85 @@ class SiteController extends Controller
         return redirect()
             ->route('site.account', ['tab' => 'password'])
             ->with('dataSuccess', 'Đổi mật khẩu thành công');
+    }
+
+    public function storeAccountAddress(SiteAccountAddressRequest $request)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $payload = $request->validated();
+        $payload['is_default'] = $request->boolean('is_default');
+        $this->siteService->storeCustomerAddress((int) $customer->id, $payload);
+
+        return redirect()
+            ->route('site.account', ['tab' => 'addresses'])
+            ->with('dataSuccess', 'Đã thêm địa chỉ');
+    }
+
+    public function updateAccountAddress(SiteAccountAddressRequest $request, int $id)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $payload = $request->validated();
+        $payload['is_default'] = $request->boolean('is_default');
+        $ok = $this->siteService->updateCustomerAddress((int) $customer->id, $id, $payload);
+
+        if (!$ok) {
+            return redirect()
+                ->route('site.account', ['tab' => 'addresses'])
+                ->with('dataError', 'Không tìm thấy địa chỉ');
+        }
+
+        return redirect()
+            ->route('site.account', ['tab' => 'addresses'])
+            ->with('dataSuccess', 'Đã cập nhật địa chỉ');
+    }
+
+    public function destroyAccountAddress(int $id)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $ok = $this->siteService->deleteCustomerAddress((int) $customer->id, $id);
+        if (!$ok) {
+            return redirect()
+                ->route('site.account', ['tab' => 'addresses'])
+                ->with('dataError', 'Không tìm thấy địa chỉ');
+        }
+
+        return redirect()
+            ->route('site.account', ['tab' => 'addresses'])
+            ->with('dataSuccess', 'Đã xóa địa chỉ');
+    }
+
+    public function setDefaultAccountAddress(int $id)
+    {
+        /** @var Customer|null $customer */
+        $customer = auth()->guard('customer')->user();
+        if (!$customer) {
+            return redirect()->route('site.login')->with('dataError', 'Vui lòng đăng nhập để tiếp tục');
+        }
+
+        $ok = $this->siteService->setDefaultCustomerAddress((int) $customer->id, $id);
+        if (!$ok) {
+            return redirect()
+                ->route('site.account', ['tab' => 'addresses'])
+                ->with('dataError', 'Không tìm thấy địa chỉ');
+        }
+
+        return redirect()
+            ->route('site.account', ['tab' => 'addresses'])
+            ->with('dataSuccess', 'Đã đặt địa chỉ mặc định');
     }
 }

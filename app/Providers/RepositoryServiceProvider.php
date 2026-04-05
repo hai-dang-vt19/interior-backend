@@ -14,6 +14,7 @@ class RepositoryServiceProvider extends ServiceProvider
         $repositories = [
             'Customer',
             'Product',
+            'ProductReview',
             'Category',
             'Order',
             'Dashboard',

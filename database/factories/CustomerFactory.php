@@ -15,7 +15,6 @@ class CustomerFactory extends Factory
             'password' => Hash::make('12345678'),
             'full_name' => fake()->name(),
             'phone' => fake()->phoneNumber(),
-            'address' => fake()->address(),
         ];
     }
 } 

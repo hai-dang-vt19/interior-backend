@@ -19,7 +19,6 @@ class Customer extends Authenticatable
         'password',
         'full_name',
         'phone',
-        'address',
         'loyalty_tier',
         'reward_points',
         'deleted_at'
@@ -48,6 +47,11 @@ class Customer extends Authenticatable
     public function addresses()
     {
         return $this->hasMany(CustomerAddress::class);
+    }
+
+    public function productReviews()
+    {
+        return $this->hasMany(ProductReview::class);
     }
 
     public function contactLogs()

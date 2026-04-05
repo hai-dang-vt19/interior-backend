@@ -29,7 +29,9 @@ class SiteOrderController extends Controller
         }
 
         $paymentMethods = $checkoutData['paymentMethods'];
-        return view('site.order.checkout', compact('cart', 'paymentMethods', 'checkoutItems', 'selectedItemsCsv'));
+        $defaultShippingAddress = $checkoutData['defaultShippingAddress'];
+
+        return view('site.order.checkout', compact('cart', 'paymentMethods', 'checkoutItems', 'selectedItemsCsv', 'defaultShippingAddress'));
     }
 
     public function placeOrder(SiteCheckoutRequest $request)

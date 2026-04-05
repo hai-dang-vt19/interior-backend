@@ -6,14 +6,15 @@ namespace App\Services;
 
 use App\Enums\PaymentMethod;
 use App\Models\Order;
+use App\Repositories\Site\SiteRepositoryInterface;
 use App\Repositories\SiteOrder\SiteOrderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Collection;
 
 class SiteOrderService extends BaseService
 {
     public function __construct(
-        private SiteOrderRepositoryInterface $siteOrderRepository
+        private SiteOrderRepositoryInterface $siteOrderRepository,
+        private SiteRepositoryInterface $siteRepository
     ) {}
 
     public function getCheckoutData(int $customerId, string $selectedItemsCsv): array
@@ -26,6 +27,7 @@ class SiteOrderService extends BaseService
             'checkoutItems' => $checkoutItems,
             'paymentMethods' => PaymentMethod::cases(),
             'selectedItemsCsv' => $selectedItemsCsv,
+            'defaultShippingAddress' => $this->siteRepository->getDefaultShippingAddressText($customerId),
         ];
     }
 

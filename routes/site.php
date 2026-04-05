@@ -4,6 +4,7 @@ use App\Http\Controllers\Site\SiteAuthController;
 use App\Http\Controllers\Site\SiteCartController;
 use App\Http\Controllers\Site\SiteOrderController;
 use App\Http\Controllers\Site\SiteController;
+use App\Http\Controllers\Site\SiteProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'home'])->name('site.home');
@@ -19,6 +20,10 @@ Route::middleware('customer.auth')->group(function () {
     Route::get('account', [SiteController::class, 'account'])->name('site.account');
     Route::patch('account', [SiteController::class, 'updateAccount'])->name('site.account.update');
     Route::patch('account/password', [SiteController::class, 'updateAccountPassword'])->name('site.account.password.update');
+    Route::post('account/addresses', [SiteController::class, 'storeAccountAddress'])->name('site.account.addresses.store');
+    Route::patch('account/addresses/{id}', [SiteController::class, 'updateAccountAddress'])->name('site.account.addresses.update');
+    Route::delete('account/addresses/{id}', [SiteController::class, 'destroyAccountAddress'])->name('site.account.addresses.destroy');
+    Route::patch('account/addresses/{id}/default', [SiteController::class, 'setDefaultAccountAddress'])->name('site.account.addresses.default');
     Route::get('cart', [SiteCartController::class, 'index'])->name('site.cart.index');
     Route::post('cart/items', [SiteCartController::class, 'store'])->name('site.cart.items.store');
     Route::patch('cart/items/{id}', [SiteCartController::class, 'update'])->name('site.cart.items.update');
@@ -27,4 +32,6 @@ Route::middleware('customer.auth')->group(function () {
     Route::post('checkout', [SiteOrderController::class, 'placeOrder'])->name('site.checkout.submit');
     Route::get('orders', [SiteOrderController::class, 'index'])->name('site.orders.index');
     Route::get('orders/{id}', [SiteOrderController::class, 'show'])->name('site.orders.show');
+    Route::post('products/{productId}/reviews', [SiteProductReviewController::class, 'store'])->name('site.products.reviews.store');
+    Route::patch('products/{productId}/reviews/{reviewId}', [SiteProductReviewController::class, 'update'])->name('site.products.reviews.update');
 });
