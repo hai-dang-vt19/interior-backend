@@ -121,7 +121,6 @@ class CustomerRepository implements CustomerRepositoryInterface
             'city' => $params['city'] ?? null,
             'district' => $params['district'] ?? null,
             'ward' => $params['ward'] ?? null,
-            'postal_code' => $params['postal_code'] ?? null,
             'is_default' => (bool) ($params['is_default'] ?? false),
         ]);
     }

@@ -10,7 +10,7 @@
     <div class="row g-4">
         <div class="col-md-5">
             @if ($mainImageUrl)
-                <img src="{{ $mainImageUrl }}" class="img-fluid rounded border shadow-sm site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                <img src="{{ $mainImageUrl }}" class="img-fluid rounded border shadow-sm site-skeleton-image image-product" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
             @else
                 <div class="border rounded p-5 text-center text-muted">Chưa có hình ảnh</div>
             @endif
@@ -49,6 +49,88 @@
             @endif
         </div>
     </div>
+
+    <section id="product-reviews" class="site-product-reviews mt-5 pt-4 border-top">
+        <h5 class="site-section-title mb-3">Đánh giá từ khách hàng</h5>
+
+        @auth('customer')
+            @if ($canReviewAfterPurchase)
+                <div class="card site-panel mb-4">
+                    <div class="card-body">
+                        @if ($myProductReview)
+                            <h6 class="mb-3">Sửa đánh giá của bạn</h6>
+                            <form action="{{ route('site.products.reviews.update', [$product->id, $myProductReview->id]) }}" method="POST" class="site-product-review-form">
+                                @csrf
+                                @method('PATCH')
+                                @if ($errors->any())
+                                    <div class="alert alert-danger small mb-3">{{ $errors->first() }}</div>
+                                @endif
+                                <div class="mb-3">
+                                    <label class="form-label">Số sao</label>
+                                    <select name="rating" class="form-select @error('rating') is-invalid @enderror" required>
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <option value="{{ $i }}" @selected((int) old('rating', $myProductReview->rating) === $i)>{{ $i }} sao</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nội dung</label>
+                                    <textarea name="review" class="form-control @error('review') is-invalid @enderror" rows="4" required>{{ old('review', $myProductReview->review) }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-dark">Cập nhật đánh giá</button>
+                            </form>
+                        @else
+                            <h6 class="mb-3">Viết đánh giá</h6>
+                            <form action="{{ route('site.products.reviews.store', $product->id) }}" method="POST" class="site-product-review-form">
+                                @csrf
+                                @if ($errors->any())
+                                    <div class="alert alert-danger small mb-3">{{ $errors->first() }}</div>
+                                @endif
+                                <div class="mb-3">
+                                    <label class="form-label">Số sao</label>
+                                    <select name="rating" class="form-select @error('rating') is-invalid @enderror" required>
+                                        @for ($i = 1; $i <= 5; $i++)
+                                            <option value="{{ $i }}" @selected((int) old('rating') === $i)>{{ $i }} sao</option>
+                                        @endfor
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nội dung</label>
+                                    <textarea name="review" class="form-control @error('review') is-invalid @enderror" rows="4" required placeholder="Chia sẻ trải nghiệm của bạn">{{ old('review') }}</textarea>
+                                </div>
+                                <button type="submit" class="btn btn-dark">Gửi đánh giá</button>
+                            </form>
+                        @endif
+                    </div>
+                </div>
+            @else
+                <p class="text-muted small mb-4">Bạn chỉ có thể đánh giá khi đã mua sản phẩm và đơn hàng được ghi nhận là <strong>đã giao</strong>.</p>
+            @endif
+        @else
+            <p class="small mb-4"><a href="{{ route('site.login') }}">Đăng nhập</a> để đánh giá sản phẩm (sau khi đơn hàng đã giao).</p>
+        @endauth
+
+        <div class="site-product-review-list d-flex flex-column gap-3">
+            @forelse ($productReviews as $rev)
+                <article class="site-product-review-item card site-panel">
+                    <div class="card-body">
+                        <div class="d-flex flex-wrap justify-content-between gap-2 mb-2">
+                            <strong>{{ $rev->customer?->full_name ?? 'Khách hàng' }}</strong>
+                            <span class="site-product-review-stars text-warning" aria-label="{{ $rev->rating }} trên 5 sao">
+                                @for ($s = 1; $s <= 5; $s++)
+                                    {{ $s <= (int) $rev->rating ? '★' : '☆' }}
+                                @endfor
+                            </span>
+                        </div>
+                        <p class="mb-1 small text-muted">{{ $rev->created_at?->format('d/m/Y H:i') }}</p>
+                        <p class="mb-0 site-product-review-text">{!! nl2br(e($rev->review)) !!}</p>
+                    </div>
+                </article>
+            @empty
+                <p class="text-muted mb-0">Chưa có đánh giá nào cho sản phẩm này.</p>
+            @endforelse
+        </div>
+    </section>
 
     @if ($relatedProducts->isNotEmpty())
         <hr class="my-4">

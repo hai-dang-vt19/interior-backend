@@ -42,10 +42,7 @@
                     <div class="col-md-4">
                         <input type="text" class="form-control" name="ward" placeholder="Phường/Xã">
                     </div>
-                    <div class="col-md-6">
-                        <input type="text" class="form-control" name="postal_code" placeholder="Mã bưu chính">
-                    </div>
-                    <div class="col-md-4 d-flex align-items-center">
+                    <div class="col-md-6 d-flex align-items-center">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" name="is_default" value="1" id="is_default">
                             <label class="form-check-label" for="is_default">Mặc định</label>

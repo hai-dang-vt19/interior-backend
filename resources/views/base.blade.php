@@ -6,6 +6,7 @@
         <title>{{ config('app.name', 'Laravel') }}</title>
         @vite([
             'resources/scss/app.scss',
+            'resources/scss/admin.scss',
             'resources/js/app.js',
         ])
     </head>
@@ -13,7 +14,7 @@
         <div class="header">
             @include('component.navbar')
         </div>
-        
+
         <div class="container-fluid px-5 pt-3">
             <div>
                 @yield('breadcrumb')

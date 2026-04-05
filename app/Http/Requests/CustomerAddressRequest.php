@@ -21,7 +21,6 @@ class CustomerAddressRequest extends FormRequest
             'city' => ['nullable', 'string', 'max:100'],
             'district' => ['nullable', 'string', 'max:100'],
             'ward' => ['nullable', 'string', 'max:100'],
-            'postal_code' => ['nullable', 'string', 'max:20'],
             'is_default' => ['nullable', 'boolean'],
         ];
     }

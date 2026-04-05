@@ -7,6 +7,7 @@ export default defineConfig({
             input: [
                 'resources/scss/app.scss',
                 'resources/scss/custom.scss',
+                'resources/scss/admin.scss',
                 'resources/scss/_variable.scss',
                 'resources/js/app.js',
             ],

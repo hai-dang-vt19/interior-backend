@@ -15,7 +15,6 @@ class CustomerAddress extends Model
         'city',
         'district',
         'ward',
-        'postal_code',
         'is_default',
     ];
 

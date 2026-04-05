@@ -10,6 +10,7 @@
     />
     @vite([
         'resources/scss/app.scss',
+        'resources/scss/custom.scss',
         'resources/js/app.js',
     ])
     <script>
