@@ -17,6 +17,10 @@
                 <input type="text" class="form-control" name="name" value="{{ request('name') }}">
             </div>
             <div class="col-md-3">
+                <label class="form-label">SKU</label>
+                <input type="text" class="form-control" name="sku" value="{{ request('sku') }}">
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Danh mục</label>
                 <select class="form-select" name="category_id">
                     <option value="">Tất cả</option>
@@ -148,12 +152,47 @@
                                             data-bs-toggle="modal" data-bs-target="#modalEditProduct"
                                             data-route="{{ route('admin.product.update', $product->id) }}"
                                             data-name="{{ $product->name }}"
+                                            data-sku="{{ $product->sku }}"
                                             data-category-id="{{ $product->category_id }}"
                                             data-description="{{ $product->description }}"
+                                            data-description-short="{{ $product->description_short }}"
+                                            data-description-long="{{ $product->description_long }}"
+                                            data-style="{{ $product->style }}"
+                                            data-space-type="{{ $product->space_type }}"
+                                            data-origin="{{ $product->origin }}"
+                                            data-year-released="{{ $product->year_released }}"
                                             data-price="{{ $product->price }}"
                                             data-discount-price="{{ $product->discount_price }}"
                                             data-quantity="{{ $product->quantity }}"
                                             data-status="{{ $product->status?->value }}"
+                                            data-is-active="{{ $product->is_active ? 1 : 0 }}"
+                                            data-is-customizable="{{ $product->is_customizable ? 1 : 0 }}"
+                                            data-variants-b64="{{ base64_encode(json_encode($product->variants->map(fn ($variant) => [
+                                                "sku_variant" => $variant->sku_variant,
+                                                "color_name" => $variant->color_name,
+                                                "color_hex" => $variant->color_hex,
+                                                "material_main" => $variant->material_main,
+                                                "material_sub" => $variant->material_sub,
+                                                "finish" => $variant->finish,
+                                                "price" => $variant->price,
+                                                "currency" => $variant->currency,
+                                                "unit" => $variant->unit,
+                                                "qty_per_set" => $variant->qty_per_set,
+                                                "is_default" => (bool) $variant->is_default,
+                                                "is_active" => (bool) $variant->is_active,
+                                            ])->values()->all())) }}"
+                                            data-specs-b64="{{ base64_encode(json_encode($product->specs->map(fn ($spec) => [
+                                                "length_mm" => $spec->length_mm,
+                                                "width_mm" => $spec->width_mm,
+                                                "height_mm" => $spec->height_mm,
+                                                "weight_kg" => $spec->weight_kg,
+                                                "max_load_kg" => $spec->max_load_kg,
+                                                "spec_group" => $spec->spec_group,
+                                                "spec_key" => $spec->spec_key,
+                                                "spec_value" => $spec->spec_value,
+                                                "spec_unit" => $spec->spec_unit,
+                                                "sort_order" => $spec->sort_order,
+                                            ])->values()->all())) }}"
                                         >
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="m7 17.013 4.413-.015 9.632-9.54c.378-.378.586-.88.586-1.414s-.208-1.036-.586-1.414l-1.586-1.586c-.756-.756-2.075-.752-2.825-.003L7 12.583v4.43zM18.045 4.458l1.589 1.583-1.597 1.582-1.586-1.585 1.594-1.58zM9 13.417l6.03-5.973 1.586 1.586-6.029 5.971L9 15.006v-1.589z"></path><path d="M5 21h14c1.103 0 2-.897 2-2v-8.668l-2 2V19H8.158c-.026 0-.053.01-.079.01-.033 0-.066-.009-.1-.01H5V5h6.847l2-2H5c-1.103 0-2 .897-2 2v14c0 1.103.897 2 2 2z"></path></svg>
                                         </button>
@@ -214,6 +253,201 @@
 @section('scripts')
 <script type="module">
     $(document).ready(function() {
+        const safeArray = function(value) {
+            if (Array.isArray(value)) {
+                return value;
+            }
+
+            return [];
+        };
+
+        const escapeHtml = function(value) {
+            return String(value ?? '')
+                .replaceAll('&', '&amp;')
+                .replaceAll('<', '&lt;')
+                .replaceAll('>', '&gt;')
+                .replaceAll('"', '&quot;')
+                .replaceAll("'", '&#039;');
+        };
+
+        const variantRowHtml = function(prefix, index, row = {}) {
+            const isDefault = Number(row.is_default ?? 0) === 1 || row.is_default === true;
+            const isActive = Number(row.is_active ?? 1) === 1 || row.is_active === true;
+
+            return `
+                <div class="col-12 js-variant-row border rounded p-2">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-3">
+                            <label class="form-label">SKU variant</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][sku_variant]" value="${escapeHtml(row.sku_variant)}" placeholder="Tự động: PV--timestamp" readonly>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Màu</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][color_name]" value="${escapeHtml(row.color_name)}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">HEX</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][color_hex]" placeholder="#000000" value="${escapeHtml(row.color_hex)}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Chất liệu</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][material_main]" value="${escapeHtml(row.material_main)}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Giá</label>
+                            <input type="number" class="form-control" min="0" name="${prefix}[${index}][price]" value="${escapeHtml(row.price)}">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-outline-danger w-100 js-remove-variant-row">X</button>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tiền tệ</label>
+                            <input type="text" class="form-control" maxlength="3" name="${prefix}[${index}][currency]" value="${escapeHtml(row.currency ?? 'VND')}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Đơn vị</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][unit]" value="${escapeHtml(row.unit ?? 'cai')}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">SL/Bộ</label>
+                            <input type="number" class="form-control" min="1" name="${prefix}[${index}][qty_per_set]" value="${escapeHtml(row.qty_per_set ?? 1)}">
+                        </div>
+                        <div class="col-md-2 form-check mt-4 ms-2">
+                            <input class="form-check-input" type="checkbox" name="${prefix}[${index}][is_default]" value="1" ${isDefault ? 'checked' : ''}>
+                            <label class="form-check-label">Mặc định</label>
+                        </div>
+                        <div class="col-md-2 form-check mt-4 ms-2">
+                            <input class="form-check-input" type="checkbox" name="${prefix}[${index}][is_active]" value="1" ${isActive ? 'checked' : ''}>
+                            <label class="form-check-label">Hoạt động</label>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const specRowHtml = function(prefix, index, row = {}) {
+            return `
+                <div class="col-12 js-spec-row border rounded p-2">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-2">
+                            <label class="form-label">Nhóm</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][spec_group]" value="${escapeHtml(row.spec_group ?? 'Kich thuoc')}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Key</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][spec_key]" value="${escapeHtml(row.spec_key)}">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Value</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][spec_value]" value="${escapeHtml(row.spec_value)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Unit</label>
+                            <input type="text" class="form-control" name="${prefix}[${index}][spec_unit]" value="${escapeHtml(row.spec_unit)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Sort</label>
+                            <input type="number" class="form-control" min="0" name="${prefix}[${index}][sort_order]" value="${escapeHtml(row.sort_order ?? 0)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Dài</label>
+                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][length_mm]" value="${escapeHtml(row.length_mm)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Rộng</label>
+                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][width_mm]" value="${escapeHtml(row.width_mm)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Cao</label>
+                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][height_mm]" value="${escapeHtml(row.height_mm)}">
+                        </div>
+                        <div class="col-md-1">
+                            <label class="form-label">Nặng</label>
+                            <input type="number" class="form-control" min="0" step="0.001" name="${prefix}[${index}][weight_kg]" value="${escapeHtml(row.weight_kg)}">
+                        </div>
+                        <div class="col-md-1">
+                            <button type="button" class="btn btn-outline-danger w-100 js-remove-spec-row">X</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+        };
+
+        const renderVariantRows = function(modalSelector, rows) {
+            const $modal = $(modalSelector);
+            const $container = $modal.find('.js-variants-container');
+            const prefix = $container.data('prefix') || 'variants';
+            const list = safeArray(rows);
+            $container.empty();
+            if (list.length === 0) {
+                $container.append(variantRowHtml(prefix, 0, { currency: 'VND', unit: 'cai', qty_per_set: 1, is_default: true, is_active: true }));
+                return;
+            }
+            list.forEach((row, index) => {
+                $container.append(variantRowHtml(prefix, index, row));
+            });
+        };
+
+        const renderSpecRows = function(modalSelector, rows) {
+            const $modal = $(modalSelector);
+            const $container = $modal.find('.js-specs-container');
+            const prefix = $container.data('prefix') || 'specs';
+            const list = safeArray(rows);
+            $container.empty();
+            if (list.length === 0) {
+                $container.append(specRowHtml(prefix, 0, { spec_group: 'Kich thuoc', sort_order: 0 }));
+                return;
+            }
+            list.forEach((row, index) => {
+                $container.append(specRowHtml(prefix, index, row));
+            });
+        };
+
+        renderVariantRows('#modalCreateProduct', []);
+        renderSpecRows('#modalCreateProduct', []);
+        renderVariantRows('#modalEditProduct', []);
+        renderSpecRows('#modalEditProduct', []);
+
+        $('.js-add-variant-row').on('click', function() {
+            const target = $(this).data('target');
+            const $modal = $(target);
+            const $container = $modal.find('.js-variants-container');
+            const prefix = $container.data('prefix') || 'variants';
+            const nextIndex = $container.find('.js-variant-row').length;
+            $container.append(variantRowHtml(prefix, nextIndex, { currency: 'VND', unit: 'cai', qty_per_set: 1, is_active: true }));
+        });
+
+        $('.js-add-spec-row').on('click', function() {
+            const target = $(this).data('target');
+            const $modal = $(target);
+            const $container = $modal.find('.js-specs-container');
+            const prefix = $container.data('prefix') || 'specs';
+            const nextIndex = $container.find('.js-spec-row').length;
+            $container.append(specRowHtml(prefix, nextIndex, { spec_group: 'Kich thuoc', sort_order: nextIndex }));
+        });
+
+        $(document).on('click', '.js-remove-variant-row', function() {
+            const $container = $(this).closest('.js-variants-container');
+            $(this).closest('.js-variant-row').remove();
+            $container.find('.js-variant-row').each(function(index) {
+                $(this).find('[name]').each(function() {
+                    const newName = $(this).attr('name').replace(/variants\[\d+]/, `variants[${index}]`);
+                    $(this).attr('name', newName);
+                });
+            });
+        });
+
+        $(document).on('click', '.js-remove-spec-row', function() {
+            const $container = $(this).closest('.js-specs-container');
+            $(this).closest('.js-spec-row').remove();
+            $container.find('.js-spec-row').each(function(index) {
+                $(this).find('[name]').each(function() {
+                    const newName = $(this).attr('name').replace(/specs\[\d+]/, `specs[${index}]`);
+                    $(this).attr('name', newName);
+                });
+            });
+        });
+
         $('.btn-submit-create-product').on('click', function() {
             $('#modalCreateProduct form').submit();
         });
@@ -222,12 +456,35 @@
             let targetModal = '#modalEditProduct form';
             $(targetModal).attr('action', $(this).data('route'));
             $(`${targetModal} input[name=name]`).val($(this).data('name'));
+            $(`${targetModal} .js-product-sku-display`).val($(this).data('sku'));
             $(`${targetModal} select[name=category_id]`).val($(this).data('category-id')).trigger('change');
             $(`${targetModal} textarea[name=description]`).val($(this).data('description'));
+            $(`${targetModal} textarea[name=description_short]`).val($(this).data('description-short'));
+            $(`${targetModal} textarea[name=description_long]`).val($(this).data('description-long'));
+            $(`${targetModal} input[name=style]`).val($(this).data('style'));
+            $(`${targetModal} input[name=space_type]`).val($(this).data('space-type'));
+            $(`${targetModal} input[name=origin]`).val($(this).data('origin'));
+            $(`${targetModal} input[name=year_released]`).val($(this).data('year-released'));
             $(`${targetModal} input[name=price]`).val($(this).data('price'));
             $(`${targetModal} input[name=discount_price]`).val($(this).data('discount-price'));
             $(`${targetModal} input[name=quantity]`).val($(this).data('quantity'));
             $(`${targetModal} select[name=status]`).val($(this).data('status')).trigger('change');
+            $(`${targetModal} input[name=is_active]`).prop('checked', Number($(this).data('is-active')) === 1);
+            $(`${targetModal} input[name=is_customizable]`).prop('checked', Number($(this).data('is-customizable')) === 1);
+
+            let variants = [];
+            let specs = [];
+            try {
+                const variantsB64 = $(this).attr('data-variants-b64') || '';
+                const specsB64 = $(this).attr('data-specs-b64') || '';
+                variants = variantsB64 ? JSON.parse(atob(variantsB64)) : [];
+                specs = specsB64 ? JSON.parse(atob(specsB64)) : [];
+            } catch (e) {
+                variants = [];
+                specs = [];
+            }
+            renderVariantRows('#modalEditProduct', variants);
+            renderSpecRows('#modalEditProduct', specs);
         });
 
         $('.btn-submit-edit-product').on('click', function() {

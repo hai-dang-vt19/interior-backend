@@ -102,8 +102,20 @@ class SiteRepository implements SiteRepositoryInterface
     public function getProductDetail(int $id): Product
     {
         return $this->productModel->query()
-            ->with(['category:id,name', 'images'])
+            ->with([
+                'category:id,name',
+                'images',
+                'variants' => function ($query) {
+                    $query->where('is_active', true)
+                        ->orderByDesc('is_default')
+                        ->orderBy('id');
+                },
+                'specs' => function ($query) {
+                    $query->orderBy('sort_order')->orderBy('id');
+                },
+            ])
             ->where('status', ProductStatus::ACTIVE->value)
+            ->where('is_active', true)
             ->findOrFail($id);
     }
 
