@@ -22,26 +22,23 @@
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Đăng nhập</button>
                     </div>
-                    <div class="text-center mt-3">
-                        <a href="{{ route('admin.register') }}">Chưa có tài khoản? Đăng ký</a>
-                    </div>
                 </form>
             </div>
         </div>
     </div>
 </div>
-@endsection 
+@endsection
 
 @section('scripts')
 <script type="module">
     $(document).ready(function() {
         $('#loginForm').on('submit', function(e) {
             e.preventDefault();
-            
+
             // Reset error states
             $('.is-invalid').removeClass('is-invalid');
             $('.invalid-feedback').text('');
-            
+
             $.ajax({
                 url: $(this).attr('action'),
                 type: 'POST',
@@ -59,7 +56,7 @@
                         for (const field in errors) {
                             const input = $(`#${field}`);
                             const errorDiv = $(`#${field}-error`);
-                            
+
                             input.addClass('is-invalid');
                             errorDiv.text(errors[field][0]);
                         }
@@ -72,4 +69,4 @@
         });
     });
 </script>
-@endsection 
+@endsection

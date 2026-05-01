@@ -14,8 +14,8 @@ Route::prefix('admin')->group(function () {
     Route::middleware('guest')->group(function () {
         Route::get('login', [AuthAdminController::class, 'showLoginForm'])->name('admin.login');
         Route::post('login', [AuthAdminController::class, 'login'])->name('admin.login.submit');
-        Route::get('register', [AuthAdminController::class, 'showRegisterForm'])->name('admin.register');
-        Route::post('register', [AuthAdminController::class, 'register'])->name('admin.register.submit');
+        // Route::get('register', [AuthAdminController::class, 'showRegisterForm'])->name('admin.register');
+        // Route::post('register', [AuthAdminController::class, 'register'])->name('admin.register.submit');
     });
 
     Route::middleware(['auth:web'])->group(function () {

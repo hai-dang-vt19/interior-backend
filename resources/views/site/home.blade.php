@@ -19,16 +19,23 @@
                                     <div class="site-hero-visual" aria-hidden="true">
                                         @if ($mainImageUrl)
                                             <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
+                                        @else
+                                            <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
                                         @endif
                                     </div>
-                                    <p class="site-hero-text">{{ $bannerProduct->description }}</p>
+                                    <p class="site-hero-text">
+                                        <span>
+                                            {{ $bannerProduct->name }}
+                                        </span><br>
+                                        {{ $bannerProduct->description }}
+                                    </p>
                                 </a>
                             </div>
                         @empty
                             <div class="swiper-slide">
                                 <div class="site-hero-slide">
                                     <div class="site-hero-visual" aria-hidden="true">
-                                        <img src="https://picsum.photos/200/300" alt="">
+                                        <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
                                     </div>
                                     <p class="site-hero-text">Chưa có dữ liệu</p>
                                 </div>
@@ -48,16 +55,23 @@
                                     <div class="site-hero-visual" aria-hidden="true">
                                         @if ($mainImageUrl)
                                             <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
+                                        @else
+                                            <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
                                         @endif
                                     </div>
-                                    <p class="site-hero-text">{{ $bannerProduct->name }}</p>
+                                    <p class="site-hero-text">
+                                        <span>
+                                            {{ $bannerProduct->name }}
+                                        </span><br>
+                                        {{ $bannerProduct->description }}
+                                    </p>
                                 </a>
                             </div>
                         @empty
                             <div class="swiper-slide">
                                 <div class="site-hero-slide">
                                     <div class="site-hero-visual" aria-hidden="true">
-                                        <img src="https://picsum.photos/200/300" alt="">
+                                        <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
                                     </div>
                                     <p class="site-hero-text">Chưa có dữ liệu banner cột phải.</p>
                                 </div>
@@ -91,7 +105,9 @@
                                                         <img src="{{ $mainImageUrl }}" class="site-category-card-img" alt="{{ $product->name }}" loading="lazy">
                                                     </div>
                                                 @else
-                                                    <div class="site-category-card-placeholder">{{ $product->name }}</div>
+                                                    <div class="site-category-card-img-wrap">
+                                                        <img src="{{ asset('storage/images/image_default.jpg') }}" class="site-category-card-img" alt="Image Default" loading="lazy">
+                                                    </div>
                                                 @endif
                                                 <div class="site-category-card-body">
                                                     <span class="small fw-semibold d-block text-truncate">{{ $product->name }}</span>
@@ -146,6 +162,8 @@
                 <div class="card h-100 site-product-card">
                     @if ($mainImageUrl)
                         <img src="{{ $mainImageUrl }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                    @else
+                        <img src="{{ asset('storage/images/image_default.jpg') }}" class="card-img-top site-product-img site-skeleton-image" alt="Image Default" loading="lazy" onload="this.classList.add('loaded')">
                     @endif
                     <div class="card-body">
                         <div class="small mb-1">

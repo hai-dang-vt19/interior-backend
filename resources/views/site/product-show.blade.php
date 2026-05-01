@@ -12,7 +12,8 @@
             @if ($mainImageUrl)
                 <img src="{{ $mainImageUrl }}" class="img-fluid rounded border shadow-sm site-skeleton-image image-product" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
             @else
-                <div class="border rounded p-5 text-center text-muted">Chưa có hình ảnh</div>
+                <img src="{{ asset('storage/images/image_default.jpg') }}" class="img-fluid rounded border shadow-sm site-skeleton-image image-product" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                {{-- <div class="border rounded p-5 text-center text-muted">Chưa có hình ảnh</div> --}}
             @endif
         </div>
         <div class="col-md-7">
@@ -20,9 +21,26 @@
                 <span class="site-badge site-badge-neutral">{{ $product->category?->name ?? 'Chưa phân loại' }}</span>
             </div>
             <h3 class="site-section-title">{{ $product->name }}</h3>
+            @if ($product->sku)
+                <p class="text-muted mb-2">SKU: {{ $product->sku }}</p>
+            @endif
             <h4 class="site-price mb-3">
                 {{ number_format((float) ($product->discount_price ?? $product->price), 0, ',', '.') }} đ
             </h4>
+            <div class="mb-3 d-flex flex-wrap gap-2">
+                @if ($product->style)
+                    <span class="site-badge site-badge-neutral">Phong cách: {{ $product->style }}</span>
+                @endif
+                @if ($product->space_type)
+                    <span class="site-badge site-badge-neutral">Không gian: {{ $product->space_type }}</span>
+                @endif
+                @if ($product->origin)
+                    <span class="site-badge site-badge-neutral">Xuất xứ: {{ $product->origin }}</span>
+                @endif
+                @if ($product->year_released)
+                    <span class="site-badge site-badge-neutral">Năm: {{ $product->year_released }}</span>
+                @endif
+            </div>
             <div class="mb-3">
                 <strong>Tồn kho:</strong> {{ (int) $product->quantity }}
                 @php($stockPercent = min(100, max(3, (int) round(((int) $product->quantity / 100) * 100))))
@@ -30,7 +48,53 @@
                     <div class="site-stock-progress-bar" style="width: {{ $stockPercent }}%"></div>
                 </div>
             </div>
-            <p class="mb-0">{{ $product->description ?: 'Chưa có mô tả sản phẩm.' }}</p>
+            <p class="mb-2">{{ $product->description_short ?: ($product->description ?: 'Chưa có mô tả sản phẩm.') }}</p>
+            @if ($product->description_long)
+                <p class="mb-0 text-muted">{{ $product->description_long }}</p>
+            @endif
+            @if ($product->variants->isNotEmpty())
+                <hr>
+                <h6 class="mb-2">Phiên bản sản phẩm</h6>
+                <div class="table-responsive">
+                    <table class="table table-sm align-middle">
+                        <thead>
+                            <tr>
+                                <th>SKU</th>
+                                <th>Màu</th>
+                                <th>Chất liệu</th>
+                                <th>Giá</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($product->variants as $variant)
+                                <tr>
+                                    <td>{{ $variant->sku_variant ?: '-' }} @if($variant->is_default)<span class="badge bg-primary ms-1">Mặc định</span>@endif</td>
+                                    <td>{{ $variant->color_name ?: '-' }}</td>
+                                    <td>{{ $variant->material_main ?: '-' }}</td>
+                                    <td>{{ number_format((float) $variant->price, 0, ',', '.') }} {{ $variant->currency }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @endif
+            @if ($product->specs->isNotEmpty())
+                <hr>
+                <h6 class="mb-2">Thông số kỹ thuật</h6>
+                <div class="row g-2">
+                    @foreach ($product->specs as $spec)
+                        <div class="col-md-6">
+                            <div class="border rounded p-2 h-100">
+                                <div class="small text-muted">{{ $spec->spec_group ?: 'Thông số' }}</div>
+                                <div>
+                                    <strong>{{ $spec->spec_key ?: 'Thông tin' }}:</strong>
+                                    {{ $spec->spec_value ?: '-' }}{{ $spec->spec_unit ? ' '.$spec->spec_unit : '' }}
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
             <hr>
             @if (auth()->guard('customer')->check())
                 <form action="{{ route('site.cart.items.store') }}" method="POST" class="row g-2 align-items-end">

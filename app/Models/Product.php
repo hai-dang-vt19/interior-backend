@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Enums\ProductStatus;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,52 +16,76 @@ class Product extends Model
     protected $fillable = [
         'category_id',
         'name',
+        'sku',
         'description',
+        'description_short',
+        'description_long',
+        'style',
+        'space_type',
+        'origin',
+        'year_released',
         'price',
         'discount_price',
         'quantity',
         'status',
+        'is_active',
+        'is_customizable',
     ];
 
     protected $casts = [
         'price' => 'decimal:0',
         'discount_price' => 'decimal:0',
         'status' => ProductStatus::class,
+        'year_released' => 'integer',
+        'is_active' => 'boolean',
+        'is_customizable' => 'boolean',
     ];
 
-    public function category()
+    public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class);
     }
 
-    public function images()
+    public function images(): HasMany
     {
         return $this->hasMany(ProductImage::class);
     }
 
-    public function cartItems()
+    public function cartItems(): HasMany
     {
         return $this->hasMany(CartItem::class);
     }
 
-    public function orderItems()
+    public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
     }
 
-    public function productReviews()
+    public function productReviews(): HasMany
     {
         return $this->hasMany(ProductReview::class);
     }
 
-    public function inventory()
+    public function inventory(): HasOne
     {
         return $this->hasOne(Inventory::class);
     }
 
-    public function inventoryHistories()
+    public function inventoryHistories(): HasMany
     {
         return $this->hasMany(InventoryHistory::class);
+    }
+
+    // Danh sách phiên bản (màu/chất liệu/giá) của sản phẩm
+    public function variants(): HasMany
+    {
+        return $this->hasMany(ProductVariant::class);
+    }
+
+    // Danh sách thông số kỹ thuật mở rộng của sản phẩm
+    public function specs(): HasMany
+    {
+        return $this->hasMany(ProductSpec::class);
     }
 
     public function formatCreatedAt()
