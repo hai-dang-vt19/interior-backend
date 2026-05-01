@@ -1,224 +1,180 @@
 @extends('site.base')
 
-{{-- Style SCSS (nested): resources/scss/pages/_site-home.scss — import qua resources/scss/custom.scss --}}
 @section('content')
-    {{-- Hero + slider danh mục; danh sách SP + lọc trong .container bên dưới --}}
-    <div class="site-full-header mb-4">
-        <div class="site-hero">
-            <div class="site-hero_title">
-                <h1 class="h2">Chung Si Interior</h1>
-            </div>
-            <div class="site-hero_swiper_front">
-                <div class="swiper" id="site-hero-swiper-front">
-                    <div class="swiper-wrapper">
-                        @forelse ($heroBannerBySide['left'] ?? [] as $bannerItem)
-                            @php($bannerProduct = $bannerItem->product)
-                            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($bannerProduct->images->firstWhere('is_primary', true))->image_url ?: optional($bannerProduct->images->first())->image_url))
-                            <div class="swiper-slide">
-                                <a href="{{ route('site.products.show', $bannerProduct->id) }}" class="site-hero-slide text-decoration-none">
-                                    <div class="site-hero-visual" aria-hidden="true">
-                                        @if ($mainImageUrl)
-                                            <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
-                                        @else
-                                            <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
-                                        @endif
-                                    </div>
-                                    <p class="site-hero-text">
-                                        <span>
-                                            {{ $bannerProduct->name }}
-                                        </span><br>
-                                        {{ $bannerProduct->description }}
-                                    </p>
-                                </a>
-                            </div>
-                        @empty
-                            <div class="swiper-slide">
-                                <div class="site-hero-slide">
-                                    <div class="site-hero-visual" aria-hidden="true">
-                                        <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
-                                    </div>
-                                    <p class="site-hero-text">Chưa có dữ liệu</p>
+    @php($categoryItems = collect($categories ?? []))
+    @php($homeCategorySlideItems = collect($homeCategorySlides ?? []))
+
+    <section class="nx-home">
+        <div class="nx-topline mb-3 d-flex justify-content-between flex-wrap gap-2">
+            <span>NOI THAT CAO CAP</span>
+            <span>HOTLINE: 0903 884 358</span>
+            <span>THIET KE NOI THAT TOAN DIEN</span>
+        </div>
+
+        <div class="nx-hero-grid mb-4">
+            <div class="swiper nx-hero-main nx-hero-main-swiper">
+                <div class="swiper-wrapper">
+                    @forelse (($heroBannerBySide['left'] ?? collect()) as $leftBanner)
+                        @php($heroProduct = $leftBanner->product ?? null)
+                        @php($heroImage = $heroProduct ? \App\Models\ProductImage::resolvePublicUrl(optional($heroProduct->images->firstWhere('is_primary', true))->image_url ?: optional($heroProduct->images->first())->image_url) : asset('storage/images/image_default.jpg'))
+                        <div class="swiper-slide">
+                            <a href="{{ $heroProduct ? route('site.products.show', $heroProduct->id) : route('site.products.index') }}" class="nx-hero-main-link text-decoration-none">
+                                <img src="{{ $heroImage }}" alt="{{ $heroProduct?->name ?? 'Noi that cao cap' }}">
+                                <div class="nx-overlay">
+                                    <h1 class="nx-title">{{ $heroProduct?->name ?? 'Khong gian song dinh nghia boi su tinh gian' }}</h1>
+                                    <p class="nx-sub">{{ $heroProduct?->description ?? 'Kham pha bo suu tap noi that hien dai cho phong khach, phong an va phong ngu.' }}</p>
                                 </div>
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-            </div>
-            <div class="site-hero_swiper_back">
-                <div class="swiper" id="site-hero-swiper-back">
-                    <div class="swiper-wrapper">
-                        @forelse ($heroBannerBySide['right'] ?? [] as $bannerItem)
-                            @php($bannerProduct = $bannerItem->product)
-                            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($bannerProduct->images->firstWhere('is_primary', true))->image_url ?: optional($bannerProduct->images->first())->image_url))
-                            <div class="swiper-slide">
-                                <a href="{{ route('site.products.show', $bannerProduct->id) }}" class="site-hero-slide text-decoration-none">
-                                    <div class="site-hero-visual" aria-hidden="true">
-                                        @if ($mainImageUrl)
-                                            <img src="{{ $mainImageUrl }}" alt="{{ $bannerProduct->name }}">
-                                        @else
-                                            <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
-                                        @endif
-                                    </div>
-                                    <p class="site-hero-text">
-                                        <span>
-                                            {{ $bannerProduct->name }}
-                                        </span><br>
-                                        {{ $bannerProduct->description }}
-                                    </p>
-                                </a>
-                            </div>
-                        @empty
-                            <div class="swiper-slide">
-                                <div class="site-hero-slide">
-                                    <div class="site-hero-visual" aria-hidden="true">
-                                        <img src="{{ asset('storage/images/image_default.jpg') }}" alt="">
-                                    </div>
-                                    <p class="site-hero-text">Chưa có dữ liệu banner cột phải.</p>
+                            </a>
+                        </div>
+                    @empty
+                        <div class="swiper-slide">
+                            <a href="{{ route('site.products.index') }}" class="nx-hero-main-link text-decoration-none">
+                                <img src="{{ asset('storage/images/image_default.jpg') }}" alt="Noi that cao cap">
+                                <div class="nx-overlay">
+                                    <h1 class="nx-title">Khong gian song dinh nghia boi su tinh gian</h1>
+                                    <p class="nx-sub">Kham pha bo suu tap noi that hien dai cho phong khach, phong an va phong ngu.</p>
                                 </div>
-                            </div>
-                        @endforelse
-                    </div>
+                            </a>
+                        </div>
+                    @endforelse
                 </div>
+                <div class="swiper-pagination nx-hero-main-pagination"></div>
+            </div>
+
+            <div class="d-flex flex-column gap-3">
+                @foreach ($homeCategorySlideItems->take(2) as $block)
+                    @php($cat = $block['category'])
+                    @php($first = collect($block['products'] ?? [])->first())
+                    @php($firstImage = \App\Models\ProductImage::resolvePublicUrl(optional($first?->images?->firstWhere('is_primary', true))->image_url ?: optional($first?->images?->first())->image_url))
+                    <a href="{{ route('site.products.index', ['category_id' => $cat->id]) }}" class="nx-hero-side-card text-decoration-none">
+                        <img src="{{ $firstImage ?: asset('storage/images/image_default.jpg') }}" alt="{{ $cat->name }}">
+                        <div class="nx-overlay">
+                            <h2 class="h5 mb-1 text-white">{{ $cat->name }}</h2>
+                            <p class="nx-sub mb-0">Xem bo suu tap</p>
+                        </div>
+                    </a>
+                @endforeach
             </div>
         </div>
 
-        @foreach ($homeCategorySlides as $index => $block)
-            @php($cat = $block['category'])
-            @php($catProducts = $block['products'])
-            <section class="site-home-category-block py-4">
-                <div class="container">
-                    <h2 class="h5 site-section-title mb-3">{{ $cat->name }}</h2>
-                </div>
-                <div class="container">
-                    @if ($catProducts->isEmpty())
-                        <p class="site-muted small mb-0">Chưa có sản phẩm trong danh mục này.</p>
-                    @else
-                        <div class="swiper site-category-swiper site-category-swiper--{{ $index }}" data-category-swiper>
-                            <div class="swiper-wrapper">
-                                @foreach ($catProducts as $product)
-                                    @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
-                                    <div class="swiper-slide">
-                                        <a href="{{ route('site.products.show', $product->id) }}" class="text-decoration-none text-body">
-                                            <div class="site-category-card">
-                                                @if ($mainImageUrl)
-                                                    <div class="site-category-card-img-wrap">
-                                                        <img src="{{ $mainImageUrl }}" class="site-category-card-img" alt="{{ $product->name }}" loading="lazy">
-                                                    </div>
-                                                @else
-                                                    <div class="site-category-card-img-wrap">
-                                                        <img src="{{ asset('storage/images/image_default.jpg') }}" class="site-category-card-img" alt="Image Default" loading="lazy">
-                                                    </div>
-                                                @endif
-                                                <div class="site-category-card-body">
-                                                    <span class="small fw-semibold d-block text-truncate">{{ $product->name }}</span>
-                                                    <span class="small site-muted">{{ number_format((float) ($product->discount_price ?? $product->price), 0, ',', '.') }} đ</span>
-                                                </div>
-                                            </div>
-                                        </a>
-                                    </div>
-                                @endforeach
-                            </div>
-                        </div>
-                    @endif
-                </div>
-            </section>
-        @endforeach
-    </div>
-
-    <div class="d-flex justify-content-between align-items-center site-page-head">
-        <div>
-            <h4 class="mb-0 site-section-title">Sản phẩm nội thất</h4>
-            <small class="site-muted">Khám phá bộ sưu tập dành cho không gian sống hiện đại</small>
+        <div class="mb-4">
+            <div class="nx-chip-row">
+                @foreach ($categoryItems->take(12) as $category)
+                    <a href="{{ route('site.products.index', ['category_id' => $category->id]) }}" class="nx-chip">{{ $category->name }}</a>
+                @endforeach
+            </div>
         </div>
-    </div>
 
-    <div class="card mb-4 site-filter-card">
-        <div class="card-body">
-            <form class="row g-2" method="GET" action="{{ route('site.home') }}">
-                <div class="col-md-5">
-                    <input type="text" class="form-control" name="keyword" value="{{ $keyword }}" placeholder="Tìm kiếm theo tên sản phẩm">
-                </div>
-                <div class="col-md-4">
-                    <select class="form-select" name="category_id">
-                        <option value="0">-- Tất cả danh mục --</option>
-                        @foreach ($categories as $category)
-                            <option value="{{ $category->id }}" {{ $categoryId === $category->id ? 'selected' : '' }}>
-                                {{ $category->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="col-md-3 d-grid">
-                    <button class="btn btn-primary" type="submit">Lọc sản phẩm</button>
-                </div>
-            </form>
+        <div class="card mb-4 border-0 nx-filter-card">
+            <div class="card-body">
+                <form class="row g-2" method="GET" action="{{ route('site.home') }}">
+                    <div class="col-lg-5">
+                        <input type="text" class="form-control" name="keyword" value="{{ $keyword }}" placeholder="Tim kiem san pham...">
+                    </div>
+                    <div class="col-lg-4">
+                        <select class="form-select" name="category_id">
+                            <option value="0">Tat ca danh muc</option>
+                            @foreach ($categoryItems as $category)
+                                <option value="{{ $category->id }}" {{ $categoryId === $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+                    <div class="col-lg-3 d-grid">
+                        <button class="btn btn-dark" type="submit">Loc san pham</button>
+                    </div>
+                </form>
+            </div>
         </div>
-    </div>
 
-    <div class="row g-3">
-        @forelse ($products as $product)
-            @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
-            <div class="col-md-3 col-sm-6">
-                <div class="card h-100 site-product-card">
-                    @if ($mainImageUrl)
-                        <img src="{{ $mainImageUrl }}" class="card-img-top site-product-img site-skeleton-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
-                    @else
-                        <img src="{{ asset('storage/images/image_default.jpg') }}" class="card-img-top site-product-img site-skeleton-image" alt="Image Default" loading="lazy" onload="this.classList.add('loaded')">
-                    @endif
-                    <div class="card-body">
-                        <div class="small mb-1">
-                            <span class="site-badge site-badge-neutral">{{ $product->category?->name ?? 'Chưa phân loại' }}</span>
-                        </div>
-                        <h6 class="card-title">{{ $product->name }}</h6>
-                        <div class="site-price">
-                            {{ number_format((float) ($product->discount_price ?? $product->price), 0, ',', '.') }} đ
-                        </div>
-                        @php($stockPercent = min(100, max(3, (int) round(((int) $product->quantity / 100) * 100))))
-                        <div class="mt-2">
-                            <div class="site-stock-progress">
-                                <div class="site-stock-progress-bar" style="width: {{ $stockPercent }}%"></div>
-                            </div>
-                            <small class="site-muted">Tồn kho: {{ (int) $product->quantity }}</small>
-                        </div>
+        <section class="mb-4">
+            <h2 class="nx-sec-title">San pham moi</h2>
+            <div class="row g-3">
+                @forelse ($products as $product)
+                    <div class="col-xl-3 col-md-4 col-sm-6">
+                        @include('site.component.product-card', ['product' => $product])
                     </div>
-                    <div class="card-footer bg-white border-0 pt-0 pb-3">
-                        <a href="{{ route('site.products.show', $product->id) }}" class="btn btn-sm btn-outline-dark w-100 mb-2">Xem chi tiết</a>
-                        @if (auth()->guard('customer')->check())
-                            <button
-                                type="button"
-                                class="btn btn-sm btn-primary w-100 btn-add-to-cart-ajax"
-                                data-product-id="{{ $product->id }}"
-                                data-quantity="1"
-                            >
-                                Thêm vào giỏ
-                            </button>
-                        @else
-                            <a href="{{ route('site.login') }}" class="btn btn-sm btn-primary w-100">Đăng nhập để mua</a>
-                        @endif
+                @empty
+                    <div class="col-12">
+                        @include('site.component.empty-state', [
+                            'title' => 'Chua co san pham phu hop',
+                            'description' => 'Hay thu thay doi tu khoa hoac danh muc tim kiem.',
+                            'actionUrl' => route('site.home'),
+                            'actionText' => 'Xoa bo loc',
+                        ])
                     </div>
+                @endforelse
+            </div>
+            <div class="mt-4">
+                {{ $products->links('vendor.pagination.bootstrap-5') }}
+            </div>
+        </section>
+
+        <section class="nx-idea-wrap">
+            <div class="row g-4">
+                <div class="col-lg-6">
+                    <h2 class="nx-sec-title mb-2">Ve Chung Si Interior</h2>
+                    <p class="mb-2">Thuong hieu noi that huong den khong gian song tinh te, tien nghi va ben vung. Chung toi mang den giai phap noi that tron goi cho gia dinh hien dai.</p>
+                    <a href="{{ route('site.products.index') }}" class="btn btn-outline-dark btn-sm mt-2">Kham pha bo suu tap</a>
+                </div>
+                <div class="col-lg-6">
+                    <h3 class="h5 mb-2">Goc cam hung</h3>
+                    @foreach ($homeCategorySlideItems->take(3) as $block)
+                        <div class="nx-idea-card">
+                            <strong>{{ $block['category']->name }}</strong>
+                            <p class="mb-0 text-muted">Goi y bo tri va lua chon noi that theo phong cach hien dai, toi gian va am cung.</p>
+                        </div>
+                    @endforeach
                 </div>
             </div>
-        @empty
-            <div class="col-12">
-                @include('site.component.empty-state', [
-                    'title' => 'Chưa có sản phẩm phù hợp',
-                    'description' => 'Hãy thử thay đổi từ khóa hoặc danh mục tìm kiếm.',
-                    'actionUrl' => route('site.home'),
-                    'actionText' => 'Xóa bộ lọc',
-                ])
-            </div>
-        @endforelse
-    </div>
-
-    <div class="mt-4">
-        {{ $products->links('vendor.pagination.bootstrap-5') }}
-    </div>
+        </section>
+    </section>
 @endsection
 
 @section('scripts')
 <script type="module">
     $(document).ready(function () {
-        $('.btn-add-to-cart-ajax').on('click', function () {
+        if (typeof window.Swiper !== 'undefined') {
+            const heroSlideCount = document.querySelectorAll('.nx-hero-main-swiper .swiper-slide').length;
+            const canLoop = heroSlideCount > 1;
+            new Swiper('.nx-hero-main-swiper', {
+                loop: canLoop,
+                autoplay: canLoop
+                    ? {
+                        delay: 4000,
+                        disableOnInteraction: false,
+                    }
+                    : false,
+                pagination: {
+                    el: '.nx-hero-main-pagination',
+                    clickable: true,
+                },
+            });
+        }
+
+        const navigateToDetail = (el) => {
+            const href = el?.dataset?.href;
+            if (href) {
+                window.location.href = href;
+            }
+        };
+
+        $('.nx-product-card-link').on('click', function (event) {
+            if ($(event.target).closest('.nx-no-card-nav').length) {
+                return;
+            }
+            navigateToDetail(this);
+        });
+
+        $('.nx-product-card-link').on('keydown', function (event) {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                navigateToDetail(this);
+            }
+        });
+
+        $('.btn-add-to-cart-ajax').on('click', function (event) {
+            event.preventDefault();
+            event.stopPropagation();
             const $btn = $(this);
             const originalText = $btn.text();
             const productId = Number($btn.data('product-id'));

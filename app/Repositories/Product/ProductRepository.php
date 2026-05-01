@@ -134,11 +134,15 @@ class ProductRepository implements ProductRepositoryInterface
      */
     private function syncVariantsAndSpecs(Product $product, array $variants, array $specs): void
     {
+        $usedVariantSkus = [];
         $variantRows = collect($variants)
             ->filter(fn ($row) => is_array($row))
-            ->map(function (array $row) {
+            ->map(function (array $row) use (&$usedVariantSkus) {
                 return [
-                    'sku_variant' => trim((string) ($row['sku_variant'] ?? '')) ?: $this->generateVariantSku(),
+                    'sku_variant' => $this->ensureUniqueVariantSku(
+                        trim((string) ($row['sku_variant'] ?? '')) ?: null,
+                        $usedVariantSkus
+                    ),
                     'color_name' => trim((string) ($row['color_name'] ?? '')) ?: null,
                     'color_hex' => trim((string) ($row['color_hex'] ?? '')) ?: null,
                     'material_main' => trim((string) ($row['material_main'] ?? '')) ?: null,
@@ -250,10 +254,38 @@ class ProductRepository implements ProductRepositoryInterface
     private function generateVariantSku(): string
     {
         do {
-            $sku = 'PV'.now()->timestamp;
+            $sku = 'PV'.now()->format('ymdHisv').strtoupper(Str::random(3));
         } while (ProductVariant::query()->where('sku_variant', $sku)->exists());
 
         return $sku;
+    }
+
+    /**
+     * Đảm bảo SKU variant là duy nhất cả trong payload hiện tại và trong DB.
+     *
+     * @param  array<int, string>  $usedSkus
+     */
+    private function ensureUniqueVariantSku(?string $preferredSku, array &$usedSkus): string
+    {
+        $baseSku = trim((string) $preferredSku);
+        if ($baseSku === '') {
+            $baseSku = $this->generateVariantSku();
+        }
+
+        $candidate = $baseSku;
+        $suffix = 1;
+
+        while (
+            in_array($candidate, $usedSkus, true)
+            || ProductVariant::query()->where('sku_variant', $candidate)->exists()
+        ) {
+            $suffix++;
+            $candidate = $baseSku.'-'.$suffix;
+        }
+
+        $usedSkus[] = $candidate;
+
+        return $candidate;
     }
 
     public function destroy(int $id): void

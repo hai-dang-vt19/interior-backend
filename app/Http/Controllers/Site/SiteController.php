@@ -41,6 +41,26 @@ class SiteController extends Controller
         return view('site.product-show', $productData);
     }
 
+    public function products(Request $request)
+    {
+        $keyword = trim((string) $request->input('keyword', ''));
+        $categoryId = (int) $request->input('category_id', 0);
+        $minPrice = $request->filled('min_price') ? (float) $request->input('min_price') : null;
+        $maxPrice = $request->filled('max_price') ? (float) $request->input('max_price') : null;
+        $sort = trim((string) $request->input('sort', 'newest'));
+        $homeData = $this->siteService->getHomeData($request->query());
+
+        return view('site.products', [
+            'products' => $homeData['products'],
+            'categories' => $homeData['categories'],
+            'keyword' => $keyword,
+            'categoryId' => $categoryId,
+            'minPrice' => $minPrice,
+            'maxPrice' => $maxPrice,
+            'sort' => $sort,
+        ]);
+    }
+
     /**
      * Trang thông tin tài khoản khách hàng.
      */

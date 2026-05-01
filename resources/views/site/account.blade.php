@@ -14,6 +14,21 @@
     @endphp
 
     <section class="site-account-page">
+        <header class="site-account-hero">
+            <div class="site-account-hero-copy">
+                <p class="site-account-kicker mb-1">TAI KHOAN KHACH HANG</p>
+                <h1 class="site-account-heading mb-2">Quan ly thong tin ca nhan</h1>
+                <p class="site-account-subtle mb-0">Cap nhat ho so, doi mat khau va quan ly dia chi giao hang tren mot giao dien gon gang, de dung.</p>
+            </div>
+            <div class="site-account-hero-meta">
+                <span class="site-account-hero-label">Xin chao</span>
+                <strong>{{ $customer->full_name ?? 'Khach hang' }}</strong>
+                @if (!empty($customer->email))
+                    <small>{{ $customer->email }}</small>
+                @endif
+            </div>
+        </header>
+
         <div class="site-account-tabs" role="tablist" aria-label="Tùy chọn tài khoản">
             <button
                 type="button"
@@ -44,6 +59,7 @@
             </button>
         </div>
 
+        <div class="site-account-shell">
         <div
             class="site-account-panel {{ $activeTab === 'info' ? 'is-active' : '' }}"
             data-tab-pane="info"
@@ -253,6 +269,7 @@
             @empty
                 <p class="site-account-empty">Chưa có địa chỉ nào. Hãy thêm địa chỉ phía trên.</p>
             @endforelse
+        </div>
         </div>
     </section>
 @endsection

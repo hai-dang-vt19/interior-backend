@@ -8,6 +8,7 @@ use App\Http\Controllers\Site\SiteProductReviewController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', [SiteController::class, 'home'])->name('site.home');
+Route::get('products', [SiteController::class, 'products'])->name('site.products.index');
 Route::get('products/{id}', [SiteController::class, 'showProduct'])->name('site.products.show');
 Route::middleware('guest:customer')->group(function () {
     Route::get('login', [SiteAuthController::class, 'showLogin'])->name('site.login');
@@ -32,6 +33,7 @@ Route::middleware('customer.auth')->group(function () {
     Route::post('checkout', [SiteOrderController::class, 'placeOrder'])->name('site.checkout.submit');
     Route::get('orders', [SiteOrderController::class, 'index'])->name('site.orders.index');
     Route::get('orders/{id}', [SiteOrderController::class, 'show'])->name('site.orders.show');
+    Route::post('orders/{id}/reorder', [SiteOrderController::class, 'reorder'])->name('site.orders.reorder');
     Route::post('products/{productId}/reviews', [SiteProductReviewController::class, 'store'])->name('site.products.reviews.store');
     Route::patch('products/{productId}/reviews/{reviewId}', [SiteProductReviewController::class, 'update'])->name('site.products.reviews.update');
 });

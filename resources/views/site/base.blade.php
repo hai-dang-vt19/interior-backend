@@ -1,18 +1,12 @@
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ config('app.name', 'Chung Si Interior') }}</title>
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css"
-    />
-    @vite([
-        'resources/scss/app.scss',
-        'resources/scss/custom.scss',
-        'resources/js/app.js',
-    ])
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
+    @vite(['resources/scss/app.scss', 'resources/scss/custom.scss', 'resources/js/app.js'])
     <script>
         (() => {
             const saved = localStorage.getItem('site-theme');
@@ -22,60 +16,96 @@
         })();
     </script>
 </head>
+
 <body class="site-body">
     @php($siteCustomer = auth()->guard('customer')->user())
     <header class="site-header site-navbar sticky-top">
         <div class="container">
             <div class="site-nav-bar">
-                <a class="site-nav-home site-nav-icon-link" href="{{ route('site.home') }}" title="Trang chủ" aria-label="Trang chủ">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                        <path d="M3 10.5 12 3l9 7.5"/>
-                        <path d="M5.25 9.75V20.4c0 .33.27.6.6.6h4.65v-6h3v6h4.65c.33 0 .6-.27.6-.6V9.75"/>
+                <a class="site-nav-home site-nav-icon-link" href="{{ route('site.home') }}" title="Trang chủ"
+                    aria-label="Trang chủ">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"
+                        stroke-linejoin="round" aria-hidden="true">
+                        <path d="M3 10.5 12 3l9 7.5" />
+                        <path d="M5.25 9.75V20.4c0 .33.27.6.6.6h4.65v-6h3v6h4.65c.33 0 .6-.27.6-.6V9.75" />
                     </svg>
                 </a>
 
                 <div class="site-nav-actions">
-                    <button type="button" class="site-nav-icon-btn icon-light" id="siteThemeToggle" aria-label="Đổi giao diện sáng tối">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                            <path d="M12 17.01c2.76 0 5.01-2.25 5.01-5.01S14.76 6.99 12 6.99 6.99 9.24 6.99 12s2.25 5.01 5.01 5.01M12 9c1.66 0 3.01 1.35 3.01 3.01s-1.35 3.01-3.01 3.01-3.01-1.35-3.01-3.01S10.34 9 12 9m1 10h-2v3h2zm0-17h-2v3h2zM2 11h3v2H2zm17 0h3v2h-3zM4.22 18.36l.71.71.71.71 1.06-1.06 1.06-1.06-.71-.71-.71-.71-1.06 1.06zM19.78 5.64l-.71-.71-.71-.71-1.06 1.06-1.06 1.06.71.71.71.71 1.06-1.06zm-12.02.7L6.7 5.28 5.64 4.22l-.71.71-.71.71L5.28 6.7l1.06 1.06.71-.71zm8.48 11.32 1.06 1.06 1.06 1.06.71-.71.71-.71-1.06-1.06-1.06-1.06-.71.71z"/>
+                    <button type="button" class="site-nav-icon-btn icon-light" id="siteThemeToggle"
+                        aria-label="Đổi giao diện sáng tối">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                            viewBox="0 0 24 24" aria-hidden="true">
+                            <path
+                                d="M12 17.01c2.76 0 5.01-2.25 5.01-5.01S14.76 6.99 12 6.99 6.99 9.24 6.99 12s2.25 5.01 5.01 5.01M12 9c1.66 0 3.01 1.35 3.01 3.01s-1.35 3.01-3.01 3.01-3.01-1.35-3.01-3.01S10.34 9 12 9m1 10h-2v3h2zm0-17h-2v3h2zM2 11h3v2H2zm17 0h3v2h-3zM4.22 18.36l.71.71.71.71 1.06-1.06 1.06-1.06-.71-.71-.71-.71-1.06 1.06zM19.78 5.64l-.71-.71-.71-.71-1.06 1.06-1.06 1.06.71.71.71.71 1.06-1.06zm-12.02.7L6.7 5.28 5.64 4.22l-.71.71-.71.71L5.28 6.7l1.06 1.06.71-.71zm8.48 11.32 1.06 1.06 1.06 1.06.71-.71.71-.71-1.06-1.06-1.06-1.06-.71.71z" />
                         </svg>
                     </button>
 
+                    @guest('customer')
+                        <div class="site-nav-guest-auth">
+                            <button type="button" class="site-nav-guest-auth-btn js-open-auth-modal"
+                                data-auth-tab="login">Đăng nhập</button>
+                            <button type="button" class="site-nav-guest-auth-btn js-open-auth-modal"
+                                data-auth-tab="register">Đăng ký</button>
+                        </div>
+                    @endguest
+
                     @if ($siteCustomer)
-                        <a class="site-nav-cart-slot site-nav-cart-link" data-bs-toggle="offcanvas" href="#siteCartPanel" role="button" aria-controls="siteCartPanel">
-                            <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" viewBox="0 0 24 24" >
-                                <path d="M21 4H6.17l-.18-1.15A1 1 0 0 0 5 2H2v2h2.14l1.87 12.15A1 1 0 0 0 7 17h12v-2H7.86l-.31-2H19c.45 0 .84-.3.96-.73l2-7A1 1 0 0 0 21 3.99Zm-2.75 7H7.24l-.77-5h13.2l-1.43 5ZM8 18a2 2 0 1 0 0 4 2 2 0 1 0 0-4m9 0a2 2 0 1 0 0 4 2 2 0 1 0 0-4"></path>
+                        <a class="site-nav-cart-slot site-nav-cart-link" data-bs-toggle="offcanvas"
+                            href="#siteCartPanel" role="button" aria-controls="siteCartPanel">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor"
+                                viewBox="0 0 24 24">
+                                <path
+                                    d="M21 4H6.17l-.18-1.15A1 1 0 0 0 5 2H2v2h2.14l1.87 12.15A1 1 0 0 0 7 17h12v-2H7.86l-.31-2H19c.45 0 .84-.3.96-.73l2-7A1 1 0 0 0 21 3.99Zm-2.75 7H7.24l-.77-5h13.2l-1.43 5ZM8 18a2 2 0 1 0 0 4 2 2 0 1 0 0-4m9 0a2 2 0 1 0 0 4 2 2 0 1 0 0-4">
+                                </path>
                             </svg>
                         </a>
                     @endif
 
-                    <button
-                        type="button"
-                        class="site-nav-hamburger site-nav-icon-btn"
-                        id="siteNavMenuToggle"
-                        aria-controls="siteNavMenuPanel"
-                        aria-expanded="false"
-                        aria-label="Mở menu tài khoản"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true">
-                            <line x1="4" y1="6" x2="20" y2="6"/>
-                            <line x1="4" y1="12" x2="20" y2="12"/>
-                            <line x1="4" y1="18" x2="20" y2="18"/>
+                    <button type="button" class="site-nav-hamburger site-nav-icon-btn" id="siteNavMenuToggle"
+                        aria-controls="siteNavMenuPanel" aria-expanded="false" aria-label="Mở menu điều hướng">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                            fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                            aria-hidden="true">
+                            <line x1="4" y1="6" x2="20" y2="6" />
+                            <line x1="4" y1="12" x2="20" y2="12" />
+                            <line x1="4" y1="18" x2="20" y2="18" />
                         </svg>
                     </button>
                 </div>
 
                 <div id="siteNavMenuPanel" class="site-nav-menu-panel" hidden>
-                    @guest('customer')
-                        <a href="{{ route('site.register') }}" class="site-nav-pill">Đăng ký</a>
-                        <a href="{{ route('site.login') }}" class="site-nav-pill">Đăng nhập</a>
-                    @else
-                        <a href="{{ route('site.account') }}" class="site-nav-pill">Thông tin cá nhân</a>
-                        <form action="{{ route('site.logout') }}" method="POST" class="site-nav-pill-form">
-                            @csrf
-                            <button type="submit" class="site-nav-pill">Đăng xuất</button>
-                        </form>
-                    @endguest
+                    @php(
+    $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
+)
+                    @php($menuCategoryColumns = $menuCategories->chunk(max(1, (int) ceil($menuCategories->count() / 3))))
+
+                    <div class="site-nav-menu-quick-links">
+                        <a href="{{ route('site.home') }}" class="site-nav-menu-link">Trang chủ</a>
+                        <a href="{{ route('site.products.index') }}" class="site-nav-menu-link">Sản phẩm</a>
+                        @auth('customer')
+                            <a href="{{ route('site.account') }}" class="site-nav-menu-link">Tài khoản</a>
+                            <a href="{{ route('site.orders.index') }}" class="site-nav-menu-link">Đơn hàng</a>
+                            <form action="{{ route('site.logout') }}" method="POST" class="site-nav-pill-form">
+                                @csrf
+                                <button type="submit" class="site-nav-menu-link site-nav-menu-link-btn">Đăng xuất</button>
+                            </form>
+                        @endauth
+                    </div>
+
+                    <div class="site-nav-category-grid">
+                        @foreach ($menuCategoryColumns as $column)
+                            <div class="site-nav-category-col">
+                                @foreach ($column as $category)
+                                    <a href="{{ route('site.products.index', ['category_id' => $category->id]) }}"
+                                        class="site-nav-category-link">
+                                        {{ $category->name }}
+                                    </a>
+                                @endforeach
+                            </div>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </div>
@@ -88,33 +118,89 @@
     </main>
     <div class="toast-container position-fixed top-0 end-0 p-3 site-toast-wrap">
         @if (session('dataSuccess'))
-            <div class="toast align-items-center text-bg-success border-0 show mb-2 site-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
+            <div class="toast align-items-center text-bg-success border-0 show mb-2 site-toast" role="alert"
+                aria-live="assertive" aria-atomic="true" data-bs-delay="3000">
                 <div class="d-flex">
                     <div class="toast-body">{{ session('dataSuccess') }}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
                 </div>
             </div>
         @endif
         @if (session('dataError') || $errors->any())
-            <div class="toast align-items-center text-bg-danger border-0 show mb-2 site-toast" role="alert" aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
+            <div class="toast align-items-center text-bg-danger border-0 show mb-2 site-toast" role="alert"
+                aria-live="assertive" aria-atomic="true" data-bs-delay="4000">
                 <div class="d-flex">
                     <div class="toast-body">{{ session('dataError') ?: $errors->first() }}</div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                        aria-label="Close"></button>
                 </div>
             </div>
         @endif
     </div>
 
+    @guest('customer')
+        <div class="modal fade site-auth-modal" id="siteAuthModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+                <div class="modal-content site-auth-modal-content">
+                    <div class="site-auth-modal-visual"
+                        style="background-image: url({{ asset('storage/images/image_login.jpg') }});"></div>
+                    <div class="site-auth-modal-form-wrap">
+                        <button type="button" class="btn-close site-auth-modal-close" data-bs-dismiss="modal"
+                            aria-label="Close"></button>
+                        <div class="site-auth-tabs mb-3">
+                            <button type="button" class="site-auth-tab-btn is-active" data-auth-target="login">Dang
+                                nhap</button>
+                            <button type="button" class="site-auth-tab-btn" data-auth-target="register">Dang ky</button>
+                        </div>
 
-    <div class="offcanvas offcanvas-end site-cart-offcanvas"
-        tabindex="-1"
-        id="siteCartPanel"
-        data-bs-backdrop="static"
-        aria-labelledby="siteCartPanelLabel"
-    >
+                        <div class="site-auth-panel is-active" data-auth-panel="login">
+                            <h5 class="mb-3">Member Login</h5>
+                            <form action="{{ route('site.login.submit') }}" method="POST" class="d-grid gap-2">
+                                @csrf
+                                <input type="hidden" name="auth_form" value="login">
+                                <input type="email" class="form-control" name="email"
+                                    value="{{ old('auth_form') === 'login' ? old('email') : '' }}" placeholder="Email"
+                                    required>
+                                <input type="password" class="form-control" name="password" placeholder="Password"
+                                    required>
+                                <button type="submit" class="btn btn-success w-100 mt-1">LOGIN</button>
+                            </form>
+                        </div>
+
+                        <div class="site-auth-panel" data-auth-panel="register">
+                            <h5 class="mb-3">Create Account</h5>
+                            <form action="{{ route('site.register.submit') }}" method="POST" class="d-grid gap-2">
+                                @csrf
+                                <input type="hidden" name="auth_form" value="register">
+                                <input type="text" class="form-control" name="full_name"
+                                    value="{{ old('auth_form') === 'register' ? old('full_name') : '' }}"
+                                    placeholder="Ho ten" required>
+                                <input type="email" class="form-control" name="email"
+                                    value="{{ old('auth_form') === 'register' ? old('email') : '' }}" placeholder="Email"
+                                    required>
+                                <input type="text" class="form-control" name="phone"
+                                    value="{{ old('auth_form') === 'register' ? old('phone') : '' }}"
+                                    placeholder="So dien thoai">
+                                <input type="password" class="form-control" name="password" placeholder="Mat khau"
+                                    required>
+                                <input type="password" class="form-control" name="password_confirmation"
+                                    placeholder="Xac nhan mat khau" required>
+                                <button type="submit" class="btn btn-success w-100 mt-1">DANG KY</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endguest
+
+
+    <div class="offcanvas offcanvas-end site-cart-offcanvas" tabindex="-1" id="siteCartPanel"
+        data-bs-backdrop="static" aria-labelledby="siteCartPanelLabel">
         <div class="offcanvas-header">
-          <h5 class="offcanvas-title" id="siteCartPanelLabel">Giỏ hàng</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            <h5 class="offcanvas-title" id="siteCartPanelLabel">Giỏ hàng</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
         </div>
         <div class="offcanvas-body p-0">
             <div id="siteCartPanelBody" class="site-cart-panel-body"></div>
@@ -123,7 +209,8 @@
                     <span class="site-cart-panel-total-label">Tổng tiền:</span>
                     <strong id="siteCartTotalText" class="site-cart-panel-total-value">0 đ</strong>
                 </div>
-                <button id="siteCartCheckoutBtn" type="button" class="btn btn-secondary site-cart-panel-checkout" disabled>
+                <button id="siteCartCheckoutBtn" type="button" class="btn btn-secondary site-cart-panel-checkout"
+                    disabled>
                     Thanh toán
                 </button>
             </div>
@@ -144,14 +231,14 @@
             if (toggleBtn) {
                 toggleBtn.classList.remove('icon-dark', 'icon-light');
                 toggleBtn.classList.add(isDark ? 'icon-dark' : 'icon-light');
-                toggleBtn.innerHTML = isDark
-                ? `
+                toggleBtn.innerHTML = isDark ?
+                    `
                     <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         fill="currentColor" viewBox="0 0 24 24" >
                         <path d="M20.71 13.51c-.78.23-1.58.35-2.38.35-4.52 0-8.2-3.68-8.2-8.2 0-.8.12-1.6.35-2.38.11-.35.01-.74-.25-1s-.64-.36-1-.25A10.17 10.17 0 0 0 2 11.8C2 17.42 6.57 22 12.2 22c4.53 0 8.45-2.91 9.76-7.24.11-.35.01-.74-.25-1s-.64-.36-1-.25M12.2 20C7.68 20 4 16.32 4 11.8a8.15 8.15 0 0 1 4.18-7.15c-.03.34-.05.68-.05 1.02 0 5.62 4.57 10.2 10.2 10.2.34 0 .68-.02 1.02-.05C17.93 18.38 15.23 20 12.2 20M16 8l.94-2.06L19 5l-2.06-.94L16 2l-.94 2.06L13 5l2.06.94zm4.25-.5-.55 1.2-1.2.55 1.2.55.55 1.2.55-1.2 1.2-.55-1.2-.55z"></path>
                     </svg>
-                `
-                : `
+                ` :
+                    `
                     <svg  xmlns="http://www.w3.org/2000/svg" width="24" height="24"
                         fill="currentColor" viewBox="0 0 24 24" >
                         <path d="M12 17.01c2.76 0 5.01-2.25 5.01-5.01S14.76 6.99 12 6.99 6.99 9.24 6.99 12s2.25 5.01 5.01 5.01M12 9c1.66 0 3.01 1.35 3.01 3.01s-1.35 3.01-3.01 3.01-3.01-1.35-3.01-3.01S10.34 9 12 9m1 10h-2v3h2zm0-17h-2v3h2zM2 11h3v2H2zm17 0h3v2h-3zM4.22 18.36l.71.71.71.71 1.06-1.06 1.06-1.06-.71-.71-.71-.71-1.06 1.06zM19.78 5.64l-.71-.71-.71-.71-1.06 1.06-1.06 1.06.71.71.71.71 1.06-1.06zm-12.02.7L6.7 5.28 5.64 4.22l-.71.71-.71.71L5.28 6.7l1.06 1.06.71-.71zm8.48 11.32 1.06 1.06 1.06 1.06.71-.71.71-.71-1.06-1.06-1.06-1.06-.71.71z"></path>
@@ -173,6 +260,47 @@
                     menuToggle.setAttribute('aria-expanded', 'false');
                 }
             });
+        }
+
+        const authModalEl = document.getElementById('siteAuthModal');
+        const authTabButtons = Array.from(document.querySelectorAll('.site-auth-tab-btn'));
+        const authPanels = Array.from(document.querySelectorAll('.site-auth-panel'));
+        const authOpenButtons = Array.from(document.querySelectorAll('.js-open-auth-modal'));
+        const authModalInstance = authModalEl && window.bootstrap?.Modal ? new bootstrap.Modal(authModalEl) : null;
+        const initialAuthTab = @json(session('auth_tab') ?: old('auth_form') ?: request('auth'));
+        const shouldOpenAuthModal = @json((bool) (session('auth_tab') || old('auth_form') || request('auth')));
+
+        const setAuthTab = (tab) => {
+            const next = tab === 'register' ? 'register' : 'login';
+            authTabButtons.forEach((btn) => {
+                const active = btn.getAttribute('data-auth-target') === next;
+                btn.classList.toggle('is-active', active);
+            });
+            authPanels.forEach((panel) => {
+                const active = panel.getAttribute('data-auth-panel') === next;
+                panel.classList.toggle('is-active', active);
+            });
+        };
+
+        authTabButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                setAuthTab(btn.getAttribute('data-auth-target'));
+            });
+        });
+
+        authOpenButtons.forEach((btn) => {
+            btn.addEventListener('click', () => {
+                setAuthTab(btn.getAttribute('data-auth-tab'));
+                authModalInstance?.show();
+            });
+        });
+
+        if (initialAuthTab) {
+            setAuthTab(initialAuthTab);
+        }
+
+        if (shouldOpenAuthModal) {
+            authModalInstance?.show();
         }
 
         const cartPanelEl = document.getElementById('siteCartPanel');
@@ -212,13 +340,13 @@
             const id = Number(item.id);
             const outOfStock = Boolean(item.is_out_of_stock);
             const lineTotal = Number(item.price) * Number(item.quantity);
-            const image = item.image_url
-                ? `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="site-cart-item-image">`
-                : `<div class="site-cart-item-image site-cart-item-image--placeholder">No image</div>`;
+            const image = item.image_url ?
+                `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="site-cart-item-image">` :
+                `<div class="site-cart-item-image site-cart-item-image--placeholder">No image</div>`;
 
-            const quantityBlock = outOfStock
-                ? `<button class="site-cart-item-outofstock" type="button" disabled>Hết hàng</button>`
-                : `
+            const quantityBlock = outOfStock ?
+                `<button class="site-cart-item-outofstock" type="button" disabled>Hết hàng</button>` :
+                `
                     <div class="site-cart-item-qty" data-item-id="${id}">
                         <button type="button" class="site-cart-qty-btn" data-action="decrease" aria-label="Giảm số lượng">-</button>
                         <input type="number" class="site-cart-qty-input" min="1" value="${Number(item.quantity)}" data-item-id="${id}" />
@@ -301,7 +429,11 @@
         const patchCartItemQuantity = (itemId, qty) => {
             const updateUrl = buildCartItemUrl(cartItemUpdateRouteTemplate, itemId);
             if (!updateUrl) {
-                return $.Deferred().reject({ responseJSON: { message: 'ID sản phẩm giỏ không hợp lệ' } }).promise();
+                return $.Deferred().reject({
+                    responseJSON: {
+                        message: 'ID sản phẩm giỏ không hợp lệ'
+                    }
+                }).promise();
             }
             return $.ajax({
                 url: updateUrl,
@@ -320,7 +452,11 @@
         const deleteCartItem = (itemId) => {
             const deleteUrl = buildCartItemUrl(cartItemDeleteRouteTemplate, itemId);
             if (!deleteUrl) {
-                return $.Deferred().reject({ responseJSON: { message: 'ID sản phẩm giỏ không hợp lệ' } }).promise();
+                return $.Deferred().reject({
+                    responseJSON: {
+                        message: 'ID sản phẩm giỏ không hợp lệ'
+                    }
+                }).promise();
             }
             return $.ajax({
                 url: deleteUrl,
@@ -346,7 +482,9 @@
                     'X-Requested-With': 'XMLHttpRequest',
                 },
             }).done((res) => {
-                renderCart(res?.data ?? { items: [] });
+                renderCart(res?.data ?? {
+                    items: []
+                });
             }).fail(() => {
                 cartPanelBody.innerHTML = `<div class="site-cart-error">Không tải được dữ liệu giỏ hàng.</div>`;
             });
@@ -359,7 +497,9 @@
             const timer = setTimeout(() => {
                 patchCartItemQuantity(itemId, quantity)
                     .done((res) => {
-                        renderCart(res?.data ?? { items: [] });
+                        renderCart(res?.data ?? {
+                            items: []
+                        });
                     })
                     .fail((xhr) => {
                         const message = xhr?.responseJSON?.message || 'Cập nhật giỏ hàng thất bại';
@@ -417,10 +557,13 @@
                     const removeBtnOriginalHtml = removeBtn.innerHTML;
                     removeBtn.disabled = true;
                     removeBtn.classList.add('is-loading');
-                    removeBtn.innerHTML = `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
+                    removeBtn.innerHTML =
+                        `<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>`;
 
                     deleteCartItem(itemId)
-                        .done((res) => renderCart(res?.data ?? { items: [] }))
+                        .done((res) => renderCart(res?.data ?? {
+                            items: []
+                        }))
                         .fail(() => {
                             removeBtn.disabled = false;
                             removeBtn.classList.remove('is-loading');
@@ -447,7 +590,9 @@
                     const current = Number(input.value || 1);
                     const nextQty = action === 'decrease' ? Math.max(1, current - 1) : current + 1;
                     input.value = String(nextQty);
-                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', {
+                        bubbles: true
+                    }));
                 }
             });
         }
@@ -489,4 +634,5 @@
         }
     </script>
 </body>
+
 </html>
