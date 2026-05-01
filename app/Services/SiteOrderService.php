@@ -46,13 +46,18 @@ class SiteOrderService extends BaseService
         return $this->siteOrderRepository->createOrderFromCheckout($customerId, $cart, $checkoutItems, $payload);
     }
 
-    public function getOrdersByCustomer(int $customerId): LengthAwarePaginator
+    public function getOrdersByCustomer(int $customerId, array $filters = []): LengthAwarePaginator
     {
-        return $this->siteOrderRepository->getOrdersByCustomer($customerId);
+        return $this->siteOrderRepository->getOrdersByCustomer($customerId, $filters);
     }
 
     public function getOrderDetailByCustomer(int $customerId, int $orderId): Order
     {
         return $this->siteOrderRepository->getOrderDetailByCustomer($customerId, $orderId);
+    }
+
+    public function reorderItems(int $customerId, int $orderId): int
+    {
+        return $this->siteOrderRepository->reorderItems($customerId, $orderId);
     }
 }

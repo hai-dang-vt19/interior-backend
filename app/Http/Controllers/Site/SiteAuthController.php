@@ -17,7 +17,7 @@ class SiteAuthController extends Controller
 
     public function showLogin()
     {
-        return view('site.auth.login');
+        return redirect()->route('site.home', ['auth' => 'login']);
     }
 
     public function login(SiteLoginRequest $request)
@@ -25,7 +25,10 @@ class SiteAuthController extends Controller
         $credentials = $request->validated();
         $customer = $this->siteAuthService->attemptLogin($credentials['email'], $credentials['password']);
         if (!$customer) {
-            return redirect()->back()->with('dataError', 'Email hoặc mật khẩu không đúng')->withInput();
+            return redirect()->back()
+                ->with('dataError', 'Email hoặc mật khẩu không đúng')
+                ->with('auth_tab', 'login')
+                ->withInput();
         }
 
         Auth::guard('customer')->login($customer);
@@ -34,7 +37,7 @@ class SiteAuthController extends Controller
 
     public function showRegister()
     {
-        return view('site.auth.register');
+        return redirect()->route('site.home', ['auth' => 'register']);
     }
 
     public function register(SiteRegisterRequest $request)

@@ -15,6 +15,7 @@ interface SiteOrderRepositoryInterface
     public function getCartWithItems(int $customerId): Cart;
     public function getCheckoutItems(Cart $cart, string $selectedItemsCsv): Collection;
     public function createOrderFromCheckout(int $customerId, Cart $cart, Collection $checkoutItems, array $payload): Order;
-    public function getOrdersByCustomer(int $customerId): LengthAwarePaginator;
+    public function getOrdersByCustomer(int $customerId, array $filters = []): LengthAwarePaginator;
     public function getOrderDetailByCustomer(int $customerId, int $orderId): Order;
+    public function reorderItems(int $customerId, int $orderId): int;
 }

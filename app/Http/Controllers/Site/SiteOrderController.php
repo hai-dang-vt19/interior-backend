@@ -47,11 +47,16 @@ class SiteOrderController extends Controller
         return redirect()->route('site.orders.show', $order->id)->with('dataSuccess', 'Đặt hàng thành công');
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $orders = $this->siteOrderService->getOrdersByCustomer((int) auth()->guard('customer')->id());
+        $status = (int) $request->query('status', 0);
+        $filters = [];
+        if ($status > 0) {
+            $filters['status'] = $status;
+        }
+        $orders = $this->siteOrderService->getOrdersByCustomer((int) auth()->guard('customer')->id(), $filters);
 
-        return view('site.order.index', compact('orders'));
+        return view('site.order.index', compact('orders', 'status'));
     }
 
     public function show(int $id)
@@ -59,5 +64,16 @@ class SiteOrderController extends Controller
         $order = $this->siteOrderService->getOrderDetailByCustomer((int) auth()->guard('customer')->id(), $id);
 
         return view('site.order.show', compact('order'));
+    }
+
+    public function reorder(int $id)
+    {
+        $addedCount = $this->siteOrderService->reorderItems((int) auth()->guard('customer')->id(), $id);
+
+        if ($addedCount < 1) {
+            return redirect()->route('site.orders.show', $id)->with('dataError', 'Khong co san pham kha dung de mua lai');
+        }
+
+        return redirect()->route('site.cart.index')->with('dataSuccess', 'Da them '.$addedCount.' san pham vao gio hang');
     }
 }

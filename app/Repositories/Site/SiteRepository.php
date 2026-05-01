@@ -37,8 +37,11 @@ class SiteRepository implements SiteRepositoryInterface
     {
         $keyword = trim((string) ($params['keyword'] ?? ''));
         $categoryId = (int) ($params['category_id'] ?? 0);
+        $minPrice = isset($params['min_price']) && $params['min_price'] !== '' ? (float) $params['min_price'] : null;
+        $maxPrice = isset($params['max_price']) && $params['max_price'] !== '' ? (float) $params['max_price'] : null;
+        $sort = trim((string) ($params['sort'] ?? 'newest'));
 
-        return $this->productModel->query()
+        $query = $this->productModel->query()
             ->with(['category:id,name', 'images'])
             ->where('status', ProductStatus::ACTIVE->value)
             ->when($keyword !== '', function ($query) use ($keyword) {
@@ -47,7 +50,24 @@ class SiteRepository implements SiteRepositoryInterface
             ->when($categoryId > 0, function ($query) use ($categoryId) {
                 $query->where('category_id', $categoryId);
             })
-            ->orderByDesc('id')
+            ->when($minPrice !== null, function ($query) use ($minPrice) {
+                $query->whereRaw('COALESCE(discount_price, price) >= ?', [$minPrice]);
+            })
+            ->when($maxPrice !== null, function ($query) use ($maxPrice) {
+                $query->whereRaw('COALESCE(discount_price, price) <= ?', [$maxPrice]);
+            });
+
+        if ($sort === 'price_asc') {
+            $query->orderByRaw('COALESCE(discount_price, price) ASC');
+        } elseif ($sort === 'price_desc') {
+            $query->orderByRaw('COALESCE(discount_price, price) DESC');
+        } elseif ($sort === 'name_asc') {
+            $query->orderBy('name');
+        } else {
+            $query->orderByDesc('id');
+        }
+
+        return $query
             ->paginate(12)
             ->appends($params);
     }
