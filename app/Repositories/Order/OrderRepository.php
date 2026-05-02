@@ -13,6 +13,7 @@ use App\Models\OrderHistory;
 use App\Models\OrderItem;
 use App\Models\OrderReturnRequest;
 use App\Models\Product;
+use App\Support\OrderInventory;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -30,6 +31,12 @@ class OrderRepository implements OrderRepositoryInterface
         $orders = $this->model
             ->withTrashed()
             ->with(['customer', 'items.product'])
+            ->when(isset($params['order_code']) && trim((string) $params['order_code']) !== '', function (Builder $query) use ($params) {
+                $term = trim((string) $params['order_code']);
+                $escaped = addcslashes($term, '%_\\');
+
+                return $query->where('order_code', 'like', '%'.$escaped.'%');
+            })
             ->when(isset($params['customer_id']) && $params['customer_id'] !== '', function (Builder $query) use ($params) {
                 return $query->where('customer_id', (int) $params['customer_id']);
             })
@@ -104,6 +111,10 @@ class OrderRepository implements OrderRepositoryInterface
                 'notes' => $params['notes'] ?? null,
             ]);
 
+            $order->update([
+                'order_code' => Order::composeOrderCode((int) $order->id, $order->created_at),
+            ]);
+
             foreach ($items as $item) {
                 $product = $products->get((int) $item['product_id']);
                 if (!$product) {
@@ -140,6 +151,7 @@ class OrderRepository implements OrderRepositoryInterface
     {
         return DB::transaction(function () use ($id, $params) {
             $order = $this->model->withTrashed()->findOrFail($id);
+            $previousStatusValue = $order->status->value;
             $oldCustomerId = (int) $order->customer_id;
             $items = $params['order_items'];
             $productIds = collect($items)->pluck('product_id')->unique()->values()->all();
@@ -171,6 +183,11 @@ class OrderRepository implements OrderRepositoryInterface
             ]);
 
             if ($updated) {
+                $newStatusValue = (int) $params['status'];
+                if ($newStatusValue === OrderStatus::CANCELLED->value && $previousStatusValue !== OrderStatus::CANCELLED->value) {
+                    OrderInventory::restoreIfNeeded($order);
+                }
+
                 OrderItem::query()->where('order_id', $order->id)->delete();
                 foreach ($items as $item) {
                     $product = $products->get((int) $item['product_id']);
@@ -204,6 +221,7 @@ class OrderRepository implements OrderRepositoryInterface
     public function destroy(int $id): void
     {
         $order = $this->model->findOrFail($id);
+        OrderInventory::restoreIfNeeded($order);
         $customerId = (int) $order->customer_id;
         $order->delete();
         OrderHistory::query()->create([
@@ -235,6 +253,7 @@ class OrderRepository implements OrderRepositoryInterface
     public function forceDelete(int $id): bool
     {
         $order = $this->model->withTrashed()->findOrFail($id);
+        OrderInventory::restoreIfNeeded($order);
         $customerId = (int) $order->customer_id;
         $result = (bool) $order->forceDelete();
         if ($result) {
@@ -250,6 +269,7 @@ class OrderRepository implements OrderRepositoryInterface
             ->with([
                 'customer',
                 'items.product',
+                'items.productVariant',
                 'histories' => function ($query) {
                     $query->with('changedBy')->orderByDesc('id');
                 },
@@ -310,6 +330,8 @@ class OrderRepository implements OrderRepositoryInterface
     public function updateShipping(int $id, array $params, ?int $userId): bool
     {
         $order = $this->model->withTrashed()->findOrFail($id);
+        $previousStatusValue = $order->status->value;
+        $newStatusValue = (int) $params['status'];
         $updated = $order->update([
             'shipping_provider' => $params['shipping_provider'] ?? null,
             'tracking_number' => $params['tracking_number'] ?? null,
@@ -317,6 +339,10 @@ class OrderRepository implements OrderRepositoryInterface
             'shipped_at' => $params['shipped_at'] ?? null,
             'delivered_at' => $params['delivered_at'] ?? null,
         ]);
+
+        if ($updated && $newStatusValue === OrderStatus::CANCELLED->value && $previousStatusValue !== OrderStatus::CANCELLED->value) {
+            OrderInventory::restoreIfNeeded($order);
+        }
 
         if ($updated) {
             OrderHistory::query()->create([

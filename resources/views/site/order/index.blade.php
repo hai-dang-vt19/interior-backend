@@ -8,16 +8,16 @@
         </header>
 
         <form method="GET" action="{{ route('site.orders.index') }}" class="ord-filter mb-3">
-            <label for="ord_status" class="form-label mb-0">Loc theo trang thai</label>
+            <label for="ord_status" class="form-label mb-0">Lọc theo trạng thái đơn</label>
             <select id="ord_status" name="status" class="form-select">
-                <option value="0" {{ ((int) ($status ?? 0)) === 0 ? 'selected' : '' }}>Tat ca</option>
-                <option value="1" {{ ((int) ($status ?? 0)) === 1 ? 'selected' : '' }}>Cho xac nhan</option>
-                <option value="2" {{ ((int) ($status ?? 0)) === 2 ? 'selected' : '' }}>Da xac nhan</option>
-                <option value="3" {{ ((int) ($status ?? 0)) === 3 ? 'selected' : '' }}>Dang giao</option>
-                <option value="4" {{ ((int) ($status ?? 0)) === 4 ? 'selected' : '' }}>Da giao</option>
-                <option value="5" {{ ((int) ($status ?? 0)) === 5 ? 'selected' : '' }}>Da huy</option>
+                <option value="0" {{ ((int) ($status ?? 0)) === 0 ? 'selected' : '' }}>Tất cả</option>
+                <option value="1" {{ ((int) ($status ?? 0)) === 1 ? 'selected' : '' }}>Chờ xác nhận</option>
+                <option value="2" {{ ((int) ($status ?? 0)) === 2 ? 'selected' : '' }}>Đã xác nhận</option>
+                <option value="3" {{ ((int) ($status ?? 0)) === 3 ? 'selected' : '' }}>Đang giao</option>
+                <option value="4" {{ ((int) ($status ?? 0)) === 4 ? 'selected' : '' }}>Đã giao</option>
+                <option value="5" {{ ((int) ($status ?? 0)) === 5 ? 'selected' : '' }}>Đã hủy</option>
             </select>
-            <button type="submit" class="btn btn-outline-dark btn-sm">Ap dung</button>
+            <button type="submit" class="btn btn-outline-dark btn-sm">Áp dụng</button>
         </form>
 
         @if ($orders->isEmpty())
@@ -74,7 +74,7 @@
                                 })
                                 <tr>
                                     <td>
-                                        <strong>#{{ $order->id }}</strong>
+                                        <strong>#{{ $order->order_code ?? $order->id }}</strong>
                                     </td>
                                     <td>{{ $order->created_at?->format('d/m/Y H:i') }}</td>
                                     <td>{{ $order->items->count() }}</td>

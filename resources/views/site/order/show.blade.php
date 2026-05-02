@@ -45,16 +45,27 @@
         4 => 'Đã giao',
         5 => 'Đã hủy',
     ];
+    $customerCanCancel = in_array($order->status, [OrderStatus::PENDING, OrderStatus::CONFIRMED], true);
 @endphp
 
 @section('content')
     <section class="ordd-page">
         <header class="ordd-head mb-3">
             <div>
-                <h1 class="ordd-title mb-1">Chi tiết đơn #{{ $order->id }}</h1>
+                <h1 class="ordd-title mb-1">Chi tiết đơn #{{ $order->order_code ?? $order->id }}</h1>
                 <p class="ordd-sub mb-0">Theo dõi tiến độ xử lý và thông tin giao hàng của đơn.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex gap-2 flex-wrap">
+                @if ($customerCanCancel)
+                    <form
+                        action="{{ route('site.orders.cancel', $order->id) }}"
+                        method="POST"
+                        class="d-inline"
+                        onsubmit="return confirm('Bạn chắc chắn muốn huỷ đơn? Đơn sẽ chuyển sang đã huỷ và số lượng đặt được nhập lại kho.')">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-outline-danger">Huỷ đơn</button>
+                    </form>
+                @endif
                 <form action="{{ route('site.orders.reorder', $order->id) }}" method="POST">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-dark">Mua lai</button>
@@ -88,6 +99,12 @@
                 <small>SĐT nhận</small>
                 <strong>{{ $order->shipping_phone }}</strong>
             </div>
+            @if ($order->notes)
+                <div class="ordd-summary-item ordd-summary-item--wide">
+                    <small>Ghi chú đơn</small>
+                    <strong>{{ $order->notes }}</strong>
+                </div>
+            @endif
         </div>
 
         <div class="card site-panel p-3 mb-3">
@@ -115,12 +132,18 @@
                         </tr>
                     </thead>
                     <tbody>
-                        @php($total = 0)
                         @foreach ($order->items as $item)
                             @php($line = ((float) $item->price) * ((int) $item->quantity))
-                            @php($total += $line)
                             <tr>
-                                <td>{{ $item->product?->name }}</td>
+                                <td>
+                                    <strong class="d-block">{{ $item->product?->name ?? 'Sản phẩm đã gỡ' }}</strong>
+                                    @include('site.component.line-pricing-note', [
+                                        'product' => $item->product,
+                                        'variant' => $item->productVariant,
+                                        'storedUnit' => $item->price,
+                                        'orderLinePreview' => true,
+                                    ])
+                                </td>
                                 <td>{{ number_format((float) $item->price, 0, ',', '.') }} đ</td>
                                 <td>{{ (int) $item->quantity }}</td>
                                 <td><strong>{{ number_format($line, 0, ',', '.') }} đ</strong></td>
@@ -137,7 +160,7 @@
                     <tfoot>
                         <tr>
                             <th colspan="3" class="text-end">Tổng cộng</th>
-                            <th class="text-danger">{{ number_format($total, 0, ',', '.') }} đ</th>
+                            <th class="text-danger">{{ number_format((float) $order->total_amount, 0, ',', '.') }} đ</th>
                             <th></th>
                         </tr>
                     </tfoot>

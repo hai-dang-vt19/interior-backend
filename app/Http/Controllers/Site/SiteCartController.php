@@ -35,10 +35,15 @@ class SiteCartController extends Controller
     {
         $payload = $request->validated();
         $customerId = (int) auth()->guard('customer')->id();
+        $variantId = isset($payload['product_variant_id']) && $payload['product_variant_id'] !== '' && $payload['product_variant_id'] !== null
+            ? (int) $payload['product_variant_id']
+            : null;
+
         $result = $this->siteCartService->addItem(
             $customerId,
             (int) $payload['product_id'],
-            (int) $payload['quantity']
+            (int) $payload['quantity'],
+            $variantId
         );
 
         if (!$result['ok']) {

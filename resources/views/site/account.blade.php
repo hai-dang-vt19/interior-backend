@@ -16,13 +16,13 @@
     <section class="site-account-page">
         <header class="site-account-hero">
             <div class="site-account-hero-copy">
-                <p class="site-account-kicker mb-1">TAI KHOAN KHACH HANG</p>
-                <h1 class="site-account-heading mb-2">Quan ly thong tin ca nhan</h1>
-                <p class="site-account-subtle mb-0">Cap nhat ho so, doi mat khau va quan ly dia chi giao hang tren mot giao dien gon gang, de dung.</p>
+                <p class="site-account-kicker mb-1">Tài khoản khách hàng</p>
+                <h1 class="site-account-heading mb-2">Quản lý thông tin cá nhân</h1>
+                <p class="site-account-subtle mb-0">Cập nhật hồ sơ, đổi mật khẩu và quản lý địa chỉ giao hàng trên một giao diện gọn gàng, dễ dàng.</p>
             </div>
             <div class="site-account-hero-meta">
-                <span class="site-account-hero-label">Xin chao</span>
-                <strong>{{ $customer->full_name ?? 'Khach hang' }}</strong>
+                <span class="site-account-hero-label">Xin chào</span>
+                <strong>{{ $customer->full_name ?? 'Khách hàng' }}</strong>
                 @if (!empty($customer->email))
                     <small>{{ $customer->email }}</small>
                 @endif

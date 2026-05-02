@@ -2,10 +2,14 @@
 
 @section('content')
     @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
-    @php($displayPrice = (float) ($product->discount_price ?? $product->price))
-    @php($basePrice = (float) $product->price)
-    @php($hasDiscount = $product->discount_price !== null && (float) $product->discount_price < (float) $product->price)
-    @php($stockPercent = min(100, max(3, (int) round(((int) $product->quantity / 100) * 100))))
+    @php($initialVariant = $product->variants->isNotEmpty() ? ($product->variants->firstWhere('is_default', true) ?? $product->variants->first()) : null)
+    @php($productBaseUnit = \App\Support\ProductLinePricing::baseUnit($product))
+    @php($displayPrice = \App\Support\ProductLinePricing::unitTotal($product, $initialVariant))
+    @php($listPrice = (float) $product->price)
+    @php($hasDiscount = $productBaseUnit + 0.009 < $listPrice)
+    @php($basePrice = $listPrice)
+    @php($selectedStockAvail = \App\Support\ProductStock::unitsAvailable($product, $initialVariant?->id))
+    @php($stockPercent = min(100, max(3, (int) round(($selectedStockAvail / 100) * 100))))
 
     <section class="spd-page">
         <div class="spd-breadcrumb mb-3">
@@ -34,9 +38,17 @@
                     @endif
 
                     <div class="spd-price-wrap mb-3">
-                        <div class="spd-price-current">{{ number_format($displayPrice, 0, ',', '.') }} đ</div>
+                        <div class="spd-price-current" data-spd-main-price>{{ number_format($displayPrice, 0, ',', '.') }} đ</div>
                         @if ($hasDiscount)
                             <div class="spd-price-old">{{ number_format($basePrice, 0, ',', '.') }} đ</div>
+                        @endif
+                    </div>
+                    <div class="spd-price-wrap mb-3">
+                        @if ($initialVariant && \App\Support\ProductLinePricing::variantAddon($initialVariant) > 0)
+                            <p class="small text-muted mb-0 mt-2 mb-0">
+                                Gồm giá sản phẩm {{ number_format($productBaseUnit, 0, ',', '.') }} đ
+                                + phụ phí phiên bản {{ number_format(\App\Support\ProductLinePricing::variantAddon($initialVariant), 0, ',', '.') }} đ
+                            </p>
                         @endif
                     </div>
 
@@ -57,11 +69,13 @@
 
                     <div class="spd-stock-box mb-3">
                         <div class="d-flex justify-content-between align-items-center">
-                            <strong>Tồn kho</strong>
-                            <span>{{ (int) $product->quantity }}</span>
+                            <strong>Tồn kho phiên bản: <span data-spd-stock-display>{{ (int) $selectedStockAvail }}</span></strong>
                         </div>
+                        @if ($product->variants->isNotEmpty())
+                            <p class="small text-muted mb-1 mt-2">Tổng các phiên bản: {{ (int) $product->variants->sum(fn ($v) => (int) $v->quantity) }}</p>
+                        @endif
                         <div class="site-stock-progress mt-2">
-                            <div class="site-stock-progress-bar" style="width: {{ $stockPercent }}%"></div>
+                            <div class="site-stock-progress-bar" data-spd-stock-bar style="width: {{ $stockPercent }}%"></div>
                         </div>
                     </div>
 
@@ -72,12 +86,46 @@
 
                     <div class="spd-buy-box">
                         @if (auth()->guard('customer')->check())
-                            <form action="{{ route('site.cart.items.store') }}" method="POST" class="row g-2 align-items-end">
+                            <form action="{{ route('site.cart.items.store') }}" method="POST" class="row g-2 align-items-end" id="spd-add-cart-form" data-spd-base-unit="{{ $productBaseUnit }}">
                                 @csrf
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
+                                @if ($product->variants->isNotEmpty())
+                                    <div class="col-12">
+                                        <label class="form-label">Chọn phiên bản</label>
+                                        <div class="list-group list-group-flush border rounded">
+                                            @foreach ($product->variants as $variant)
+                                                <label class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 mb-0">
+                                                    <span class="d-flex align-items-start gap-2">
+                                                        <input
+                                                            type="radio"
+                                                            name="product_variant_id"
+                                                            value="{{ $variant->id }}"
+                                                            class="form-check-input mt-1 spd-variant-radio"
+                                                            data-variant-addon="{{ (float) $variant->price }}"
+                                                            data-variant-stock="{{ (int) $variant->quantity }}"
+                                                            @checked($initialVariant && (int) $initialVariant->id === (int) $variant->id)
+                                                            required
+                                                        >
+                                                        <span>
+                                                            <span class="d-block small text-muted">{{ $variant->sku_variant ?: '—' }}</span>
+                                                            <span class="d-block">{{ $variant->color_name ?: 'Màu —' }} @if($variant->material_main) · {{ $variant->material_main }} @endif</span>
+                                                        </span>
+                                                    </span>
+                                                    @php($rowUnit = \App\Support\ProductLinePricing::unitTotal($product, $variant))
+                                                    <span class="text-end">
+                                                        <strong class="text-nowrap d-block">{{ number_format($rowUnit, 0, ',', '.') }} đ</strong>
+                                                        @if (\App\Support\ProductLinePricing::variantAddon($variant) > 0)
+                                                            <small class="text-muted text-nowrap d-block">+ {{ number_format(\App\Support\ProductLinePricing::variantAddon($variant), 0, ',', '.') }} đ phiên bản</small>
+                                                        @endif
+                                                    </span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
                                 <div class="col-md-4">
                                     <label class="form-label">Số lượng</label>
-                                    <input type="number" class="form-control" name="quantity" min="1" max="{{ (int) $product->quantity }}" value="1">
+                                    <input type="number" class="form-control" name="quantity" id="spd-qty-input" min="1" max="{{ max(1, (int) $selectedStockAvail) }}" value="1">
                                 </div>
                                 <div class="col-md-8">
                                     <button class="btn btn-primary w-100" type="submit">Thêm vào giỏ hàng</button>
@@ -90,36 +138,6 @@
                 </article>
             </div>
         </div>
-
-        @if ($product->variants->isNotEmpty())
-            <section class="spd-section mt-4">
-                <div class="spd-section-head">
-                    <h5 class="site-section-title mb-0">Phiên bản sản phẩm</h5>
-                </div>
-                <div class="table-responsive">
-                    <table class="table table-sm align-middle spd-table">
-                        <thead>
-                            <tr>
-                                <th>SKU</th>
-                                <th>Màu</th>
-                                <th>Chất liệu</th>
-                                <th>Giá</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($product->variants as $variant)
-                                <tr>
-                                    <td>{{ $variant->sku_variant ?: '-' }} @if($variant->is_default)<span class="badge bg-primary ms-1">Mặc định</span>@endif</td>
-                                    <td>{{ $variant->color_name ?: '-' }}</td>
-                                    <td>{{ $variant->material_main ?: '-' }}</td>
-                                    <td>{{ number_format((float) $variant->price, 0, ',', '.') }} {{ $variant->currency }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        @endif
 
         @if ($product->specs->isNotEmpty())
             <section class="spd-section mt-4">
@@ -255,4 +273,54 @@
             </section>
         @endif
     </section>
+@endsection
+
+@section('scripts')
+    <script>
+        (function () {
+            const mainPriceEl = document.querySelector('[data-spd-main-price]');
+            const buyForm = document.getElementById('spd-add-cart-form');
+            if (!mainPriceEl || !buyForm) {
+                return;
+            }
+            const baseUnit = Number(buyForm.getAttribute('data-spd-base-unit') || 0);
+            const stockEl = document.querySelector('[data-spd-stock-display]');
+            const stockBar = document.querySelector('[data-spd-stock-bar]');
+            const qtyInput = document.getElementById('spd-qty-input');
+            const formatVndInt = (n) => {
+                const v = Math.max(0, Math.round(Number(n) || 0));
+                return v.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.') + ' đ';
+            };
+            const applyStockUi = (unitsRaw) => {
+                const u = Math.max(0, Math.floor(Number(unitsRaw) || 0));
+                if (stockEl) {
+                    stockEl.textContent = String(u);
+                }
+                if (stockBar) {
+                    stockBar.style.width = `${Math.min(100, Math.max(3, Math.round((u / 100) * 100)))}%`;
+                }
+                if (qtyInput) {
+                    const cap = Math.max(1, u);
+                    qtyInput.max = String(cap);
+                    const cur = Number(qtyInput.value || 1);
+                    qtyInput.value = String(Math.min(Math.max(1, cur), cap));
+                }
+            };
+
+            document.querySelectorAll('.spd-variant-radio').forEach((radio) => {
+                radio.addEventListener('change', () => {
+                    if (!radio.checked) {
+                        return;
+                    }
+                    const addon = Number(radio.getAttribute('data-variant-addon') || 0);
+                    mainPriceEl.textContent = formatVndInt(baseUnit + addon);
+                    applyStockUi(radio.getAttribute('data-variant-stock'));
+                });
+            });
+            const initRadio = document.querySelector('.spd-variant-radio:checked');
+            if (initRadio) {
+                applyStockUi(initRadio.getAttribute('data-variant-stock'));
+            }
+        })();
+    </script>
 @endsection

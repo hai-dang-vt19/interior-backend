@@ -33,6 +33,7 @@ Route::middleware('customer.auth')->group(function () {
     Route::post('checkout', [SiteOrderController::class, 'placeOrder'])->name('site.checkout.submit');
     Route::get('orders', [SiteOrderController::class, 'index'])->name('site.orders.index');
     Route::get('orders/{id}', [SiteOrderController::class, 'show'])->name('site.orders.show');
+    Route::post('orders/{id}/cancel', [SiteOrderController::class, 'cancel'])->name('site.orders.cancel');
     Route::post('orders/{id}/reorder', [SiteOrderController::class, 'reorder'])->name('site.orders.reorder');
     Route::post('products/{productId}/reviews', [SiteProductReviewController::class, 'store'])->name('site.products.reviews.store');
     Route::patch('products/{productId}/reviews/{reviewId}', [SiteProductReviewController::class, 'update'])->name('site.products.reviews.update');

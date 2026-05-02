@@ -42,7 +42,15 @@ class SiteRepository implements SiteRepositoryInterface
         $sort = trim((string) ($params['sort'] ?? 'newest'));
 
         $query = $this->productModel->query()
-            ->with(['category:id,name', 'images'])
+            ->with([
+                'category:id,name',
+                'images',
+                'variants' => function ($query) {
+                    $query->where('is_active', true)
+                        ->orderByDesc('is_default')
+                        ->orderBy('id');
+                },
+            ])
             ->where('status', ProductStatus::ACTIVE->value)
             ->when($keyword !== '', function ($query) use ($keyword) {
                 $query->where('name', 'like', '%'.$keyword.'%');
@@ -64,12 +72,10 @@ class SiteRepository implements SiteRepositoryInterface
         } elseif ($sort === 'name_asc') {
             $query->orderBy('name');
         } else {
-            $query->orderByDesc('id');
+            $query->orderByDesc('created_at');
         }
 
-        return $query
-            ->paginate(12)
-            ->appends($params);
+        return $query->paginate(12)->appends($params);
     }
 
     public function getHomeCategorySlides(): array
@@ -85,7 +91,14 @@ class SiteRepository implements SiteRepositoryInterface
             $homeCategorySlides[] = [
                 'category' => $cat,
                 'products' => $this->productModel->query()
-                    ->with('images')
+                    ->with([
+                        'images',
+                        'variants' => function ($query) {
+                            $query->where('is_active', true)
+                                ->orderByDesc('is_default')
+                                ->orderBy('id');
+                        },
+                    ])
                     ->where('status', ProductStatus::ACTIVE->value)
                     ->where('category_id', $cat->id)
                     ->orderByDesc('id')

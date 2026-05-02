@@ -14,8 +14,8 @@ interface SiteCartRepositoryInterface
     public function getCartWithItems(int $customerId): Cart;
     public function getCartModelWithItems(int $customerId): Cart;
     public function findActiveProductById(int $productId): ?Product;
-    public function findCartItemByCartAndProduct(int $cartId, int $productId): ?CartItem;
-    public function createCartItem(int $cartId, int $productId, int $quantity, float $price): CartItem;
+    public function findCartItemByCartProductAndVariant(int $cartId, int $productId, ?int $productVariantId): ?CartItem;
+    public function createCartItem(int $cartId, int $productId, ?int $productVariantId, int $quantity, float $price): CartItem;
     public function updateCartItemQuantityAndPrice(CartItem $item, int $quantity, float $price): bool;
     public function findCartItemByCustomerAndItemId(int $customerId, int $itemId): ?CartItem;
     public function updateCartItemQuantity(CartItem $item, int $quantity): bool;

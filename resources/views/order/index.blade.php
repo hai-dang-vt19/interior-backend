@@ -13,6 +13,10 @@
     <div class="card-body">
         <form action="{{ route('admin.order.index') }}" method="GET" id="searchFormOrder" class="row g-3">
             <div class="col-md-3">
+                <label class="form-label">Mã đơn</label>
+                <input type="text" class="form-control" name="order_code" value="{{ request('order_code') }}" placeholder="VD: ORD1735..." autocomplete="off">
+            </div>
+            <div class="col-md-3">
                 <label class="form-label">Khách hàng</label>
                 <select class="form-select" name="customer_id">
                     <option value="">Tất cả</option>
@@ -78,7 +82,7 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th class="text-center">ID</th>
+                        <th class="text-center">Mã đơn</th>
                         <th>Khách hàng</th>
                         <th class="text-center">Sản phẩm</th>
                         <th>Tổng tiền</th>
@@ -92,7 +96,7 @@
                 <tbody>
                     @forelse ($orders as $order)
                         <tr>
-                            <td class="text-center">{{ $order->id }}</td>
+                            <td class="text-center"><code class="small">{{ $order->order_code ?? $order->id }}</code></td>
                             <td>{{ $order->customer?->full_name }}</td>
                             <td class="text-center">{{ $order->items->count() }}</td>
                             <td>{{ $order->getTotalDisplay() }}</td>

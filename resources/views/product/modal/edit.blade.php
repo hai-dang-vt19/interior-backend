@@ -33,8 +33,9 @@
               <input type="number" class="form-control" name="discount_price" min="0">
             </div>
             <div class="col-md-4">
-              <label class="form-label">Số lượng</label>
+              <label class="form-label">Số lượng (khi không có phiên bản)</label>
               <input type="number" class="form-control" name="quantity" min="0">
+              <p class="form-text mb-0">Có phiên bản — tồn nhập trong từng dòng; tổng SP đồng bộ sau khi lưu.</p>
             </div>
             <div class="col-md-12">
               <label class="form-label">Trạng thái</label>

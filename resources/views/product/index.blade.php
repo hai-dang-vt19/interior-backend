@@ -94,7 +94,7 @@
                 <thead>
                     <tr>
                         <th class="text-center">STT</th>
-                        <th class="text-center">ID</th>
+                        <th class="text-center">SKU</th>
                         <th>Tên</th>
                         <th>Danh mục</th>
                         <th>Giá</th>
@@ -115,7 +115,7 @@
                             @endif
                         >
                             <td class="text-center">{{ ($products->currentPage() - 1) * $products->perPage() + 1 + $key }}</td>
-                            <td class="text-center">{{ $product->id }}</td>
+                            <td class="text-center">{{ $product->sku }}</td>
                             <td>{{ $product->name }}</td>
                             <td>{{ $product->category?->name }}</td>
                             <td>{{ $product->getPriceDisplay() }}</td>
@@ -178,6 +178,7 @@
                                                 "currency" => $variant->currency,
                                                 "unit" => $variant->unit,
                                                 "qty_per_set" => $variant->qty_per_set,
+                                                "quantity" => (int) $variant->quantity,
                                                 "is_default" => (bool) $variant->is_default,
                                                 "is_active" => (bool) $variant->is_active,
                                             ])->values()->all())) }}"
@@ -312,6 +313,10 @@
                             <label class="form-label">SL/Bộ</label>
                             <input type="number" class="form-control" min="1" name="${prefix}[${index}][qty_per_set]" value="${escapeHtml(row.qty_per_set ?? 1)}">
                         </div>
+                        <div class="col-md-2">
+                            <label class="form-label">Tồn kho</label>
+                            <input type="number" class="form-control" min="0" name="${prefix}[${index}][quantity]" value="${escapeHtml(row.quantity ?? 0)}">
+                        </div>
                         <div class="col-md-2 form-check mt-4 ms-2">
                             <input class="form-check-input" type="checkbox" name="${prefix}[${index}][is_default]" value="1" ${isDefault ? 'checked' : ''}>
                             <label class="form-check-label">Mặc định</label>
@@ -380,7 +385,7 @@
             const list = safeArray(rows);
             $container.empty();
             if (list.length === 0) {
-                $container.append(variantRowHtml(prefix, 0, { currency: 'VND', unit: 'cai', qty_per_set: 1, is_default: true, is_active: true }));
+                $container.append(variantRowHtml(prefix, 0, { currency: 'VND', unit: 'cai', qty_per_set: 1, quantity: 0, is_default: true, is_active: true }));
                 return;
             }
             list.forEach((row, index) => {
@@ -414,7 +419,7 @@
             const $container = $modal.find('.js-variants-container');
             const prefix = $container.data('prefix') || 'variants';
             const nextIndex = $container.find('.js-variant-row').length;
-            $container.append(variantRowHtml(prefix, nextIndex, { currency: 'VND', unit: 'cai', qty_per_set: 1, is_active: true }));
+            $container.append(variantRowHtml(prefix, nextIndex, { currency: 'VND', unit: 'cai', qty_per_set: 1, quantity: 0, is_active: true }));
         });
 
         $('.js-add-spec-row').on('click', function() {

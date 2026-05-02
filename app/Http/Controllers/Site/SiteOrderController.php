@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Site;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteCheckoutRequest;
 use App\Services\SiteOrderService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
 
 class SiteOrderController extends Controller
@@ -75,5 +76,20 @@ class SiteOrderController extends Controller
         }
 
         return redirect()->route('site.cart.index')->with('dataSuccess', 'Da them '.$addedCount.' san pham vao gio hang');
+    }
+
+    public function cancel(int $id)
+    {
+        $customerId = (int) auth()->guard('customer')->id();
+
+        try {
+            $this->siteOrderService->cancelOrderByCustomer($customerId, $id);
+        } catch (ModelNotFoundException $e) {
+            abort(404);
+        } catch (\RuntimeException $e) {
+            return redirect()->route('site.orders.show', $id)->with('dataError', $e->getMessage());
+        }
+
+        return redirect()->route('site.orders.show', $id)->with('dataSuccess', 'Đã huỷ đơn hàng.');
     }
 }
