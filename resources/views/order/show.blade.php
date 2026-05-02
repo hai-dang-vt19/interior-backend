@@ -4,7 +4,7 @@
     <nav aria-label="breadcrumb">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{{ route('admin.order.index') }}">Đơn hàng</a></li>
-            <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn #{{ $order->id }}</li>
+            <li class="breadcrumb-item active" aria-current="page">Chi tiết đơn {{ $order->order_code ?? '#'.$order->id }}</li>
         </ol>
     </nav>
 @endsection
@@ -29,6 +29,9 @@
                     <p class="mb-1"><strong>Thanh toán:</strong> {{ $order->payment_method?->label() }} /
                         {{ $order->payment_status?->label() }}</p>
                     <p class="mb-0"><strong>Tổng tiền:</strong> {{ $order->getTotalDisplay() }}</p>
+                    @if ($order->notes)
+                        <p class="mb-0 mt-2"><strong>Ghi chú khách:</strong> {{ $order->notes }}</p>
+                    @endif
                 </div>
             </div>
         </div>
@@ -113,15 +116,36 @@
                     </tr>
                 </thead>
                 <tbody>
+                    @php($linesSum = 0)
                     @foreach ($order->items as $item)
+                        @php($lineAmount = (float) $item->price * (int) $item->quantity)
+                        @php($linesSum += $lineAmount)
                         <tr>
-                            <td>{{ $item->product?->name }}</td>
+                            <td>
+                                <strong class="d-block">{{ $item->product?->name ?? 'Sản phẩm đã gỡ' }}</strong>
+                                @include('site.component.line-pricing-note', [
+                                    'product' => $item->product,
+                                    'variant' => $item->productVariant,
+                                    'storedUnit' => $item->price,
+                                    'orderLinePreview' => true,
+                                ])
+                            </td>
                             <td>{{ $item->quantity }}</td>
                             <td>{{ number_format((float) $item->price, 0, ',', '.') }} đ</td>
-                            <td>{{ number_format((float) $item->price * $item->quantity, 0, ',', '.') }} đ</td>
+                            <td>{{ number_format($lineAmount, 0, ',', '.') }} đ</td>
                         </tr>
                     @endforeach
                 </tbody>
+                <tfoot class="table-light">
+                    <tr>
+                        <th colspan="3" class="text-end">Cộng dòng</th>
+                        <th>{{ number_format($linesSum, 0, ',', '.') }} đ</th>
+                    </tr>
+                    <tr>
+                        <th colspan="3" class="text-end">Tổng đơn (lưu hệ thống)</th>
+                        <th class="text-success">{{ $order->getTotalDisplay() }}</th>
+                    </tr>
+                </tfoot>
             </table>
         </div>
     </div>

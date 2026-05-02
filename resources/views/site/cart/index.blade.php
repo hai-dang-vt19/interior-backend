@@ -28,7 +28,14 @@
                     @php($line = ((float) $item->price) * ((int) $item->quantity))
                     @php($total += $line)
                     <tr>
-                        <td>{{ $item->product?->name }}</td>
+                        <td>
+                            <strong class="d-block">{{ $item->product?->name }}</strong>
+                            @include('site.component.line-pricing-note', [
+                                'product' => $item->product,
+                                'variant' => $item->productVariant,
+                                'storedUnit' => $item->price,
+                            ])
+                        </td>
                         <td>{{ number_format((float) $item->price, 0, ',', '.') }} đ</td>
                         <td>
                             <form action="{{ route('site.cart.items.update', $item->id) }}" method="POST" class="d-flex gap-2">

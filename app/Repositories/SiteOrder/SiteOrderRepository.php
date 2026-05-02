@@ -10,8 +10,12 @@ use App\Enums\ProductStatus;
 use App\Models\Cart;
 use App\Models\CartItem;
 use App\Models\Order;
+use App\Models\OrderHistory;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Support\OrderInventory;
+use App\Support\ProductLinePricing;
+use App\Support\ProductStock;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -35,7 +39,7 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
     public function getCartWithItems(int $customerId): Cart
     {
         $cart = $this->resolveCart($customerId);
-        $cart->load(['items.product']);
+        $cart->load(['items.product.images', 'items.productVariant']);
 
         return $cart;
     }
@@ -66,10 +70,12 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
                 if (!$product || (int) $product->status->value !== ProductStatus::ACTIVE->value) {
                     throw new \RuntimeException('Sản phẩm không còn khả dụng: '.($item->product?->name ?? 'N/A'));
                 }
-                if ((int) $item->quantity > (int) $product->quantity) {
+                $avail = ProductStock::unitsAvailable($product, $item->product_variant_id);
+                if ((int) $item->quantity > $avail) {
                     throw new \RuntimeException('Sản phẩm vượt tồn kho: '.$product->name);
                 }
-                $total += ((int) $item->quantity) * ((float) $item->price);
+                $unit = ProductLinePricing::unitTotalForCartLine($product, $item);
+                $total += ((int) $item->quantity) * $unit;
             }
 
             $order = $this->orderModel->query()->create([
@@ -83,26 +89,64 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
                 'notes' => $payload['notes'] ?? null,
             ]);
 
+            $order->update([
+                'order_code' => Order::composeOrderCode((int) $order->id, $order->created_at),
+            ]);
+
             foreach ($checkoutItems as $item) {
+                $productLine = $this->productModel->query()->lockForUpdate()->find($item->product_id);
+                if (! $productLine || (int) $productLine->status->value !== ProductStatus::ACTIVE->value) {
+                    throw new \RuntimeException('Sản phẩm không còn khả dụng: '.($item->product?->name ?? 'N/A'));
+                }
+
                 $this->orderItemModel->query()->create([
                     'order_id' => $order->id,
                     'product_id' => $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
                     'quantity' => $item->quantity,
-                    'price' => $item->price,
+                    'price' => ProductLinePricing::unitTotalForCartLine($productLine, $item),
                 ]);
 
-                $product = $this->productModel->query()->find($item->product_id);
-                $nextQty = max(0, ((int) $product->quantity) - ((int) $item->quantity));
-                $product->quantity = $nextQty;
-                if ($nextQty === 0) {
-                    $product->status = ProductStatus::OUT_OF_STOCK;
-                }
-                $product->save();
+                ProductStock::decrementForOrderLine($productLine, $item->product_variant_id, (int) $item->quantity);
             }
+
+            OrderInventory::markStockDeducted($order);
 
             $cart->items()->whereIn('id', $checkoutItems->pluck('id')->all())->delete();
 
             return $order;
+        });
+    }
+
+    public function cancelOrderByCustomer(int $customerId, int $orderId): Order
+    {
+        return DB::transaction(function () use ($customerId, $orderId): Order {
+            /** @var Order $order */
+            $order = $this->orderModel->query()
+                ->where('customer_id', $customerId)
+                ->whereKey($orderId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            $cancelableStatuses = [OrderStatus::PENDING, OrderStatus::CONFIRMED];
+            if (! in_array($order->status, $cancelableStatuses, true)) {
+                throw new \RuntimeException('Chỉ có thể huỷ đơn khi đang chờ xác nhận hoặc đã xác nhận và chưa giao.');
+            }
+
+            OrderInventory::restoreIfNeeded($order);
+
+            $order->update([
+                'status' => OrderStatus::CANCELLED,
+            ]);
+
+            OrderHistory::query()->create([
+                'order_id' => $order->id,
+                'action' => 'customer_cancelled',
+                'note' => 'Khách hàng huỷ đơn',
+                'changed_by' => null,
+            ]);
+
+            return $order->fresh();
         });
     }
 
@@ -124,7 +168,7 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
     public function getOrderDetailByCustomer(int $customerId, int $orderId): Order
     {
         return $this->orderModel->query()
-            ->with(['items.product.images'])
+            ->with(['items.product.images', 'items.productVariant'])
             ->where('customer_id', $customerId)
             ->findOrFail($orderId);
     }
@@ -137,34 +181,62 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
             $addedCount = 0;
 
             foreach ($order->items as $item) {
-                $product = $this->productModel->query()->find($item->product_id);
-                if (! $product || (int) ($product->status?->value ?? 0) !== ProductStatus::ACTIVE->value || (int) $product->quantity <= 0) {
+                $product = $this->productModel->query()
+                    ->with(['variants' => function ($query) {
+                        $query->where('is_active', true)
+                            ->orderByDesc('is_default')
+                            ->orderBy('id');
+                    }])
+                    ->find($item->product_id);
+                if (! $product || (int) ($product->status?->value ?? 0) !== ProductStatus::ACTIVE->value) {
                     continue;
                 }
 
-                $desiredQty = min((int) $item->quantity, (int) $product->quantity);
+                $variant = null;
+                if ($item->product_variant_id) {
+                    $variant = $product->variants->firstWhere('id', (int) $item->product_variant_id);
+                }
+                if ($variant === null && $product->variants->isNotEmpty()) {
+                    $variant = $product->variants->firstWhere('is_default', true) ?? $product->variants->first();
+                }
+
+                $variantKey = $variant?->id;
+                $avail = ProductStock::unitsAvailable($product, $variantKey);
+                if ($avail <= 0) {
+                    continue;
+                }
+
+                $desiredQty = min((int) $item->quantity, $avail);
                 if ($desiredQty <= 0) {
                     continue;
                 }
 
-                /** @var CartItem|null $existing */
-                $existing = CartItem::query()
+                $lineUnit = ProductLinePricing::unitTotal($product, $variant);
+
+                $existingQuery = CartItem::query()
                     ->where('cart_id', $cart->id)
-                    ->where('product_id', $product->id)
-                    ->first();
+                    ->where('product_id', $product->id);
+                if ($variantKey !== null) {
+                    $existingQuery->where('product_variant_id', $variantKey);
+                } else {
+                    $existingQuery->whereNull('product_variant_id');
+                }
+                /** @var CartItem|null $existing */
+                $existing = $existingQuery->first();
 
                 if ($existing) {
-                    $nextQty = min((int) $product->quantity, (int) $existing->quantity + $desiredQty);
+                    $nextQty = min($avail, (int) $existing->quantity + $desiredQty);
                     $existing->update([
                         'quantity' => $nextQty,
-                        'price' => $product->discount_price ?? $product->price,
+                        'price' => $lineUnit,
                     ]);
                 } else {
                     CartItem::query()->create([
                         'cart_id' => $cart->id,
                         'product_id' => $product->id,
+                        'product_variant_id' => $variantKey,
                         'quantity' => $desiredQty,
-                        'price' => $product->discount_price ?? $product->price,
+                        'price' => $lineUnit,
                     ]);
                 }
 

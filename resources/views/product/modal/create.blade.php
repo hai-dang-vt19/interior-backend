@@ -33,8 +33,9 @@
               <input type="number" class="form-control" name="discount_price" min="0" value="{{ old('discount_price') }}">
             </div>
             <div class="col-md-4">
-              <label class="form-label">Số lượng</label>
+              <label class="form-label">Số lượng (SP không có phiên bản)</label>
               <input type="number" class="form-control" name="quantity" min="0" value="{{ old('quantity', 0) }}">
+              <p class="form-text mb-0">Nếu thêm phiên bản — nhập <strong>tồn kho</strong> trong từng dòng phiên bản.</p>
             </div>
             <div class="col-md-12">
               <label class="form-label">Trạng thái</label>

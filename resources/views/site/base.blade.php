@@ -30,6 +30,7 @@
                         <path d="M3 10.5 12 3l9 7.5" />
                         <path d="M5.25 9.75V20.4c0 .33.27.6.6.6h4.65v-6h3v6h4.65c.33 0 .6-.27.6-.6V9.75" />
                     </svg>
+                    <span class="text">Trang chủ</span>
                 </a>
 
                 <div class="site-nav-actions">
@@ -77,8 +78,8 @@
 
                 <div id="siteNavMenuPanel" class="site-nav-menu-panel" hidden>
                     @php(
-    $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
-)
+                        $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
+                    )
                     @php($menuCategoryColumns = $menuCategories->chunk(max(1, (int) ceil($menuCategories->count() / 3))))
 
                     <div class="site-nav-menu-quick-links">
@@ -149,13 +150,12 @@
                         <button type="button" class="btn-close site-auth-modal-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                         <div class="site-auth-tabs mb-3">
-                            <button type="button" class="site-auth-tab-btn is-active" data-auth-target="login">Dang
-                                nhap</button>
-                            <button type="button" class="site-auth-tab-btn" data-auth-target="register">Dang ky</button>
+                            <button type="button" class="site-auth-tab-btn is-active" data-auth-target="login">Đăng nhập</button>
+                            <button type="button" class="site-auth-tab-btn" data-auth-target="register">Đăng ký</button>
                         </div>
 
                         <div class="site-auth-panel is-active" data-auth-panel="login">
-                            <h5 class="mb-3">Member Login</h5>
+                            <h5 class="mb-3">Đăng nhập</h5>
                             <form action="{{ route('site.login.submit') }}" method="POST" class="d-grid gap-2">
                                 @csrf
                                 <input type="hidden" name="auth_form" value="login">
@@ -164,29 +164,29 @@
                                     required>
                                 <input type="password" class="form-control" name="password" placeholder="Password"
                                     required>
-                                <button type="submit" class="btn btn-success w-100 mt-1">LOGIN</button>
+                                <button type="submit" class="btn btn-success w-100 mt-1">Đăng nhập</button>
                             </form>
                         </div>
 
                         <div class="site-auth-panel" data-auth-panel="register">
-                            <h5 class="mb-3">Create Account</h5>
+                            <h5 class="mb-3">Đăng ký</h5>
                             <form action="{{ route('site.register.submit') }}" method="POST" class="d-grid gap-2">
                                 @csrf
                                 <input type="hidden" name="auth_form" value="register">
                                 <input type="text" class="form-control" name="full_name"
                                     value="{{ old('auth_form') === 'register' ? old('full_name') : '' }}"
-                                    placeholder="Ho ten" required>
+                                    placeholder="Họ tên" required>
                                 <input type="email" class="form-control" name="email"
                                     value="{{ old('auth_form') === 'register' ? old('email') : '' }}" placeholder="Email"
                                     required>
                                 <input type="text" class="form-control" name="phone"
                                     value="{{ old('auth_form') === 'register' ? old('phone') : '' }}"
-                                    placeholder="So dien thoai">
-                                <input type="password" class="form-control" name="password" placeholder="Mat khau"
+                                    placeholder="Số điện thoại">
+                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu"
                                     required>
                                 <input type="password" class="form-control" name="password_confirmation"
-                                    placeholder="Xac nhan mat khau" required>
-                                <button type="submit" class="btn btn-success w-100 mt-1">DANG KY</button>
+                                    placeholder="Xác nhận mật khẩu" required>
+                                <button type="submit" class="btn btn-success w-100 mt-1">Đăng ký</button>
                             </form>
                         </div>
                     </div>
@@ -340,6 +340,14 @@
             const id = Number(item.id);
             const outOfStock = Boolean(item.is_out_of_stock);
             const lineTotal = Number(item.price) * Number(item.quantity);
+            const variantLine = item.variant_label ?
+                `<p class="site-cart-item-variant small text-muted mb-1">${escapeHtml(item.variant_label)}</p>` :
+                '';
+            const pricing = item.pricing && typeof item.pricing === 'object' ? item.pricing : null;
+            const pricingSplit =
+                pricing && Number(pricing.variant_addon_unit) > 0 ?
+                `<p class="small text-muted mb-1">Giá SP: ${formatCurrencyVnd(Number(pricing.product_base_unit || 0))} + Phiên bản: ${formatCurrencyVnd(Number(pricing.variant_addon_unit || 0))}</p>` :
+                '';
             const image = item.image_url ?
                 `<img src="${escapeHtml(item.image_url)}" alt="${escapeHtml(item.name)}" class="site-cart-item-image">` :
                 `<div class="site-cart-item-image site-cart-item-image--placeholder">No image</div>`;
@@ -363,6 +371,8 @@
                         <div class="site-cart-item-media">${image}</div>
                         <div class="site-cart-item-info">
                             <h6 class="site-cart-item-name">${escapeHtml(item.name || 'Sản phẩm')}</h6>
+                            ${variantLine}
+                            ${pricingSplit}
                             <p class="site-cart-item-meta">Kho: <strong>${Number(item.stock)}</strong></p>
                             <p class="site-cart-item-status ${outOfStock ? 'is-out' : 'is-in'}">${outOfStock ? 'Hết hàng' : 'Còn hàng'}</p>
                             <p class="site-cart-item-price">Giá: ${formatCurrencyVnd(Number(item.price))}</p>

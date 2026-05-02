@@ -14,6 +14,7 @@ class InventoryHistory extends Model
 
     protected $fillable = [
         'product_id',
+        'product_variant_id',
         'type',
         'quantity',
         'notes',
@@ -27,6 +28,11 @@ class InventoryHistory extends Model
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function productVariant()
+    {
+        return $this->belongsTo(ProductVariant::class);
     }
 
     public function createdBy()

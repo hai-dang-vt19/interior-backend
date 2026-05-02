@@ -18,4 +18,5 @@ interface SiteOrderRepositoryInterface
     public function getOrdersByCustomer(int $customerId, array $filters = []): LengthAwarePaginator;
     public function getOrderDetailByCustomer(int $customerId, int $orderId): Order;
     public function reorderItems(int $customerId, int $orderId): int;
+    public function cancelOrderByCustomer(int $customerId, int $orderId): Order;
 }

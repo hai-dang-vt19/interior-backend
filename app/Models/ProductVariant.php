@@ -25,10 +25,12 @@ class ProductVariant extends Model
         'qty_per_set',
         'is_default',
         'is_active',
+        'quantity',
     ];
 
     protected $casts = [
         'price' => 'decimal:2',
+        'quantity' => 'integer',
         'qty_per_set' => 'integer',
         'is_default' => 'boolean',
         'is_active' => 'boolean',

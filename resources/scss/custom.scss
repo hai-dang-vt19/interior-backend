@@ -149,6 +149,13 @@
     align-items: center;
     justify-content: center;
     color: var(--site-text);
+    .text {
+        font-weight: 500;
+        margin-left: 0.5rem;
+        @media screen and (max-width: 768px) {
+            display: none;
+        }
+    }
 }
 
 .site-nav-icon-link {
@@ -449,7 +456,7 @@ a.site-nav-text-btn {
 .site-nav-menu-quick-links {
     display: flex;
     flex-wrap: wrap;
-    justify-content: flex-end;
+    justify-content: center;
     gap: 0.5rem;
 }
 
@@ -1989,6 +1996,37 @@ a.site-nav-text-btn {
     margin-top: 12px;
 }
 
+.nx-idea-swiper {
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #ede8df;
+}
+
+.nx-idea-swiper .swiper-wrapper,
+.nx-idea-swiper .swiper-slide {
+    height: auto;
+}
+
+.nx-idea-slide-card.nx-hero-side-card {
+    display: block;
+    height: 240px;
+}
+
+.nx-idea-pagination.swiper-pagination-bullets {
+    bottom: 10px !important;
+}
+
+.nx-idea-pagination .swiper-pagination-bullet {
+    background: #fff;
+    opacity: 0.45;
+}
+
+.nx-idea-pagination .swiper-pagination-bullet-active {
+    opacity: 1;
+    background: #fff;
+}
+
 .nx-filter-card {
     background: #f8f4ef;
 }
@@ -2003,6 +2041,10 @@ a.site-nav-text-btn {
     }
 
     .nx-hero-side-card {
+        height: 220px;
+    }
+
+    .nx-idea-slide-card.nx-hero-side-card {
         height: 220px;
     }
 }

@@ -2,7 +2,7 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title>Invoice #{{ $order->id }}</title>
+    <title>Invoice {{ $order->order_code ?? '#'.$order->id }}</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 12px; color: #222; }
         .wrap { width: 100%; }
@@ -18,7 +18,7 @@
 <body>
     <div class="wrap">
         <h1>Hoa don don hang</h1>
-        <p class="muted">Ma don: #{{ $order->id }} | Ngay tao: {{ $order->created_at?->format('d/m/Y H:i') }}</p>
+        <p class="muted">Ma don: {{ $order->order_code ?? '#'.$order->id }} | Ngay tao: {{ $order->created_at?->format('d/m/Y H:i') }}</p>
 
         <h3 class="mt">Thong tin khach hang</h3>
         <p>Ten: {{ $order->customer?->full_name }}</p>
@@ -37,8 +37,23 @@
             </thead>
             <tbody>
                 @foreach($order->items as $item)
+                    @php($variantTxt = \App\Support\ProductLinePricing::variantSummary($item->productVariant))
                     <tr>
-                        <td>{{ $item->product?->name }}</td>
+                        <td>
+                            {{ $item->product?->name }}
+                            @if ($variantTxt)
+                                <span class="muted"> — {{ $variantTxt }}</span>
+                            @endif
+                            @php($pv = $item->productVariant)
+                            @php($prod = $item->product)
+                            @if ($prod && $pv)
+                                @php($b = \App\Support\ProductLinePricing::baseUnit($prod))
+                                @php($a = \App\Support\ProductLinePricing::variantAddon($pv))
+                                @if ($a > 0)
+                                    <div class="muted">(Giá SP: {{ number_format($b, 0, ',', '.') }} đ + Phiên bản: {{ number_format($a, 0, ',', '.') }} đ)</div>
+                                @endif
+                            @endif
+                        </td>
                         <td>{{ $item->quantity }}</td>
                         <td class="right">{{ number_format((float)$item->price, 0, ',', '.') }} đ</td>
                         <td class="right">{{ number_format((float)$item->price * $item->quantity, 0, ',', '.') }} đ</td>

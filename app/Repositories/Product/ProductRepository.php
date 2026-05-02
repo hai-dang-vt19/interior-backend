@@ -14,6 +14,7 @@ use App\Models\Product;
 use App\Models\ProductImage;
 use App\Models\ProductSpec;
 use App\Models\ProductVariant;
+use App\Support\ProductStock;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -91,10 +92,14 @@ class ProductRepository implements ProductRepositoryInterface
         return DB::transaction(function () use ($params) {
             $variants = Arr::pull($params, 'variants', []);
             $specs = Arr::pull($params, 'specs', []);
+            if ($this->hasMeaningfulVariantPayload($variants)) {
+                unset($params['quantity']);
+            }
             $params['sku'] = $this->generateProductSku();
 
             $product = $this->model->create($params);
             $this->syncVariantsAndSpecs($product, $variants, $specs);
+            $this->syncProductInventorySnapshot((int) $product->id);
 
             return $product;
         });
@@ -114,6 +119,12 @@ class ProductRepository implements ProductRepositoryInterface
             $specs = Arr::pull($params, 'specs', null);
             $shouldSyncVariants = $this->hasMeaningfulVariantPayload(is_array($variants) ? $variants : []);
             $shouldSyncSpecs = $this->hasMeaningfulSpecPayload(is_array($specs) ? $specs : []);
+
+            $currentlyHasVariants = ProductVariant::query()->where('product_id', $id)->exists();
+            if ($currentlyHasVariants || $shouldSyncVariants) {
+                unset($params['quantity']);
+            }
+
             unset($params['sku']);
 
             $updated = $product->update($params);
@@ -123,6 +134,9 @@ class ProductRepository implements ProductRepositoryInterface
 
             if ($shouldSyncVariants || $shouldSyncSpecs) {
                 $this->syncVariantsAndSpecs($product, $variants ?? [], $specs ?? []);
+                if ($shouldSyncVariants) {
+                    $this->syncProductInventorySnapshot((int) $product->id);
+                }
             }
 
             return true;
@@ -152,6 +166,7 @@ class ProductRepository implements ProductRepositoryInterface
                     'currency' => strtoupper(trim((string) ($row['currency'] ?? 'VND'))) ?: 'VND',
                     'unit' => trim((string) ($row['unit'] ?? 'cai')) ?: 'cai',
                     'qty_per_set' => (int) ($row['qty_per_set'] ?? 1),
+                    'quantity' => max(0, (int) ($row['quantity'] ?? 0)),
                     'is_default' => (bool) ($row['is_default'] ?? false),
                     'is_active' => (bool) ($row['is_active'] ?? true),
                 ];
@@ -393,41 +408,117 @@ class ProductRepository implements ProductRepositoryInterface
         return $this->model
             ->with([
                 'inventory',
+                'variants' => function ($query) {
+                    $query->orderByDesc('is_default')->orderBy('id');
+                },
                 'inventoryHistories' => function ($query) {
-                    $query->orderByDesc('id')->limit(50);
+                    $query->with('productVariant')
+                        ->orderByDesc('id')
+                        ->limit(50);
                 },
             ])
             ->withTrashed()
             ->findOrFail($productId);
     }
 
+    /**
+     * Đồng bộ tổng tồn (products.quantity, bảng inventory) sau khi cấu trúc phiên bản đổi hoặc điều chỉnh tồn phiên bản.
+     */
+    private function syncProductInventorySnapshot(int $productId): void
+    {
+        ProductStock::refreshProductAggregateFromVariants($productId);
+        $product = $this->model->query()->find($productId);
+        if ($product === null) {
+            return;
+        }
+
+        $qty = max(0, (int) $product->quantity);
+        Inventory::query()->firstOrCreate(
+            ['product_id' => $productId],
+            ['quantity' => $qty],
+        )->update(['quantity' => $qty]);
+    }
+
     public function adjustInventory(int $productId, array $params, int $createdBy): bool
     {
         return DB::transaction(function () use ($productId, $params, $createdBy) {
             $product = $this->model->withTrashed()->findOrFail($productId);
+            $hasVariants = ProductVariant::query()->where('product_id', $product->id)->exists();
+            $variantId = isset($params['product_variant_id']) ? (int) $params['product_variant_id'] : null;
+
+            $delta = (int) $params['quantity'];
+            $type = (int) $params['type'];
+
+            if ($hasVariants && ($variantId === null || $variantId < 1)) {
+                throw new \RuntimeException('Sản phẩm có phiên bản: cần chọn phiên bản khi điều chỉnh tồn kho.');
+            }
+
+            if ($hasVariants && $variantId !== null && $variantId > 0) {
+                /** @var ProductVariant $variant */
+                $variant = ProductVariant::query()
+                    ->where('product_id', $product->id)
+                    ->where('id', $variantId)
+                    ->firstOrFail();
+
+                $current = (int) $variant->quantity;
+                $newVariantQty = $current;
+                if ($type === InventoryType::IMPORT->value) {
+                    $newVariantQty = $current + $delta;
+                } elseif ($type === InventoryType::EXPORT->value) {
+                    $newVariantQty = max(0, $current - $delta);
+                } elseif ($type === InventoryType::ADJUSTMENT->value) {
+                    $newVariantQty = max(0, $delta);
+                }
+
+                $variant->update(['quantity' => $newVariantQty]);
+
+                ProductStock::refreshProductAggregateFromVariants((int) $product->id);
+                $product->refresh();
+
+                $aggregate = max(0, (int) $product->quantity);
+                Inventory::query()->firstOrCreate(
+                    ['product_id' => $product->id],
+                    ['quantity' => $aggregate],
+                )->update(['quantity' => $aggregate]);
+
+                InventoryHistory::query()->create([
+                    'product_id' => $product->id,
+                    'product_variant_id' => $variantId,
+                    'type' => $type,
+                    'quantity' => $delta,
+                    'notes' => $params['notes'] ?? null,
+                    'created_by' => $createdBy,
+                ]);
+
+                return true;
+            }
+
             $inventory = Inventory::query()->firstOrCreate(
                 ['product_id' => $product->id],
                 ['quantity' => $product->quantity]
             );
 
-            $delta = (int) $params['quantity'];
             $current = (int) $inventory->quantity;
             $newQuantity = $current;
 
-            if ((int) $params['type'] === InventoryType::IMPORT->value) {
+            if ($type === InventoryType::IMPORT->value) {
                 $newQuantity = $current + $delta;
-            } elseif ((int) $params['type'] === InventoryType::EXPORT->value) {
+            } elseif ($type === InventoryType::EXPORT->value) {
                 $newQuantity = max(0, $current - $delta);
-            } else {
-                $newQuantity = $delta;
+            } elseif ($type === InventoryType::ADJUSTMENT->value) {
+                $newQuantity = max(0, $delta);
             }
 
             $inventory->update(['quantity' => $newQuantity]);
-            $product->update(['quantity' => $newQuantity]);
+
+            Product::query()->where('id', $product->id)->update([
+                'quantity' => $newQuantity,
+            ]);
 
             InventoryHistory::query()->create([
                 'product_id' => $product->id,
-                'type' => (int) $params['type'],
+                'product_variant_id' => null,
+                'type' => $type,
                 'quantity' => $delta,
                 'notes' => $params['notes'] ?? null,
                 'created_by' => $createdBy,

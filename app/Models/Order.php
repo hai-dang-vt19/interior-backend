@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -14,6 +15,7 @@ class Order extends Model
     use HasFactory, SoftDeletes;
 
     protected $fillable = [
+        'order_code',
         'customer_id',
         'total_amount',
         'shipping_address',
@@ -26,6 +28,8 @@ class Order extends Model
         'payment_method',
         'payment_status',
         'notes',
+        'stock_deducted_at',
+        'stock_restored_at',
     ];
 
     protected $casts = [
@@ -35,6 +39,8 @@ class Order extends Model
         'payment_status' => PaymentStatus::class,
         'shipped_at' => 'datetime',
         'delivered_at' => 'datetime',
+        'stock_deducted_at' => 'datetime',
+        'stock_restored_at' => 'datetime',
     ];
 
     public function customer()
@@ -55,6 +61,14 @@ class Order extends Model
     public function returnRequests()
     {
         return $this->hasMany(OrderReturnRequest::class);
+    }
+
+    /**
+     * Mã hiển thị: ORD + unix timestamp + id (liền nhau, không dấu phân tách).
+     */
+    public static function composeOrderCode(int $id, CarbonInterface $createdAt): string
+    {
+        return sprintf('ORD%d%d', $createdAt->getTimestamp(), $id);
     }
 
     public function formatCreatedAt()

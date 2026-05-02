@@ -27,7 +27,7 @@ class SiteCartRepository implements SiteCartRepositoryInterface
     public function getCartWithItems(int $customerId): Cart
     {
         $cart = $this->resolveCart($customerId);
-        $cart->load(['items.product.images']);
+        $cart->load(['items.product.images', 'items.productVariant']);
 
         return $cart;
     }
@@ -39,7 +39,13 @@ class SiteCartRepository implements SiteCartRepositoryInterface
 
     public function findActiveProductById(int $productId): ?Product
     {
-        $product = $this->productModel->query()->find($productId);
+        $product = $this->productModel->query()
+            ->with(['variants' => function ($query) {
+                $query->where('is_active', true)
+                    ->orderByDesc('is_default')
+                    ->orderBy('id');
+            }])
+            ->find($productId);
         if (!$product) {
             return null;
         }
@@ -47,19 +53,27 @@ class SiteCartRepository implements SiteCartRepositoryInterface
         return ((int) $product->status->value === ProductStatus::ACTIVE->value) ? $product : null;
     }
 
-    public function findCartItemByCartAndProduct(int $cartId, int $productId): ?CartItem
+    public function findCartItemByCartProductAndVariant(int $cartId, int $productId, ?int $productVariantId): ?CartItem
     {
-        return $this->cartItemModel->query()
+        $query = $this->cartItemModel->query()
             ->where('cart_id', $cartId)
-            ->where('product_id', $productId)
-            ->first();
+            ->where('product_id', $productId);
+
+        if ($productVariantId === null) {
+            $query->whereNull('product_variant_id');
+        } else {
+            $query->where('product_variant_id', $productVariantId);
+        }
+
+        return $query->first();
     }
 
-    public function createCartItem(int $cartId, int $productId, int $quantity, float $price): CartItem
+    public function createCartItem(int $cartId, int $productId, ?int $productVariantId, int $quantity, float $price): CartItem
     {
         return $this->cartItemModel->query()->create([
             'cart_id' => $cartId,
             'product_id' => $productId,
+            'product_variant_id' => $productVariantId,
             'quantity' => $quantity,
             'price' => $price,
         ]);
@@ -80,7 +94,7 @@ class SiteCartRepository implements SiteCartRepositoryInterface
             ->whereHas('cart', function ($query) use ($customerId) {
                 $query->where('customer_id', $customerId);
             })
-            ->with('product.images')
+            ->with(['product.images', 'productVariant'])
             ->first();
     }
 
