@@ -9,10 +9,12 @@ use App\Enums\PaymentStatus;
 use App\Enums\ProductStatus;
 use App\Models\Cart;
 use App\Models\CartItem;
+use App\Models\Customer;
 use App\Models\Order;
 use App\Models\OrderHistory;
 use App\Models\OrderItem;
 use App\Models\Product;
+use App\Support\CustomerLoyalty;
 use App\Support\OrderInventory;
 use App\Support\ProductLinePricing;
 use App\Support\ProductStock;
@@ -26,7 +28,8 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
         private Cart $cartModel,
         private Product $productModel,
         private Order $orderModel,
-        private OrderItem $orderItemModel
+        private OrderItem $orderItemModel,
+        private Customer $customerModel
     ) {}
 
     public function resolveCart(int $customerId): Cart
@@ -64,7 +67,12 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
     public function createOrderFromCheckout(int $customerId, Cart $cart, Collection $checkoutItems, array $payload): Order
     {
         return DB::transaction(function () use ($customerId, $cart, $checkoutItems, $payload) {
-            $total = 0;
+            $customer = $this->customerModel->query()->whereKey($customerId)->lockForUpdate()->first();
+            if ($customer === null) {
+                throw new \RuntimeException('Không tìm thấy tài khoản khách hàng.');
+            }
+
+            $subtotal = 0.0;
             foreach ($checkoutItems as $item) {
                 $product = $this->productModel->query()->lockForUpdate()->find($item->product_id);
                 if (!$product || (int) $product->status->value !== ProductStatus::ACTIVE->value) {
@@ -75,11 +83,15 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
                     throw new \RuntimeException('Sản phẩm vượt tồn kho: '.$product->name);
                 }
                 $unit = ProductLinePricing::unitTotalForCartLine($product, $item);
-                $total += ((int) $item->quantity) * $unit;
+                $subtotal += ((int) $item->quantity) * $unit;
             }
+
+            $loyaltyDiscount = CustomerLoyalty::computeDiscountAmountFromSubtotal($subtotal, (string) $customer->loyalty_tier);
+            $total = max(0, (int) round($subtotal - $loyaltyDiscount));
 
             $order = $this->orderModel->query()->create([
                 'customer_id' => $customerId,
+                'loyalty_discount_amount' => $loyaltyDiscount,
                 'total_amount' => $total,
                 'shipping_address' => $payload['shipping_address'],
                 'shipping_phone' => $payload['shipping_phone'],

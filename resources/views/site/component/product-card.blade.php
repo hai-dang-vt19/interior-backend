@@ -32,7 +32,7 @@
                     Thêm vào giỏ hàng
                 </button>
             @else
-                <button type="button" class="btn btn-dark btn-sm nx-no-card-nav js-open-auth-modal" data-auth-tab="login">Dang nhap de mua</button>
+                <button type="button" class="btn btn-dark btn-sm nx-no-card-nav js-open-auth-modal" data-auth-tab="login">Đăng nhập để mua</button>
             @endif
         </div>
     </div>

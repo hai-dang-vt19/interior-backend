@@ -31,8 +31,24 @@ class SiteOrderController extends Controller
 
         $paymentMethods = $checkoutData['paymentMethods'];
         $defaultShippingAddress = $checkoutData['defaultShippingAddress'];
+        $checkoutSubtotal = $checkoutData['checkoutSubtotal'];
+        $loyaltyDiscountAmount = $checkoutData['loyaltyDiscountAmount'];
+        $checkoutGrandTotal = $checkoutData['checkoutGrandTotal'];
+        $loyaltyTierDisplay = $checkoutData['loyaltyTierDisplay'];
+        $loyaltyBenefitLine = $checkoutData['loyaltyBenefitLine'];
 
-        return view('site.order.checkout', compact('cart', 'paymentMethods', 'checkoutItems', 'selectedItemsCsv', 'defaultShippingAddress'));
+        return view('site.order.checkout', compact(
+            'cart',
+            'paymentMethods',
+            'checkoutItems',
+            'selectedItemsCsv',
+            'defaultShippingAddress',
+            'checkoutSubtotal',
+            'loyaltyDiscountAmount',
+            'checkoutGrandTotal',
+            'loyaltyTierDisplay',
+            'loyaltyBenefitLine'
+        ));
     }
 
     public function placeOrder(SiteCheckoutRequest $request)

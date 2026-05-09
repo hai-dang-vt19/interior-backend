@@ -6,7 +6,10 @@ namespace App\Services;
 
 use App\Enums\PaymentMethod;
 use App\Models\Cart;
+use App\Models\Customer;
 use App\Models\Order;
+use App\Support\CustomerLoyalty;
+use App\Support\CustomerOrderNotifier;
 use App\Repositories\Site\SiteRepositoryInterface;
 use App\Repositories\SiteOrder\SiteOrderRepositoryInterface;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -26,12 +29,23 @@ class SiteOrderService extends BaseService
         $normalizedCsv = $this->normalizedSelectedCartItemIdsCsv($cart, $selectedItemsCsv);
         $checkoutItems = $this->siteOrderRepository->getCheckoutItems($cart, $normalizedCsv);
 
+        $customerRow = Customer::query()->find($customerId);
+        $tier = (string) ($customerRow?->loyalty_tier ?? 'standard');
+        $checkoutSubtotal = $checkoutItems->sum(static fn ($item) => ((float) $item->price) * ((int) $item->quantity));
+        $loyaltyDiscountPreview = CustomerLoyalty::computeDiscountAmountFromSubtotal($checkoutSubtotal, $tier);
+        $checkoutGrandTotal = max(0, (int) round($checkoutSubtotal - $loyaltyDiscountPreview));
+
         return [
             'cart' => $cart,
             'checkoutItems' => $checkoutItems,
             'paymentMethods' => PaymentMethod::cases(),
             'selectedItemsCsv' => $normalizedCsv,
             'defaultShippingAddress' => $this->siteRepository->getDefaultShippingAddressText($customerId),
+            'checkoutSubtotal' => $checkoutSubtotal,
+            'loyaltyDiscountAmount' => $loyaltyDiscountPreview,
+            'checkoutGrandTotal' => $checkoutGrandTotal,
+            'loyaltyTierDisplay' => $customerRow !== null ? $customerRow->formatLoyaltyTier() : null,
+            'loyaltyBenefitLine' => CustomerLoyalty::benefitLabel($tier),
         ];
     }
 
@@ -69,7 +83,10 @@ class SiteOrderService extends BaseService
 
     public function cancelOrderByCustomer(int $customerId, int $orderId): Order
     {
-        return $this->siteOrderRepository->cancelOrderByCustomer($customerId, $orderId);
+        $order = $this->siteOrderRepository->cancelOrderByCustomer($customerId, $orderId);
+        CustomerOrderNotifier::sendOrderUpdatedEmail($order, CustomerOrderNotifier::CONTEXT_CUSTOMER_CANCEL);
+
+        return $order;
     }
 
     /** Khi không truyền selected_items (ví dụ vào checkout từ trang giỏ), mặc định lấy toàn bộ dòng trong giỏ. */

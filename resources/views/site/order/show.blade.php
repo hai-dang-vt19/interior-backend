@@ -157,9 +157,22 @@
                             </tr>
                         @endforeach
                     </tbody>
+                    @php($orderLinesSum = $order->items->sum(static fn ($i) => (float) $i->price * (int) $i->quantity))
                     <tfoot>
+                        @if ((int) $order->loyalty_discount_amount > 0)
+                            <tr>
+                                <th colspan="3" class="text-end text-muted">Tạm tính</th>
+                                <th>{{ number_format($orderLinesSum, 0, ',', '.') }} đ</th>
+                                <th></th>
+                            </tr>
+                            <tr>
+                                <th colspan="3" class="text-end text-muted">Chiết khấu hạng thành viên</th>
+                                <th class="text-success">− {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</th>
+                                <th></th>
+                            </tr>
+                        @endif
                         <tr>
-                            <th colspan="3" class="text-end">Tổng cộng</th>
+                            <th colspan="3" class="text-end">Tổng thanh toán</th>
                             <th class="text-danger">{{ number_format((float) $order->total_amount, 0, ',', '.') }} đ</th>
                             <th></th>
                         </tr>

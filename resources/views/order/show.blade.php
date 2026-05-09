@@ -28,7 +28,10 @@
                     <p class="mb-1"><strong>Trạng thái:</strong> {{ $order->status?->label() }}</p>
                     <p class="mb-1"><strong>Thanh toán:</strong> {{ $order->payment_method?->label() }} /
                         {{ $order->payment_status?->label() }}</p>
-                    <p class="mb-0"><strong>Tổng tiền:</strong> {{ $order->getTotalDisplay() }}</p>
+                    <p class="mb-0"><strong>Tổng đơn (total_amount):</strong> {{ $order->getTotalDisplay() }}</p>
+                    @if ((int) $order->loyalty_discount_amount > 0)
+                        <p class="mb-0 small text-muted">Gồm chiết khấu hạng khi đặt trên web: −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</p>
+                    @endif
                     @if ($order->notes)
                         <p class="mb-0 mt-2"><strong>Ghi chú khách:</strong> {{ $order->notes }}</p>
                     @endif
@@ -141,8 +144,14 @@
                         <th colspan="3" class="text-end">Cộng dòng</th>
                         <th>{{ number_format($linesSum, 0, ',', '.') }} đ</th>
                     </tr>
+                    @if ((int) $order->loyalty_discount_amount > 0)
+                        <tr>
+                            <th colspan="3" class="text-end text-muted">Chiết khấu hạng (đặt web)</th>
+                            <th class="text-success">− {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</th>
+                        </tr>
+                    @endif
                     <tr>
-                        <th colspan="3" class="text-end">Tổng đơn (lưu hệ thống)</th>
+                        <th colspan="3" class="text-end">Tổng đơn (total_amount)</th>
                         <th class="text-success">{{ $order->getTotalDisplay() }}</th>
                     </tr>
                 </tfoot>

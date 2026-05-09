@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Enums\CustomerStatus;
+use App\Support\CustomerLoyalty;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -21,18 +22,31 @@ class Customer extends Authenticatable
         'phone',
         'loyalty_tier',
         'reward_points',
-        'deleted_at'
+        'deleted_at',
+        'email_verified_at',
+        'email_verification_token_hash',
+        'email_verification_token_expires_at',
     ];
 
     protected $hidden = [
         'password',
         'remember_token',
+        'email_verification_token_hash',
     ];
 
     protected $casts = [
         'email_verified_at' => 'datetime',
+        'email_verification_token_expires_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+    /**
+     * Kiểm tra khách đã xác nhận email đăng ký hay chưa
+     */
+    public function hasVerifiedEmail(): bool
+    {
+        return $this->email_verified_at !== null;
+    }
 
     public function carts()
     {
@@ -88,11 +102,6 @@ class Customer extends Authenticatable
 
     public function getLoyaltyBenefit()
     {
-        return match ($this->loyalty_tier) {
-            'silver' => 'Giảm 2%',
-            'gold' => 'Giảm 5%',
-            'platinum' => 'Giảm 8%',
-            default => 'Giảm 0%',
-        };
+        return CustomerLoyalty::benefitLabel((string) $this->loyalty_tier);
     }
 } 

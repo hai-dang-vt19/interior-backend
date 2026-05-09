@@ -13,6 +13,7 @@ use App\Models\OrderHistory;
 use App\Models\OrderItem;
 use App\Models\OrderReturnRequest;
 use App\Models\Product;
+use App\Support\CustomerLoyalty;
 use App\Support\OrderInventory;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Builder;
@@ -99,6 +100,7 @@ class OrderRepository implements OrderRepositoryInterface
             $order = $this->model->create([
                 'customer_id' => $params['customer_id'],
                 'total_amount' => $totalAmount,
+                'loyalty_discount_amount' => 0,
                 'shipping_address' => $params['shipping_address'],
                 'shipping_phone' => $params['shipping_phone'],
                 'shipping_provider' => $params['shipping_provider'] ?? null,
@@ -170,6 +172,7 @@ class OrderRepository implements OrderRepositoryInterface
             $updated = $order->update([
                 'customer_id' => $params['customer_id'],
                 'total_amount' => $totalAmount,
+                'loyalty_discount_amount' => 0,
                 'shipping_address' => $params['shipping_address'],
                 'shipping_phone' => $params['shipping_phone'],
                 'shipping_provider' => $params['shipping_provider'] ?? null,
@@ -371,15 +374,8 @@ class OrderRepository implements OrderRepositoryInterface
             ->where('payment_status', PaymentStatus::PAID->value)
             ->sum('total_amount');
 
-        $rewardPoints = (int) floor($paidDeliveredRevenue / 100000);
-        $tier = 'standard';
-        if ($rewardPoints >= 7000) {
-            $tier = 'platinum';
-        } elseif ($rewardPoints >= 3000) {
-            $tier = 'gold';
-        } elseif ($rewardPoints >= 1000) {
-            $tier = 'silver';
-        }
+        $rewardPoints = CustomerLoyalty::rewardPointsFromPaidDeliveredRevenue($paidDeliveredRevenue);
+        $tier = CustomerLoyalty::tierFromRewardPoints($rewardPoints);
 
         Customer::query()
             ->where('id', $customerId)

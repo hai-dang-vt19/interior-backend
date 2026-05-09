@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [SiteController::class, 'home'])->name('site.home');
 Route::get('products', [SiteController::class, 'products'])->name('site.products.index');
 Route::get('products/{id}', [SiteController::class, 'showProduct'])->name('site.products.show');
+Route::get('register/verify', [SiteAuthController::class, 'verifyRegistrationEmail'])->name('site.register.verify');
+
 Route::middleware('guest:customer')->group(function () {
     Route::get('login', [SiteAuthController::class, 'showLogin'])->name('site.login');
     Route::post('login', [SiteAuthController::class, 'login'])->name('site.login.submit');

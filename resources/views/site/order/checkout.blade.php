@@ -1,7 +1,6 @@
 @extends('site.base')
 
 @section('content')
-    @php($total = 0)
     @php($itemCount = (int) (($checkoutItems ?? $cart->items)->count()))
 
     <section class="ck-page">
@@ -60,7 +59,6 @@
                     <ul class="ck-summary-list">
                         @foreach (($checkoutItems ?? $cart->items) as $item)
                             @php($line = ((float) $item->price) * ((int) $item->quantity))
-                            @php($total += $line)
                             @php($summaryImage = \App\Models\ProductImage::resolvePublicUrl(optional($item->product?->images?->firstWhere('is_primary', true))->image_url ?: optional($item->product?->images?->first())->image_url))
                             <li class="ck-summary-item">
                                 <img src="{{ $summaryImage ?: asset('storage/images/image_default.jpg') }}" alt="{{ $item->product?->name }}" class="ck-summary-thumb" loading="lazy">
@@ -77,9 +75,26 @@
                             </li>
                         @endforeach
                     </ul>
-                    <div class="ck-summary-total">
-                        <span>Tổng cộng</span>
-                        <strong>{{ number_format($total, 0, ',', '.') }} đ</strong>
+                    <div class="ck-summary-lines ck-summary-total-breakdown mt-3 pt-3 border-top">
+                        <div class="d-flex justify-content-between align-items-center mb-2 px-3 ck-summary-row">
+                            <span class="text-muted">Tạm tính</span>
+                            <strong>{{ number_format((float) ($checkoutSubtotal ?? 0), 0, ',', '.') }} đ</strong>
+                        </div>
+                        @if ((int) ($loyaltyDiscountAmount ?? 0) > 0)
+                            <div class="d-flex justify-content-between align-items-center mb-1 px-3 ck-summary-row">
+                                <span class="text-muted">
+                                    Ưu đãi thành viên @if(!empty($loyaltyTierDisplay)) ({{ $loyaltyTierDisplay }}) @endif
+                                </span>
+                                <strong class="text-success">− {{ number_format((int) $loyaltyDiscountAmount, 0, ',', '.') }} đ</strong>
+                            </div>
+                            <p class="small text-muted mb-2 px-3">{{ $loyaltyBenefitLine ?? '' }}</p>
+                        @else
+                            <p class="small text-muted mb-2 px-3">{{ $loyaltyBenefitLine ?? '' }}</p>
+                        @endif
+                        <div class="d-flex justify-content-between align-items-center ck-summary-total">
+                            <span>Thanh toán</span>
+                            <strong>{{ number_format((float) ($checkoutGrandTotal ?? ($checkoutSubtotal ?? 0)), 0, ',', '.') }} đ</strong>
+                        </div>
                     </div>
                 </aside>
             </div>

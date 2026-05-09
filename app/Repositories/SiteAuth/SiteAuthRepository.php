@@ -12,13 +12,29 @@ class SiteAuthRepository implements SiteAuthRepositoryInterface
         private Customer $customerModel
     ) {}
 
-    public function findCustomerByEmail(string $email): ?Customer
+    public function findCustomerByPhone(string $phone): ?Customer
     {
-        return $this->customerModel->query()->where('email', $email)->first();
+        return $this->customerModel->query()->where('phone', $phone)->first();
+    }
+
+    public function findCustomerByEmailVerificationTokenHash(string $tokenHash): ?Customer
+    {
+        return $this->customerModel->query()
+            ->where('email_verification_token_hash', $tokenHash)
+            ->first();
     }
 
     public function createCustomer(array $payload): Customer
     {
         return $this->customerModel->query()->create($payload);
+    }
+
+    public function markCustomerEmailVerified(Customer $customer): void
+    {
+        $customer->forceFill([
+            'email_verified_at' => now(),
+            'email_verification_token_hash' => null,
+            'email_verification_token_expires_at' => null,
+        ])->save();
     }
 }
