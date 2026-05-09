@@ -29,6 +29,9 @@ class CustomerService extends BaseService
         $params['password'] = Hash::make('12345678');
         $params['loyalty_tier'] = $params['loyalty_tier'] ?? 'standard';
         $params['reward_points'] = $params['reward_points'] ?? 0;
+        $params['email_verified_at'] = now();
+        $params['email_verification_token_hash'] = null;
+        $params['email_verification_token_expires_at'] = null;
         if (($params['status'] ?? null) == CustomerStatus::INACTIVE->value) {
             $params['deleted_at'] = now();
         }

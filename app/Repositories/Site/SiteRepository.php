@@ -37,6 +37,7 @@ class SiteRepository implements SiteRepositoryInterface
     {
         $keyword = trim((string) ($params['keyword'] ?? ''));
         $categoryId = (int) ($params['category_id'] ?? 0);
+        $categoryIds = $this->resolveCategoryFilterIds($categoryId);
         $minPrice = isset($params['min_price']) && $params['min_price'] !== '' ? (float) $params['min_price'] : null;
         $maxPrice = isset($params['max_price']) && $params['max_price'] !== '' ? (float) $params['max_price'] : null;
         $sort = trim((string) ($params['sort'] ?? 'newest'));
@@ -55,8 +56,8 @@ class SiteRepository implements SiteRepositoryInterface
             ->when($keyword !== '', function ($query) use ($keyword) {
                 $query->where('name', 'like', '%'.$keyword.'%');
             })
-            ->when($categoryId > 0, function ($query) use ($categoryId) {
-                $query->where('category_id', $categoryId);
+            ->when(!empty($categoryIds), function ($query) use ($categoryIds) {
+                $query->whereIn('category_id', $categoryIds);
             })
             ->when($minPrice !== null, function ($query) use ($minPrice) {
                 $query->whereRaw('COALESCE(discount_price, price) >= ?', [$minPrice]);
@@ -76,6 +77,35 @@ class SiteRepository implements SiteRepositoryInterface
         }
 
         return $query->paginate(12)->appends($params);
+    }
+
+    // Lấy danh sách id danh mục để lọc sản phẩm gồm cha và toàn bộ danh mục con
+    private function resolveCategoryFilterIds(int $categoryId): array
+    {
+        if ($categoryId <= 0) {
+            return [];
+        }
+
+        $ids = [$categoryId];
+        $parentIds = [$categoryId];
+
+        while (!empty($parentIds)) {
+            $childIds = $this->categoryModel->query()
+                ->whereIn('parent_id', $parentIds)
+                ->pluck('id')
+                ->map(fn ($id) => (int) $id)
+                ->all();
+
+            $newChildIds = array_values(array_diff($childIds, $ids));
+            if (empty($newChildIds)) {
+                break;
+            }
+
+            $ids = array_merge($ids, $newChildIds);
+            $parentIds = $newChildIds;
+        }
+
+        return $ids;
     }
 
     public function getHomeCategorySlides(): array

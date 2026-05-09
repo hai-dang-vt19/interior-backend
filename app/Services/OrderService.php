@@ -6,6 +6,7 @@ namespace App\Services;
 
 use App\Models\Order;
 use App\Repositories\Order\OrderRepositoryInterface;
+use App\Support\CustomerOrderNotifier;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 
@@ -42,7 +43,14 @@ class OrderService extends BaseService
 
     public function updateOrderByID(int $id, array $params): bool
     {
-        return $this->orderRepository->updateOrderByID($id, $params);
+        $ok = $this->orderRepository->updateOrderByID($id, $params);
+
+        if ($ok) {
+            $order = $this->orderRepository->getOrderByID($id);
+            CustomerOrderNotifier::sendOrderUpdatedEmail($order, CustomerOrderNotifier::CONTEXT_ADMIN_FULL);
+        }
+
+        return $ok;
     }
 
     public function destroy(int $id): void
@@ -77,6 +85,13 @@ class OrderService extends BaseService
 
     public function updateShipping(int $id, array $params, ?int $userId): bool
     {
-        return $this->orderRepository->updateShipping($id, $params, $userId);
+        $ok = $this->orderRepository->updateShipping($id, $params, $userId);
+
+        if ($ok) {
+            $order = $this->orderRepository->getOrderByID($id);
+            CustomerOrderNotifier::sendOrderUpdatedEmail($order, CustomerOrderNotifier::CONTEXT_ADMIN_SHIPPING);
+        }
+
+        return $ok;
     }
 }

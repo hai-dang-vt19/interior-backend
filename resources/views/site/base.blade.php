@@ -78,8 +78,8 @@
 
                 <div id="siteNavMenuPanel" class="site-nav-menu-panel" hidden>
                     @php(
-                        $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
-                    )
+    $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
+)
                     @php($menuCategoryColumns = $menuCategories->chunk(max(1, (int) ceil($menuCategories->count() / 3))))
 
                     <div class="site-nav-menu-quick-links">
@@ -150,7 +150,8 @@
                         <button type="button" class="btn-close site-auth-modal-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
                         <div class="site-auth-tabs mb-3">
-                            <button type="button" class="site-auth-tab-btn is-active" data-auth-target="login">Đăng nhập</button>
+                            <button type="button" class="site-auth-tab-btn is-active" data-auth-target="login">Đăng
+                                nhập</button>
                             <button type="button" class="site-auth-tab-btn" data-auth-target="register">Đăng ký</button>
                         </div>
 
@@ -159,8 +160,8 @@
                             <form action="{{ route('site.login.submit') }}" method="POST" class="d-grid gap-2">
                                 @csrf
                                 <input type="hidden" name="auth_form" value="login">
-                                <input type="email" class="form-control" name="email"
-                                    value="{{ old('auth_form') === 'login' ? old('email') : '' }}" placeholder="Email"
+                                <input type="text" class="form-control" name="phone"
+                                    value="{{ old('auth_form') === 'login' ? old('phone') : '' }}" placeholder="Số điện thoại"
                                     required>
                                 <input type="password" class="form-control" name="password" placeholder="Password"
                                     required>

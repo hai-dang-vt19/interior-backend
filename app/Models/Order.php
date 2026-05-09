@@ -18,6 +18,7 @@ class Order extends Model
         'order_code',
         'customer_id',
         'total_amount',
+        'loyalty_discount_amount',
         'shipping_address',
         'shipping_phone',
         'shipping_provider',
@@ -34,6 +35,7 @@ class Order extends Model
 
     protected $casts = [
         'total_amount' => 'decimal:0',
+        'loyalty_discount_amount' => 'integer',
         'status' => OrderStatus::class,
         'payment_method' => PaymentMethod::class,
         'payment_status' => PaymentStatus::class,

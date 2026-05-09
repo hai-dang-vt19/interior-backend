@@ -23,10 +23,17 @@ class SiteAuthController extends Controller
     public function login(SiteLoginRequest $request)
     {
         $credentials = $request->validated();
-        $customer = $this->siteAuthService->attemptLogin($credentials['email'], $credentials['password']);
+        $customer = $this->siteAuthService->attemptLogin($credentials['phone'], $credentials['password']);
         if (!$customer) {
             return redirect()->back()
-                ->with('dataError', 'Email hoặc mật khẩu không đúng')
+                ->with('dataError', 'Số điện thoại hoặc mật khẩu không đúng')
+                ->with('auth_tab', 'login')
+                ->withInput();
+        }
+
+        if (!$customer->hasVerifiedEmail()) {
+            return redirect()->back()
+                ->with('dataError', 'Email chưa được xác thực. Vui lòng kiểm tra hộp thư đến hoặc mục spam.')
                 ->with('auth_tab', 'login')
                 ->withInput();
         }
@@ -43,10 +50,23 @@ class SiteAuthController extends Controller
     public function register(SiteRegisterRequest $request)
     {
         $payload = $request->validated();
-        $customer = $this->siteAuthService->registerCustomer($payload);
+        $this->siteAuthService->registerCustomer($payload);
 
-        Auth::guard('customer')->login($customer);
-        return redirect()->route('site.home')->with('dataSuccess', 'Đăng ký tài khoản thành công');
+        return redirect()->route('site.home')->with(
+            'dataSuccess',
+            'Đăng ký thành công. Vui lòng mở email và nhấn nút “Xác thực tài khoản” để hoàn tất trước khi đăng nhập.'
+        );
+    }
+
+    /**
+     * Trang kết quả sau khi người dùng nhấn liên kết xác thực trong email
+     */
+    public function verifyRegistrationEmail(Request $request)
+    {
+        $token = (string) $request->query('token', '');
+        $result = $this->siteAuthService->verifyRegistrationEmail($token);
+
+        return view('site.auth.register-verify-result', ['status' => $result['status']]);
     }
 
     public function logout(Request $request)

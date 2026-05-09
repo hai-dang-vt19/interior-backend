@@ -16,9 +16,6 @@
               <a class="nav-link {{ Route::is('admin.product.*') ? 'active' : '' }}" href="{{ route('admin.product.index') }}">Sản phẩm</a>
             </li>
             <li class="nav-item">
-              <a class="nav-link {{ Route::is('admin.product-review.*') ? 'active' : '' }}" href="{{ route('admin.product-review.index') }}">Đánh giá SP</a>
-            </li>
-            <li class="nav-item">
               <a class="nav-link {{ Route::is('admin.category.*') ? 'active' : '' }}" href="{{ route('admin.category.index') }}">Danh mục</a>
             </li>
           @endif

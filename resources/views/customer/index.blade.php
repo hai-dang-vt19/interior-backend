@@ -196,6 +196,8 @@
     </div>
 </div>
 
+@include('customer.partials.loyalty-policy')
+
 @include('customer.modal.create')
 @include('customer.modal.edit')
 @endsection
