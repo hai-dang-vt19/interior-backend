@@ -60,6 +60,17 @@ final class CustomerLoyalty
         };
     }
 
+    /** Nhãn hiển thị hạng (dùng chung Customer + snapshot trên đơn). */
+    public static function displayTierLabel(string $tier): string
+    {
+        return match ($tier) {
+            'silver' => 'Silver',
+            'gold' => 'Gold',
+            'platinum' => 'Platinum',
+            default => 'Standard',
+        };
+    }
+
     /**
      * Số tiền giảm (VND, nguyên) từ tạm tính và hạng hiện tại.
      */
@@ -117,7 +128,7 @@ final class CustomerLoyalty
                     sprintf('Silver: %s.', self::benefitLabel('silver')),
                     sprintf('Gold: %s.', self::benefitLabel('gold')),
                     sprintf('Platinum: %s.', self::benefitLabel('platinum')),
-                    'Đơn tạo chỉnh từ trang quản trị (admin): tổng tiền theo cách nhập và tính sẵn tại chỗ; chỉ luồng khách đặt trên site mới có trừ chiết khấu hạng.',
+                    'Đơn tạo từ admin: đơn giá dòng = giá website (KM + phiên bản); tạm tính trừ % hạng của khách tại thời điểm lưu (giống site). Trường loyalty_tier_snapshot ghi lại hạng đã áp dụng.',
                 ],
             ],
         ];

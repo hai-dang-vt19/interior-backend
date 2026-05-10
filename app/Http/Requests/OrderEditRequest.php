@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests;
 
+use App\Http\Requests\Concerns\ValidatesAdminOrderItemVariants;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
@@ -13,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class OrderEditRequest extends FormRequest
 {
+    use ValidatesAdminOrderItemVariants;
+
     public function authorize(): bool
     {
         return true;
@@ -34,6 +37,7 @@ class OrderEditRequest extends FormRequest
             'notes' => ['nullable', 'string'],
             'order_items' => ['required', 'array', 'min:1'],
             'order_items.*.product_id' => ['required', 'integer', 'exists:products,id'],
+            'order_items.*.product_variant_id' => ['nullable', 'integer'],
             'order_items.*.quantity' => ['required', 'integer', 'min:1'],
         ];
     }

@@ -41,6 +41,45 @@ final class ProductLinePricing
         return self::unitTotal($product, $item->productVariant);
     }
 
+    /**
+     * Đơn giá và variant ghi trên đơn admin — đồng bộ với storefront (KM sản phẩm + phụ phí phiên bản).
+     *
+     * @return array{unit: float, variant_id: ?int}
+     */
+    public static function resolveAdminOrderLine(Product $product, ?int $requestedVariantId): array
+    {
+        if (! $product->relationLoaded('variants')) {
+            $product->load([
+                'variants' => static function ($query): void {
+                    $query->where('is_active', true)
+                        ->orderByDesc('is_default')
+                        ->orderBy('id');
+                },
+            ]);
+        }
+
+        $variants = $product->variants;
+        if ($variants->isEmpty()) {
+            return [
+                'unit' => self::unitTotal($product, null),
+                'variant_id' => null,
+            ];
+        }
+
+        $variant = null;
+        if ($requestedVariantId !== null && $requestedVariantId > 0) {
+            $variant = $variants->firstWhere('id', $requestedVariantId);
+        }
+        if ($variant === null) {
+            $variant = $variants->firstWhere('is_default', true) ?? $variants->first();
+        }
+
+        return [
+            'unit' => self::unitTotal($product, $variant),
+            'variant_id' => $variant !== null ? (int) $variant->id : null,
+        ];
+    }
+
     /** Nhãn hiển thị variant thống nhất (SKU, màu, chất liệu). */
     public static function variantSummary(?ProductVariant $variant): ?string
     {

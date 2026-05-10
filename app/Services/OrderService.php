@@ -94,4 +94,35 @@ class OrderService extends BaseService
 
         return $ok;
     }
+
+    /**
+     * Dữ liệu thông báo đơn chờ xác nhận (badge + modal admin).
+     *
+     * @return array{count: int, list_limit: int, orders: array<int, array{id: int, order_code: string|null, customer_name: string, total_display: string, created_at: string|null, url: string}>}
+     */
+    public function getPendingOrderNotificationsPayload(int $listLimit = 40): array
+    {
+        $count = $this->orderRepository->countPendingOrders();
+        $orders = $this->orderRepository->getPendingOrdersForNotification($listLimit);
+
+        return [
+            'count' => $count,
+            'list_limit' => $listLimit,
+            'orders' => $orders
+                ->map(static function (Order $order): array {
+                    return [
+                        'id' => (int) $order->id,
+                        'order_code' => $order->order_code,
+                        'customer_name' => (string) ($order->customer?->full_name ?? '—'),
+                        'total_display' => $order->getTotalDisplay(),
+                        'created_at' => $order->created_at?->format('d/m/Y H:i'),
+                        'url' => $order->order_code
+                            ? route('admin.order.index', ['order_code' => $order->order_code])
+                            : route('admin.order.show', ['id' => $order->id]),
+                    ];
+                })
+                ->values()
+                ->all(),
+        ];
+    }
 }

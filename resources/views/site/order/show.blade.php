@@ -17,14 +17,7 @@
         default => 'site-badge-neutral'
     };
     $currentStatus = (int) ($order->status?->value ?? 1);
-    $statusLabel = match ($order->status?->value) {
-        1 => 'Chờ xác nhận',
-        2 => 'Đã xác nhận',
-        3 => 'Đang giao',
-        4 => 'Đã giao',
-        5 => 'Đã hủy',
-        default => 'Không xác định'
-    };
+    $statusLabel = $order->status?->label() ?? 'Không xác định';
     $paymentLabel = match ($order->payment_status?->value) {
         1 => 'Chưa thanh toán',
         2 => 'Đã thanh toán',
@@ -38,13 +31,7 @@
         4 => 'Ví điện tử',
         default => 'Không xác định'
     };
-    $steps = [
-        1 => 'Chờ xác nhận',
-        2 => 'Đã xác nhận',
-        3 => 'Đang giao',
-        4 => 'Đã giao',
-        5 => 'Đã hủy',
-    ];
+    $steps = collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])->all();
     $customerCanCancel = in_array($order->status, [OrderStatus::PENDING, OrderStatus::CONFIRMED], true);
 @endphp
 
@@ -166,7 +153,12 @@
                                 <th></th>
                             </tr>
                             <tr>
-                                <th colspan="3" class="text-end text-muted">Chiết khấu hạng thành viên</th>
+                                <th colspan="3" class="text-end text-muted">
+                                    Chiết khấu hạng
+                                    @if ($order->loyaltyTierSnapshotLabel())
+                                        ({{ $order->loyaltyTierSnapshotLabel() }}@if (($p = $order->loyaltyTierPercentSnapshot()) !== null && $p > 0), {{ $p }}%@endif)
+                                    @endif
+                                </th>
                                 <th class="text-success">− {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</th>
                                 <th></th>
                             </tr>

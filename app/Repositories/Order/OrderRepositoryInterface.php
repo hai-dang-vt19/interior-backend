@@ -24,4 +24,14 @@ interface OrderRepositoryInterface
     public function addReturnRequest(int $id, array $params, ?int $userId): bool;
     public function updateReturnRequestStatus(int $id, int $returnId, string $status, ?int $userId): bool;
     public function updateShipping(int $id, array $params, ?int $userId): bool;
+
+    /** Số đơn trạng thái chờ xác nhận (không xóa mềm). */
+    public function countPendingOrders(): int;
+
+    /**
+     * Danh sách đơn chờ xác nhận mới nhất (thông báo admin).
+     *
+     * @return \Illuminate\Support\Collection<int, \App\Models\Order>
+     */
+    public function getPendingOrdersForNotification(int $limit = 40): Collection;
 }

@@ -66,7 +66,7 @@
                 <button type="button" class="btn btn-sm btn-outline-primary btn-add-order-item-edit">Thêm dòng</button>
               </div>
               <div class="order-items-edit"></div>
-              <small class="text-muted">Tổng tiền sẽ được tự động tính lại khi lưu.</small>
+              <small class="text-muted">Đơn giá đồng bộ website; tổng thanh toán trừ chiết khấu theo hạng khách khi lưu. Hạng áp dụng được lưu trên đơn.</small>
             </div>
           </form>
         </div>

@@ -62,7 +62,15 @@
             </tbody>
         </table>
 
-        <h3 class="mt right">Tong cong: {{ $order->getTotalDisplay() }}</h3>
+        @php($invLines = $order->items->sum(static fn ($i) => (float) $i->price * (int) $i->quantity))
+        <p class="right mt"><span class="muted">Tam tinh:</span> {{ number_format($invLines, 0, ',', '.') }} đ</p>
+        @if ((int) $order->loyalty_discount_amount > 0)
+            <p class="right">
+                <span class="muted">Chiet khau hang{{ $order->loyaltyTierSnapshotLabel() ? ' ('.$order->loyaltyTierSnapshotLabel().')' : '' }}@if (($p = $order->loyaltyTierPercentSnapshot()) !== null && $p > 0), {{ $p }}%@endif:</span>
+                −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ
+            </p>
+        @endif
+        <h3 class="mt right">Thanh toan: {{ $order->getTotalDisplay() }}</h3>
     </div>
 </body>
 </html>

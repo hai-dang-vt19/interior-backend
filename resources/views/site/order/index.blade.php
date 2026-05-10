@@ -11,11 +11,11 @@
             <label for="ord_status" class="form-label mb-0">Lọc theo trạng thái đơn</label>
             <select id="ord_status" name="status" class="form-select">
                 <option value="0" {{ ((int) ($status ?? 0)) === 0 ? 'selected' : '' }}>Tất cả</option>
-                <option value="1" {{ ((int) ($status ?? 0)) === 1 ? 'selected' : '' }}>Chờ xác nhận</option>
-                <option value="2" {{ ((int) ($status ?? 0)) === 2 ? 'selected' : '' }}>Đã xác nhận</option>
-                <option value="3" {{ ((int) ($status ?? 0)) === 3 ? 'selected' : '' }}>Đang giao</option>
-                <option value="4" {{ ((int) ($status ?? 0)) === 4 ? 'selected' : '' }}>Đã giao</option>
-                <option value="5" {{ ((int) ($status ?? 0)) === 5 ? 'selected' : '' }}>Đã hủy</option>
+                @foreach (App\Enums\OrderStatus::cases() as $st)
+                    <option value="{{ $st->value }}" {{ ((int) ($status ?? 0)) === $st->value ? 'selected' : '' }}>
+                        {{ $st->label() }}
+                    </option>
+                @endforeach
             </select>
             <button type="submit" class="btn btn-outline-dark btn-sm">Áp dụng</button>
         </form>
@@ -44,14 +44,7 @@
                         </thead>
                         <tbody>
                             @foreach ($orders as $order)
-                                @php($statusLabel = match ($order->status?->value) {
-                                    1 => 'Chờ xác nhận',
-                                    2 => 'Đã xác nhận',
-                                    3 => 'Đang giao',
-                                    4 => 'Đã giao',
-                                    5 => 'Đã hủy',
-                                    default => 'Không xác định'
-                                })
+                                @php($statusLabel = $order->status?->label() ?? 'Không xác định')
                                 @php($paymentLabel = match ($order->payment_status?->value) {
                                     1 => 'Chưa thanh toán',
                                     2 => 'Đã thanh toán',

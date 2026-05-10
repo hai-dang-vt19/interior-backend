@@ -29,8 +29,19 @@
                     <p class="mb-1"><strong>Thanh toán:</strong> {{ $order->payment_method?->label() }} /
                         {{ $order->payment_status?->label() }}</p>
                     <p class="mb-0"><strong>Tổng đơn (total_amount):</strong> {{ $order->getTotalDisplay() }}</p>
+                    @if ($order->loyaltyTierSnapshotLabel())
+                        <p class="mb-1 small text-muted">
+                            <strong>Hạng áp dụng (lúc lưu đơn):</strong> {{ $order->loyaltyTierSnapshotLabel() }}
+                            @php($pctSnap = $order->loyaltyTierPercentSnapshot())
+                            @if ($pctSnap !== null && $pctSnap > 0)
+                                — chiết khấu {{ $pctSnap }}% trên tạm tính
+                            @endif
+                        </p>
+                    @endif
                     @if ((int) $order->loyalty_discount_amount > 0)
-                        <p class="mb-0 small text-muted">Gồm chiết khấu hạng khi đặt trên web: −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</p>
+                        <p class="mb-0 small text-muted">Đã trừ chiết khấu hạng: −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</p>
+                    @elseif ($order->loyaltyTierSnapshotLabel())
+                        <p class="mb-0 small text-muted">Không có chiết khấu % (hạng Standard hoặc tạm tính 0).</p>
                     @endif
                     @if ($order->notes)
                         <p class="mb-0 mt-2"><strong>Ghi chú khách:</strong> {{ $order->notes }}</p>
@@ -146,7 +157,12 @@
                     </tr>
                     @if ((int) $order->loyalty_discount_amount > 0)
                         <tr>
-                            <th colspan="3" class="text-end text-muted">Chiết khấu hạng (đặt web)</th>
+                            <th colspan="3" class="text-end text-muted">
+                                Chiết khấu hạng
+                                @if ($order->loyaltyTierSnapshotLabel())
+                                    ({{ $order->loyaltyTierSnapshotLabel() }}@if (($p = $order->loyaltyTierPercentSnapshot()) !== null && $p > 0), {{ $p }}%@endif)
+                                @endif
+                            </th>
                             <th class="text-success">− {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</th>
                         </tr>
                     @endif

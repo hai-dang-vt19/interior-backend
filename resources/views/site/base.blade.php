@@ -78,8 +78,8 @@
 
                 <div id="siteNavMenuPanel" class="site-nav-menu-panel" hidden>
                     @php(
-    $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
-)
+                        $menuCategories = \App\Models\Category::query()->orderBy('name')->get(['id', 'name'])
+                    )
                     @php($menuCategoryColumns = $menuCategories->chunk(max(1, (int) ceil($menuCategories->count() / 3))))
 
                     <div class="site-nav-menu-quick-links">
@@ -195,6 +195,8 @@
             </div>
         </div>
     @endguest
+
+    @include('site.component.footer')
 
 
     <div class="offcanvas offcanvas-end site-cart-offcanvas" tabindex="-1" id="siteCartPanel"
