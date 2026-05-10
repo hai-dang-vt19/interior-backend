@@ -86,3 +86,18 @@
     --bs-tooltip-bg: #2C3E50;
     --bs-tooltip-color: #FDFEFE;
 }
+
+.order-pending-notify-wrap {
+    .badge {
+        font-size: 0.65rem;
+        min-width: 1.25rem;
+    }
+}
+
+.admin-pending-order-item {
+    border-left: 3px solid transparent;
+}
+
+.admin-pending-order-item:hover {
+    border-left-color: var(--bs-primary, #0d6efd);
+}

@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Mail;
 
-use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Models\Order;
@@ -78,16 +77,7 @@ class CustomerOrderUpdatedMail extends Mailable
 
     private function vietnameseOrderStatus(): string
     {
-        $s = $this->order->status;
-
-        return match ($s) {
-            OrderStatus::PENDING => 'Chờ xác nhận',
-            OrderStatus::CONFIRMED => 'Đã xác nhận',
-            OrderStatus::SHIPPING => 'Đang giao hàng',
-            OrderStatus::DELIVERED => 'Đã giao hàng',
-            OrderStatus::CANCELLED => 'Đã huỷ',
-            default => (string) ($s?->label() ?? '—'),
-        };
+        return (string) ($this->order->status?->label() ?? '—');
     }
 
     private function vietnamesePaymentStatus(): string

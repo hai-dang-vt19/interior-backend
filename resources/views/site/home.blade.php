@@ -7,7 +7,7 @@
     <section class="nx-home">
         <div class="nx-topline mb-3 d-flex justify-content-between flex-wrap gap-2">
             <span>Nội thất cao cấp</span>
-            <span>HOTLINE: 0903 884 358</span>
+            <span>HOTLINE: 0947 508 288</span>
             <span>Thiết kế nội thất toàn diện</span>
         </div>
 

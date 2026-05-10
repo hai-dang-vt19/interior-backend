@@ -117,7 +117,7 @@
                                         data-bs-target="#modalEditOrder"
                                         data-route="{{ route('admin.order.update', $order->id) }}"
                                         data-customer-id="{{ $order->customer_id }}"
-                                        data-items='@json($order->items->map(fn($item) => ["product_id" => $item->product_id, "quantity" => $item->quantity])->values())'
+                                        data-items='@json($order->items->map(fn ($item) => ["product_id" => $item->product_id, "product_variant_id" => $item->product_variant_id, "quantity" => $item->quantity])->values())'
                                         data-shipping-address="{{ $order->shipping_address }}"
                                         data-shipping-phone="{{ $order->shipping_phone }}"
                                         data-shipping-provider="{{ $order->shipping_provider }}"
@@ -175,35 +175,81 @@
 @endsection
 
 @section('scripts')
+<script type="application/json" id="admin-order-catalog-json">@json($orderCatalogForJs)</script>
 <script type="module">
 $(document).ready(function() {
-    const productOptions = `@foreach ($products as $product)<option value="{{ $product->id }}">{{ $product->name }} ({{ number_format((float)($product->discount_price ?? $product->price), 0, ',', '.') }} đ)</option>@endforeach`;
+    const catalog = JSON.parse(document.getElementById('admin-order-catalog-json').textContent || '[]');
+    const catalogById = Object.fromEntries(catalog.map((p) => [String(p.id), p]));
 
-    const buildItemRow = (prefix, index, productId = '', quantity = 1) => {
-        return `
-            <div class="row g-2 order-item-row mb-2">
-                <div class="col-md-8">
-                    <select class="form-select" name="${prefix}[${index}][product_id]">
-                        ${productOptions}
-                    </select>
+    const formatMoney = (v) => new Intl.NumberFormat('vi-VN').format(Math.round(Number(v))) + ' đ';
+
+    const refreshVariantSelect = ($row) => {
+        const pid = String($row.find('.js-order-product').val() || '');
+        const p = catalogById[pid];
+        const wrap = $row.find('.js-variant-wrap');
+        const vsel = $row.find('.js-order-variant');
+        vsel.empty();
+        if (!p || !p.variants || !p.variants.length) {
+            wrap.hide();
+            vsel.prop('disabled', true);
+            return;
+        }
+        wrap.show();
+        vsel.prop('disabled', false);
+        p.variants.forEach((v) => {
+            vsel.append(`<option value="${v.id}">${v.label} — ${formatMoney(v.unit)}</option>`);
+        });
+    };
+
+    const buildItemRow = (prefix, index, productId = '', variantId = '', quantity = 1) => {
+        const $row = $(`
+            <div class="row g-2 order-item-row mb-2 align-items-end">
+                <div class="col-md-5">
+                    <label class="form-label small mb-0">Sản phẩm</label>
+                    <select class="form-select js-order-product" name="${prefix}[${index}][product_id]"></select>
                 </div>
-                <div class="col-md-3">
+                <div class="col-md-4 js-variant-wrap" style="display:none">
+                    <label class="form-label small mb-0">Phiên bản</label>
+                    <select class="form-select js-order-variant" name="${prefix}[${index}][product_variant_id]"></select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label small mb-0">SL</label>
                     <input type="number" class="form-control" name="${prefix}[${index}][quantity]" min="1" value="${quantity}">
                 </div>
                 <div class="col-md-1 d-grid">
                     <button type="button" class="btn btn-outline-danger btn-remove-item">&times;</button>
                 </div>
             </div>
-        `;
+        `);
+        const sel = $row.find('.js-order-product');
+        catalog.forEach((p) => {
+            const optLabel = p.variants && p.variants.length
+                ? `${p.name} (từ ${formatMoney(p.display_unit)})`
+                : `${p.name} (${formatMoney(p.display_unit)})`;
+            sel.append(`<option value="${p.id}">${optLabel}</option>`);
+        });
+        if (productId) {
+            sel.val(String(productId));
+        }
+        refreshVariantSelect($row);
+        if (variantId) {
+            $row.find('.js-order-variant').val(String(variantId));
+        }
+        return $row;
     };
 
     const resetCreateItems = () => {
         const wrap = $('#modalCreateOrder .order-items-create');
-        wrap.html(buildItemRow('order_items', 0));
+        wrap.empty().append(buildItemRow('order_items', 0));
         wrap.find('select[name="order_items[0][product_id]"] option:first').prop('selected', true);
+        refreshVariantSelect(wrap.find('.order-item-row').first());
     };
 
     resetCreateItems();
+
+    $(document).on('change', '.js-order-product', function() {
+        refreshVariantSelect($(this).closest('.order-item-row'));
+    });
 
     $('.btn-submit-create-order').on('click', function() {
         $('#modalCreateOrder form').submit();
@@ -212,8 +258,10 @@ $(document).ready(function() {
     $('.btn-add-order-item-create').on('click', function() {
         const wrap = $('#modalCreateOrder .order-items-create');
         const index = wrap.find('.order-item-row').length;
-        wrap.append(buildItemRow('order_items', index));
-        wrap.find(`select[name="order_items[${index}][product_id]"] option:first`).prop('selected', true);
+        const $row = buildItemRow('order_items', index);
+        wrap.append($row);
+        $row.find('select.js-order-product option:first').prop('selected', true);
+        refreshVariantSelect($row);
     });
 
     $('#modalCreateOrder').on('click', '.btn-remove-item', function() {
@@ -243,20 +291,23 @@ $(document).ready(function() {
         if (!items.length) {
             wrap.append(buildItemRow('order_items', 0));
             wrap.find('select[name="order_items[0][product_id]"] option:first').prop('selected', true);
+            refreshVariantSelect(wrap.find('.order-item-row').first());
             return;
         }
 
         items.forEach((item, index) => {
-            wrap.append(buildItemRow('order_items', index, item.product_id, item.quantity));
-            wrap.find(`select[name="order_items[${index}][product_id]"]`).val(String(item.product_id));
+            const vid = item.product_variant_id != null ? item.product_variant_id : '';
+            wrap.append(buildItemRow('order_items', index, item.product_id, vid, item.quantity));
         });
     });
 
     $('.btn-add-order-item-edit').on('click', function() {
         const wrap = $('#modalEditOrder .order-items-edit');
         const index = wrap.find('.order-item-row').length;
-        wrap.append(buildItemRow('order_items', index));
-        wrap.find(`select[name="order_items[${index}][product_id]"] option:first`).prop('selected', true);
+        const $row = buildItemRow('order_items', index);
+        wrap.append($row);
+        $row.find('select.js-order-product option:first').prop('selected', true);
+        refreshVariantSelect($row);
     });
 
     $('#modalEditOrder').on('click', '.btn-remove-item', function() {

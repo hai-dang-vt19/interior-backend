@@ -31,12 +31,29 @@
             </li>
           @endif
         </ul>
+        @auth
+            <div class="order-pending-notify-wrap me-3 d-flex align-items-center">
+                <button type="button" class="btn btn-link text-white text-decoration-none p-1 position-relative"
+                    id="adminPendingOrdersBtn" data-bs-toggle="modal" data-bs-target="#adminPendingOrdersModal"
+                    title="Đơn chờ xác nhận" aria-label="Đơn chờ xác nhận">
+                    {{-- Thay thế SVG dưới bằng icon thông báo của bạn --}}
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
+                        viewBox="0 0 16 16" aria-hidden="true">
+                        <path
+                            d="M8 16a2 2 0 0 0 2-2H6a2 2 0 0 0 2 2zm.995-14.901a1 1 0 1 0-1.99 0A5.002 5.002 0 0 0 3 6c0 1.098-.5 6-2 7h14c-1.5-1-2-5.902-2-7 0-2.42-1.72-4.44-4.005-4.901z" />
+                    </svg>
+                    <span
+                        class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger d-none"
+                        id="adminPendingOrdersBadge">0</span>
+                </button>
+            </div>
+        @endauth
         <span class="navbar-text">
           @if ($isAdmin)
-            <a href="{{ route('admin.auth-activity-logs') }}" class="btn btn-sm btn-outline-secondary me-2">Nhật ký auth</a>
+            <a href="{{ route('admin.auth-activity-logs') }}" class="btn btn-sm btn-outline-secondary text-white me-2">Nhật ký auth</a>
           @endif
-          <span class="me-2">{{ $currentUser?->full_name }} ({{ $currentUser?->role?->label() }})</span>
-          <a href="{{ route('admin.change-password') }}" class="btn btn-sm btn-outline-primary me-2">Đổi mật khẩu</a>
+          <span class="me-2 text-white">{{ $currentUser?->full_name }} ({{ $currentUser?->role?->label() }})</span>
+          <a href="{{ route('admin.change-password') }}" class="btn btn-sm btn-outline-primary text-white me-2">Đổi mật khẩu</a>
           <form action="{{ route('admin.logout') }}" method="POST" class="d-inline">
               @csrf
               <button type="submit" class="btn btn-sm btn-danger">Logout</button>

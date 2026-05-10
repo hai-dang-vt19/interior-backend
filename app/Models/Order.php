@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Support\CustomerLoyalty;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -19,6 +20,7 @@ class Order extends Model
         'customer_id',
         'total_amount',
         'loyalty_discount_amount',
+        'loyalty_tier_snapshot',
         'shipping_address',
         'shipping_phone',
         'shipping_provider',
@@ -81,5 +83,26 @@ class Order extends Model
     public function getTotalDisplay()
     {
         return number_format((float) $this->total_amount, 0, ',', '.') . ' đ';
+    }
+
+    /** Nhãn hạng đã áp dụng khi tạo/cập nhật đơn (null với đơn cũ chưa snapshot). */
+    public function loyaltyTierSnapshotLabel(): ?string
+    {
+        $snap = $this->loyalty_tier_snapshot;
+        if ($snap === null || $snap === '') {
+            return null;
+        }
+
+        return CustomerLoyalty::displayTierLabel((string) $snap);
+    }
+
+    /** % chiết khấu theo snapshot hạng (null nếu không có snapshot). */
+    public function loyaltyTierPercentSnapshot(): ?int
+    {
+        if ($this->loyalty_tier_snapshot === null || $this->loyalty_tier_snapshot === '') {
+            return null;
+        }
+
+        return CustomerLoyalty::discountPercentForTier((string) $this->loyalty_tier_snapshot);
     }
 }

@@ -15,6 +15,7 @@ use App\Models\OrderReturnRequest;
 use App\Models\Product;
 use App\Support\CustomerLoyalty;
 use App\Support\OrderInventory;
+use App\Support\ProductLinePricing;
 use Carbon\Carbon;
 use Illuminate\Contracts\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
@@ -77,7 +78,17 @@ class OrderRepository implements OrderRepositoryInterface
 
     public function getProducts(): Collection
     {
-        return Product::query()->whereNull('deleted_at')->orderBy('name')->get();
+        return Product::query()
+            ->whereNull('deleted_at')
+            ->with([
+                'variants' => static function ($query): void {
+                    $query->where('is_active', true)
+                        ->orderByDesc('is_default')
+                        ->orderBy('id');
+                },
+            ])
+            ->orderBy('name')
+            ->get();
     }
 
     public function createOrder(array $params): Order
@@ -85,22 +96,26 @@ class OrderRepository implements OrderRepositoryInterface
         return DB::transaction(function () use ($params) {
             $items = $params['order_items'];
             $productIds = collect($items)->pluck('product_id')->unique()->values()->all();
-            $products = Product::query()->whereIn('id', $productIds)->get()->keyBy('id');
+            $products = Product::query()
+                ->whereIn('id', $productIds)
+                ->with([
+                    'variants' => static function ($query): void {
+                        $query->where('is_active', true)
+                            ->orderByDesc('is_default')
+                            ->orderBy('id');
+                    },
+                ])
+                ->get()
+                ->keyBy('id');
 
-            $totalAmount = 0;
-            foreach ($items as $item) {
-                $product = $products->get((int) $item['product_id']);
-                if (!$product) {
-                    continue;
-                }
-                $unitPrice = (float) ($product->discount_price ?? $product->price);
-                $totalAmount += $unitPrice * (int) $item['quantity'];
-            }
+            $subtotal = $this->sumAdminOrderSubtotal($items, $products);
+            $loyaltyApplied = $this->applyLoyaltyForCustomerSubtotal($subtotal, (int) $params['customer_id']);
 
             $order = $this->model->create([
                 'customer_id' => $params['customer_id'],
-                'total_amount' => $totalAmount,
-                'loyalty_discount_amount' => 0,
+                'total_amount' => $loyaltyApplied['total_amount'],
+                'loyalty_discount_amount' => $loyaltyApplied['loyalty_discount_amount'],
+                'loyalty_tier_snapshot' => $loyaltyApplied['loyalty_tier_snapshot'],
                 'shipping_address' => $params['shipping_address'],
                 'shipping_phone' => $params['shipping_phone'],
                 'shipping_provider' => $params['shipping_provider'] ?? null,
@@ -119,15 +134,19 @@ class OrderRepository implements OrderRepositoryInterface
 
             foreach ($items as $item) {
                 $product = $products->get((int) $item['product_id']);
-                if (!$product) {
+                if (! $product) {
                     continue;
                 }
-                $unitPrice = (float) ($product->discount_price ?? $product->price);
+                $reqVariant = isset($item['product_variant_id']) && $item['product_variant_id'] !== '' && $item['product_variant_id'] !== null
+                    ? (int) $item['product_variant_id']
+                    : null;
+                $resolved = ProductLinePricing::resolveAdminOrderLine($product, $reqVariant);
                 OrderItem::query()->create([
                     'order_id' => $order->id,
                     'product_id' => (int) $item['product_id'],
+                    'product_variant_id' => $resolved['variant_id'],
                     'quantity' => (int) $item['quantity'],
-                    'price' => $unitPrice,
+                    'price' => $resolved['unit'],
                 ]);
             }
 
@@ -157,22 +176,26 @@ class OrderRepository implements OrderRepositoryInterface
             $oldCustomerId = (int) $order->customer_id;
             $items = $params['order_items'];
             $productIds = collect($items)->pluck('product_id')->unique()->values()->all();
-            $products = Product::query()->whereIn('id', $productIds)->get()->keyBy('id');
+            $products = Product::query()
+                ->whereIn('id', $productIds)
+                ->with([
+                    'variants' => static function ($query): void {
+                        $query->where('is_active', true)
+                            ->orderByDesc('is_default')
+                            ->orderBy('id');
+                    },
+                ])
+                ->get()
+                ->keyBy('id');
 
-            $totalAmount = 0;
-            foreach ($items as $item) {
-                $product = $products->get((int) $item['product_id']);
-                if (!$product) {
-                    continue;
-                }
-                $unitPrice = (float) ($product->discount_price ?? $product->price);
-                $totalAmount += $unitPrice * (int) $item['quantity'];
-            }
+            $subtotal = $this->sumAdminOrderSubtotal($items, $products);
+            $loyaltyApplied = $this->applyLoyaltyForCustomerSubtotal($subtotal, (int) $params['customer_id']);
 
             $updated = $order->update([
                 'customer_id' => $params['customer_id'],
-                'total_amount' => $totalAmount,
-                'loyalty_discount_amount' => 0,
+                'total_amount' => $loyaltyApplied['total_amount'],
+                'loyalty_discount_amount' => $loyaltyApplied['loyalty_discount_amount'],
+                'loyalty_tier_snapshot' => $loyaltyApplied['loyalty_tier_snapshot'],
                 'shipping_address' => $params['shipping_address'],
                 'shipping_phone' => $params['shipping_phone'],
                 'shipping_provider' => $params['shipping_provider'] ?? null,
@@ -194,15 +217,19 @@ class OrderRepository implements OrderRepositoryInterface
                 OrderItem::query()->where('order_id', $order->id)->delete();
                 foreach ($items as $item) {
                     $product = $products->get((int) $item['product_id']);
-                    if (!$product) {
+                    if (! $product) {
                         continue;
                     }
-                    $unitPrice = (float) ($product->discount_price ?? $product->price);
+                    $reqVariant = isset($item['product_variant_id']) && $item['product_variant_id'] !== '' && $item['product_variant_id'] !== null
+                        ? (int) $item['product_variant_id']
+                        : null;
+                    $resolved = ProductLinePricing::resolveAdminOrderLine($product, $reqVariant);
                     OrderItem::query()->create([
                         'order_id' => $order->id,
                         'product_id' => (int) $item['product_id'],
+                        'product_variant_id' => $resolved['variant_id'],
                         'quantity' => (int) $item['quantity'],
-                        'price' => $unitPrice,
+                        'price' => $resolved['unit'],
                     ]);
                 }
 
@@ -358,6 +385,66 @@ class OrderRepository implements OrderRepositoryInterface
         }
 
         return $updated;
+    }
+
+    /** Đếm đơn trạng thái chờ xác nhận (không tính đơn đã xóa mềm). */
+    public function countPendingOrders(): int
+    {
+        return $this->model->query()
+            ->whereNull('deleted_at')
+            ->where('status', OrderStatus::PENDING->value)
+            ->count();
+    }
+
+    /** Danh sách đơn chờ xác nhận mới nhất cho thông báo header admin. */
+    public function getPendingOrdersForNotification(int $limit = 40): Collection
+    {
+        return $this->model->query()
+            ->with(['customer:id,full_name'])
+            ->whereNull('deleted_at')
+            ->where('status', OrderStatus::PENDING->value)
+            ->latest('id')
+            ->limit($limit)
+            ->get(['id', 'order_code', 'customer_id', 'total_amount', 'created_at']);
+    }
+
+    /**
+     * Tạm tính đơn admin (đơn giá website × SL từng dòng).
+     */
+    private function sumAdminOrderSubtotal(array $items, Collection $products): float
+    {
+        $total = 0.0;
+        foreach ($items as $item) {
+            $product = $products->get((int) $item['product_id']);
+            if (! $product) {
+                continue;
+            }
+            $reqVariant = isset($item['product_variant_id']) && $item['product_variant_id'] !== '' && $item['product_variant_id'] !== null
+                ? (int) $item['product_variant_id']
+                : null;
+            $resolved = ProductLinePricing::resolveAdminOrderLine($product, $reqVariant);
+            $total += $resolved['unit'] * (int) $item['quantity'];
+        }
+
+        return $total;
+    }
+
+    /**
+     * Trừ chiết khấu hạng giống storefront; lưu snapshot mã hạng lúc lưu đơn.
+     *
+     * @return array{total_amount: int, loyalty_discount_amount: int, loyalty_tier_snapshot: string}
+     */
+    private function applyLoyaltyForCustomerSubtotal(float $subtotalVnd, int $customerId): array
+    {
+        $customer = Customer::query()->find($customerId);
+        $tier = (string) ($customer?->loyalty_tier ?? 'standard');
+        $loyaltyDiscount = CustomerLoyalty::computeDiscountAmountFromSubtotal($subtotalVnd, $tier);
+
+        return [
+            'loyalty_discount_amount' => $loyaltyDiscount,
+            'total_amount' => max(0, (int) round($subtotalVnd - $loyaltyDiscount)),
+            'loyalty_tier_snapshot' => $tier,
+        ];
     }
 
     // Đồng bộ điểm thưởng và hạng khách hàng theo đơn đã giao + đã thanh toán

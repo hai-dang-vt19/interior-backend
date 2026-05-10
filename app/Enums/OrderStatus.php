@@ -13,11 +13,11 @@ enum OrderStatus: int
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
-            self::CONFIRMED => 'Confirmed',
-            self::SHIPPING => 'Shipping',
-            self::DELIVERED => 'Delivered',
-            self::CANCELLED => 'Cancelled',
+            self::PENDING => 'Chờ xác nhận',
+            self::CONFIRMED => 'Đã xác nhận',
+            self::SHIPPING => 'Đang giao hàng',
+            self::DELIVERED => 'Đã giao hàng',
+            self::CANCELLED => 'Đã hủy',
         };
     }
 } 

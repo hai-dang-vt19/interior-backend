@@ -92,6 +92,7 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
             $order = $this->orderModel->query()->create([
                 'customer_id' => $customerId,
                 'loyalty_discount_amount' => $loyaltyDiscount,
+                'loyalty_tier_snapshot' => (string) $customer->loyalty_tier,
                 'total_amount' => $total,
                 'shipping_address' => $payload['shipping_address'],
                 'shipping_phone' => $payload['shipping_phone'],

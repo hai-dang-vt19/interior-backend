@@ -92,12 +92,7 @@ class Customer extends Authenticatable
 
     public function formatLoyaltyTier()
     {
-        return match ($this->loyalty_tier) {
-            'silver' => 'Silver',
-            'gold' => 'Gold',
-            'platinum' => 'Platinum',
-            default => 'Standard',
-        };
+        return CustomerLoyalty::displayTierLabel((string) $this->loyalty_tier);
     }
 
     public function getLoyaltyBenefit()

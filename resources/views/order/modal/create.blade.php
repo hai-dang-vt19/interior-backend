@@ -66,7 +66,7 @@
                 <button type="button" class="btn btn-sm btn-outline-primary btn-add-order-item-create">Thêm dòng</button>
               </div>
               <div class="order-items-create"></div>
-              <small class="text-muted">Tổng tiền sẽ được tự động tính từ sản phẩm và số lượng.</small>
+              <small class="text-muted">Đơn giá đồng bộ website (KM + phiên bản). Tổng thanh toán = tạm tính − chiết khấu % theo <strong>hạng khách</strong> tại thời điểm lưu (cùng luật với đặt trên web); hệ thống lưu hạng đã áp dụng trên đơn.</small>
             </div>
           </form>
         </div>

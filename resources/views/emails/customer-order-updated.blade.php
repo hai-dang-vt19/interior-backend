@@ -10,7 +10,18 @@ Xin chào **{{ $order->customer?->full_name ?? 'Quý khách' }}**,
 - **Thanh toán:** {{ $paymentMethodVi }} — {{ $paymentStatusVi }}
 - **Tổng tiền:** {{ number_format((float) $order->total_amount, 0, ',', '.') }} đ
 @if ((int) $order->loyalty_discount_amount > 0)
-- **Đã giảm (hạng thành viên):** {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ
+@php
+    $tierLbl = $order->loyaltyTierSnapshotLabel();
+    $pct = $order->loyaltyTierPercentSnapshot();
+    $loyaltyMailSuffix = '';
+    if ($tierLbl) {
+        $loyaltyMailSuffix = $tierLbl;
+    }
+    if ($pct !== null && $pct > 0) {
+        $loyaltyMailSuffix .= ($loyaltyMailSuffix !== '' ? ' ' : '').$pct.'%';
+    }
+@endphp
+- **Đã giảm (hạng thành viên{{ $loyaltyMailSuffix !== '' ? ' — '.$loyaltyMailSuffix : '' }}):** {{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ
 @endif
 - **Địa chỉ giao hàng:** {{ $order->shipping_address }}
 - **Điện thoại liên hệ:** {{ $order->shipping_phone }}

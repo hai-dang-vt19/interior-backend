@@ -14,6 +14,9 @@
         <div class="header">
             @include('component.navbar')
         </div>
+        @auth
+            @include('component.admin-order-pending-notify-modal')
+        @endauth
 
         <div class="container-fluid px-5 pt-3">
             <div>

@@ -76,6 +76,7 @@ Route::prefix('admin')->group(function () {
         });
 
         Route::middleware('role:ADMIN,STAFF')->prefix('order')->name('admin.order.')->group(function () {
+            Route::get('pending-notifications', [OrderController::class, 'pendingNotifications'])->name('pending-notifications');
             Route::post('', [OrderController::class, 'store'])->name('store');
             Route::get('{id}/show', [OrderController::class, 'show'])->name('show');
             Route::get('{id}/invoice', [OrderController::class, 'invoice'])->name('invoice');
