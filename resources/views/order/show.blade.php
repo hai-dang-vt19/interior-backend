@@ -12,64 +12,158 @@
 @section('content')
     <div class="row g-3">
         <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header">
-                    <h6 class="mb-0">Thông tin đơn hàng</h6>
+            @php
+                use App\Enums\OrderStatus;
+                use App\Enums\PaymentStatus;
+                $orderStatusBadge =
+                    match ($order->status) {
+                        OrderStatus::PENDING => 'text-bg-warning',
+                        OrderStatus::CONFIRMED => 'text-bg-info',
+                        OrderStatus::SHIPPING => 'text-bg-primary',
+                        OrderStatus::DELIVERED => 'text-bg-success',
+                        OrderStatus::CANCELLED => 'text-bg-secondary',
+                        default => 'text-bg-light text-dark border',
+                    };
+                $paymentStatusBadge =
+                    match ($order->payment_status) {
+                        PaymentStatus::PAID => 'text-bg-success',
+                        PaymentStatus::FAILED => 'text-bg-danger',
+                        PaymentStatus::PENDING => 'text-bg-warning text-dark',
+                        default => 'text-bg-light text-dark border',
+                    };
+            @endphp
+            <div class="card h-100 border shadow-sm">
+                <div class="card-header bg-body-secondary border-bottom py-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <h6 class="mb-1">Thông tin đơn hàng</h6>
+                            <div class="text-muted small">
+                                Đặt lúc <strong>{{ $order->created_at?->format('d/m/Y H:i') ?? '—' }}</strong>
+                            </div>
+                        </div>
+                        <div class="d-flex flex-wrap gap-1 justify-content-end">
+                            <span class="badge rounded-pill {{ $orderStatusBadge }}">{{ $order->status?->label() }}</span>
+                            <span class="badge rounded-pill {{ $paymentStatusBadge }}">{{ $order->payment_status?->label() }}</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
-                    <p class="mb-1"><strong>Khách hàng:</strong> {{ $order->customer?->full_name }}</p>
-                    <p class="mb-1"><strong>SĐT giao hàng:</strong> {{ $order->shipping_phone }}</p>
-                    <p class="mb-1"><strong>Địa chỉ:</strong> {{ $order->shipping_address }}</p>
-                    <p class="mb-1"><strong>Đơn vị VC:</strong> {{ $order->shipping_provider ?? '-' }}</p>
-                    <p class="mb-1"><strong>Mã vận đơn:</strong> {{ $order->tracking_number ?? '-' }}</p>
-                    <p class="mb-1"><strong>Ngày gửi:</strong> {{ $order->shipped_at?->format('d/m/Y H:i') ?? '-' }}</p>
-                    <p class="mb-1"><strong>Ngày giao:</strong> {{ $order->delivered_at?->format('d/m/Y H:i') ?? '-' }}
-                    </p>
-                    <p class="mb-1"><strong>Trạng thái:</strong> {{ $order->status?->label() }}</p>
-                    <p class="mb-1"><strong>Thanh toán:</strong> {{ $order->payment_method?->label() }} /
-                        {{ $order->payment_status?->label() }}</p>
-                    <p class="mb-0"><strong>Tổng đơn (total_amount):</strong> {{ $order->getTotalDisplay() }}</p>
-                    @if ($order->loyaltyTierSnapshotLabel())
-                        <p class="mb-1 small text-muted">
-                            <strong>Hạng áp dụng (lúc lưu đơn):</strong> {{ $order->loyaltyTierSnapshotLabel() }}
-                            @php($pctSnap = $order->loyaltyTierPercentSnapshot())
-                            @if ($pctSnap !== null && $pctSnap > 0)
-                                — chiết khấu {{ $pctSnap }}% trên tạm tính
-                            @endif
-                        </p>
-                    @endif
-                    @if ((int) $order->loyalty_discount_amount > 0)
-                        <p class="mb-0 small text-muted">Đã trừ chiết khấu hạng: −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }} đ</p>
-                    @elseif ($order->loyaltyTierSnapshotLabel())
-                        <p class="mb-0 small text-muted">Không có chiết khấu % (hạng Standard hoặc tạm tính 0).</p>
-                    @endif
+                    <div class="rounded-3 bg-body-secondary px-3 py-2 mb-4">
+                        <div class="small text-muted mb-0">Mã đơn</div>
+                        <code class="d-block fs-5 fw-semibold text-body">{{ $order->order_code ?: '#'.$order->id }}</code>
+                    </div>
+
+                    @php($sepRow = 'row g-2 small align-items-start border-bottom border-light pb-3 mb-3 mx-0')
+                    <div class="row g-4">
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted fw-bold small mb-3 pb-2 border-bottom border-light">Khách &amp;
+                                nhận hàng</h6>
+                            <div class="mb-0">
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-5 text-muted">Khách hàng</div>
+                                    <div class="col-7 fw-medium text-break">{{ $order->customer?->full_name ?? '—' }}</div>
+                                </div>
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-5 text-muted">SĐT giao hàng</div>
+                                    <div class="col-7">{{ $order->shipping_phone }}</div>
+                                </div>
+                                <div class="row g-2 small mx-0">
+                                    <div class="col-12 text-muted">Địa chỉ giao</div>
+                                    <div class="col-12 text-break">{{ $order->shipping_address }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="text-uppercase text-muted fw-bold small mb-3 pb-2 border-bottom border-light">Vận chuyển
+                            </h6>
+                            <div class="mb-0">
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-5 text-muted">Đơn vị VC</div>
+                                    <div class="col-7">{{ $order->shipping_provider ?? '—' }}</div>
+                                </div>
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-5 text-muted">Mã vận đơn</div>
+                                    <div class="col-7">{{ $order->tracking_number ?? '—' }}</div>
+                                </div>
+                                <div class="{{ $sepRow }} border-0 mb-2 pb-0">
+                                    <div class="col-5 text-muted">Ngày gửi</div>
+                                    <div class="col-7">{{ $order->shipped_at?->format('d/m/Y H:i') ?? '—' }}</div>
+                                </div>
+                                <div class="row g-2 small mx-0">
+                                    <div class="col-5 text-muted">Ngày giao</div>
+                                    <div class="col-7">{{ $order->delivered_at?->format('d/m/Y H:i') ?? '—' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <h6 class="text-uppercase text-muted fw-bold small mb-3 pb-2 border-bottom border-light">Thanh toán
+                            </h6>
+                            <div class="mb-0">
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-sm-4 col-lg-3 text-muted">Phương thức</div>
+                                    <div class="col-sm-8 col-lg-9">{{ $order->payment_method?->label() ?? '—' }}</div>
+                                </div>
+                                <div class="{{ $sepRow }}">
+                                    <div class="col-sm-4 col-lg-3 text-muted">Trạng thái TT</div>
+                                    <div class="col-sm-8 col-lg-9">{{ $order->payment_status?->label() ?? '—' }}</div>
+                                </div>
+                                <div class="row g-2 align-items-baseline mx-0">
+                                    <div class="col-sm-4 col-lg-3 text-muted small">Tổng thanh toán</div>
+                                    <div class="col-sm-8 col-lg-9 fs-5 fw-semibold text-success">{{ $order->getTotalDisplay() }}
+                                    </div>
+                                </div>
+                                @if ($order->loyaltyTierSnapshotLabel())
+                                    <div class="small text-muted border-top pt-3 mt-3">
+                                        Hạng lúc lưu đơn: <strong>{{ $order->loyaltyTierSnapshotLabel() }}</strong>
+                                        @php($pctSnap = $order->loyaltyTierPercentSnapshot())
+                                        @if ($pctSnap !== null && $pctSnap > 0)
+                                            · Chiết khấu {{ $pctSnap }}% trên tạm tính
+                                        @endif
+                                    </div>
+                                @endif
+                                @if ((int) $order->loyalty_discount_amount > 0)
+                                    <div class="small text-success mt-2">Đã trừ chiết khấu hạng: −{{ number_format((int) $order->loyalty_discount_amount, 0, ',', '.') }}
+                                        đ</div>
+                                @elseif ($order->loyaltyTierSnapshotLabel())
+                                    <div class="small text-muted mt-2">Không có chiết khấu % hạng (Standard hoặc tạm tính 0).</div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
                     @if ($order->notes)
-                        <p class="mb-0 mt-2"><strong>Ghi chú khách:</strong> {{ $order->notes }}</p>
+                        <div class="alert alert-secondary border mt-4 py-2 px-3 small mb-0">
+                            <strong class="d-block text-dark mb-1">Ghi chú khách</strong>
+                            <span class="text-break">{{ $order->notes }}</span>
+                        </div>
                     @endif
                 </div>
             </div>
         </div>
-        <div class="col-lg-6">
-            <div class="card h-100">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                    <h6 class="mb-0">Tạo yêu cầu đổi/trả</h6>
+        <div class="col-lg-6 d-flex flex-column gap-3">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
+                    <h6 class="mb-0">Cập nhật giao hàng</h6>
                     <a href="{{ route('admin.order.invoice', $order->id) }}" class="btn btn-sm btn-success">Xuất hóa đơn
                         PDF</a>
                 </div>
                 <div class="card-body">
-                    <form action="{{ route('admin.order.shipping.update', $order->id) }}" method="POST"
-                        class="row g-2 mb-3">
+                    <p class="small text-muted mb-3">Đơn vị VC, vận đơn, trạng thái đơn và mốc thời gian gửi/giao.</p>
+                    <form action="{{ route('admin.order.shipping.update', $order->id) }}" method="POST" class="row g-2">
                         @csrf
                         @method('PATCH')
                         <div class="col-md-4">
+                            <label class="form-label small mb-0">Đơn vị vận chuyển</label>
                             <input type="text" class="form-control" name="shipping_provider"
                                 value="{{ $order->shipping_provider }}" placeholder="Đơn vị vận chuyển">
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label small mb-0">Mã vận đơn</label>
                             <input type="text" class="form-control" name="tracking_number"
                                 value="{{ $order->tracking_number }}" placeholder="Mã vận đơn">
                         </div>
                         <div class="col-md-4">
+                            <label class="form-label small mb-0">Trạng thái đơn</label>
                             <select class="form-select" name="status">
                                 @foreach (App\Enums\OrderStatus::cases() as $status)
                                     <option value="{{ $status->value }}"
@@ -79,32 +173,46 @@
                             </select>
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label small mb-0">Ngày gửi</label>
                             <input type="datetime-local" class="form-control" name="shipped_at"
                                 value="{{ $order->shipped_at?->format('Y-m-d\TH:i') }}">
                         </div>
                         <div class="col-md-6">
+                            <label class="form-label small mb-0">Ngày giao</label>
                             <input type="datetime-local" class="form-control" name="delivered_at"
                                 value="{{ $order->delivered_at?->format('Y-m-d\TH:i') }}">
                         </div>
                         <div class="col-12">
+                            <label class="form-label small mb-0">Ghi chú</label>
                             <input type="text" class="form-control" name="note"
                                 placeholder="Ghi chú cập nhật giao hàng">
                         </div>
                         <div class="col-12 d-grid">
-                            <button type="submit" class="btn btn-warning">Cập nhật giao hàng</button>
+                            <button type="submit" class="btn btn-warning">Lưu cập nhật giao hàng</button>
                         </div>
                     </form>
+                </div>
+            </div>
 
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="mb-0">Tạo yêu cầu đổi / trả hàng</h6>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">Ghi nhận yêu cầu nội bộ cho đơn này; theo dõi danh sách bên dưới mục
+                        “Yêu cầu đổi/trả”.</p>
                     <form action="{{ route('admin.order.return.store', $order->id) }}" method="POST" class="row g-2">
                         @csrf
                         <div class="col-md-4">
+                            <label class="form-label small mb-0">Loại</label>
                             <select class="form-select" name="type">
                                 <option value="return">Trả hàng</option>
                                 <option value="exchange">Đổi hàng</option>
                             </select>
                         </div>
                         <div class="col-md-8">
-                            <input type="text" class="form-control" name="reason" placeholder="Lý do">
+                            <label class="form-label small mb-0">Lý do</label>
+                            <input type="text" class="form-control" name="reason" placeholder="Lý do" required>
                         </div>
                         <div class="col-12 d-grid">
                             <button type="submit" class="btn btn-primary">Gửi yêu cầu</button>

@@ -17,6 +17,7 @@ class Order extends Model
 
     protected $fillable = [
         'order_code',
+        'vnp_txn_ref',
         'customer_id',
         'total_amount',
         'loyalty_discount_amount',
@@ -82,7 +83,7 @@ class Order extends Model
 
     public function getTotalDisplay()
     {
-        return number_format((float) $this->total_amount, 0, ',', '.') . ' đ';
+        return number_format((float) $this->total_amount, 0, ',', '.').' đ';
     }
 
     /** Nhãn hạng đã áp dụng khi tạo/cập nhật đơn (null với đơn cũ chưa snapshot). */

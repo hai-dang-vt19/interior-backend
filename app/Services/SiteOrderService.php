@@ -8,10 +8,10 @@ use App\Enums\PaymentMethod;
 use App\Models\Cart;
 use App\Models\Customer;
 use App\Models\Order;
-use App\Support\CustomerLoyalty;
-use App\Support\CustomerOrderNotifier;
 use App\Repositories\Site\SiteRepositoryInterface;
 use App\Repositories\SiteOrder\SiteOrderRepositoryInterface;
+use App\Support\CustomerLoyalty;
+use App\Support\CustomerOrderNotifier;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class SiteOrderService extends BaseService
@@ -38,7 +38,7 @@ class SiteOrderService extends BaseService
         return [
             'cart' => $cart,
             'checkoutItems' => $checkoutItems,
-            'paymentMethods' => PaymentMethod::cases(),
+            'paymentMethods' => PaymentMethod::forSiteCheckout(),
             'selectedItemsCsv' => $normalizedCsv,
             'defaultShippingAddress' => $this->siteRepository->getDefaultShippingAddressText($customerId),
             'checkoutSubtotal' => $checkoutSubtotal,
@@ -87,6 +87,12 @@ class SiteOrderService extends BaseService
         CustomerOrderNotifier::sendOrderUpdatedEmail($order, CustomerOrderNotifier::CONTEXT_CUSTOMER_CANCEL);
 
         return $order;
+    }
+
+    /** Sau thanh toán VNPay thất bại: cấp mã giao dịch mới và chuyển trạng thái chờ thanh toán. */
+    public function renewOrderForVnpayRetry(int $customerId, int $orderId): Order
+    {
+        return $this->siteOrderRepository->renewVnpTxnRefAfterFailure($customerId, $orderId);
     }
 
     /** Khi không truyền selected_items (ví dụ vào checkout từ trang giỏ), mặc định lấy toàn bộ dòng trong giỏ. */

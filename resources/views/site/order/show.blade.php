@@ -2,6 +2,8 @@
 
 @php
     use App\Enums\OrderStatus;
+    use App\Enums\PaymentMethod;
+    use App\Enums\PaymentStatus;
     $statusClass = match ($order->status?->value) {
         1 => 'site-badge-status-pending',
         2 => 'site-badge-status-confirmed',
@@ -18,21 +20,21 @@
     };
     $currentStatus = (int) ($order->status?->value ?? 1);
     $statusLabel = $order->status?->label() ?? 'Không xác định';
-    $paymentLabel = match ($order->payment_status?->value) {
-        1 => 'Chưa thanh toán',
-        2 => 'Đã thanh toán',
-        3 => 'Thanh toán lỗi',
-        default => 'Không xác định'
-    };
+    $paymentLabel = $order->payment_status?->label() ?? 'Không xác định';
     $methodLabel = match ($order->payment_method?->value) {
         1 => 'Tiền mặt',
         2 => 'COD',
         3 => 'Chuyển khoản',
         4 => 'Ví điện tử',
+        5 => 'Thanh toán online (VNPay)',
         default => 'Không xác định'
     };
     $steps = collect(OrderStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])->all();
     $customerCanCancel = in_array($order->status, [OrderStatus::PENDING, OrderStatus::CONFIRMED], true);
+    $canRetryVnpay =
+        $order->payment_method === PaymentMethod::VNPAY
+        && $order->payment_status === PaymentStatus::FAILED
+        && $order->status !== OrderStatus::CANCELLED;
 @endphp
 
 @section('content')
@@ -51,6 +53,12 @@
                         onsubmit="return confirm('Bạn chắc chắn muốn huỷ đơn? Đơn sẽ chuyển sang đã huỷ và số lượng đặt được nhập lại kho.')">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-outline-danger">Huỷ đơn</button>
+                    </form>
+                @endif
+                @if ($canRetryVnpay)
+                    <form action="{{ route('site.orders.vnpay.retry', $order->id) }}" method="POST" class="d-inline">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-primary">Thanh toán lại</button>
                     </form>
                 @endif
                 <form action="{{ route('site.orders.reorder', $order->id) }}" method="POST">

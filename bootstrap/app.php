@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Foundation\Application;
-use Illuminate\Foundation\Configuration\Exceptions;
-use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\AdminMiddleware;
 use App\Http\Middleware\CustomerAuthenticateMiddleware;
 use App\Http\Middleware\RoleMiddleware;
+use Illuminate\Foundation\Application;
+use Illuminate\Foundation\Configuration\Exceptions;
+use Illuminate\Foundation\Configuration\Middleware;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
@@ -20,6 +20,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => RoleMiddleware::class,
             'auth' => \App\Http\Middleware\Authenticate::class,
             'customer.auth' => CustomerAuthenticateMiddleware::class,
+        ]);
+
+        $middleware->validateCsrfTokens(except: [
+            'payment/vnpay/ipn',
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

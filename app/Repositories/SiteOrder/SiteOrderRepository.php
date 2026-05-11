@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Repositories\SiteOrder;
 
 use App\Enums\OrderStatus;
+use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
 use App\Enums\ProductStatus;
 use App\Models\Cart;
@@ -21,6 +22,7 @@ use App\Support\ProductStock;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class SiteOrderRepository implements SiteOrderRepositoryInterface
 {
@@ -75,7 +77,7 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
             $subtotal = 0.0;
             foreach ($checkoutItems as $item) {
                 $product = $this->productModel->query()->lockForUpdate()->find($item->product_id);
-                if (!$product || (int) $product->status->value !== ProductStatus::ACTIVE->value) {
+                if (! $product || (int) $product->status->value !== ProductStatus::ACTIVE->value) {
                     throw new \RuntimeException('Sản phẩm không còn khả dụng: '.($item->product?->name ?? 'N/A'));
                 }
                 $avail = ProductStock::unitsAvailable($product, $item->product_variant_id);
@@ -89,6 +91,9 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
             $loyaltyDiscount = CustomerLoyalty::computeDiscountAmountFromSubtotal($subtotal, (string) $customer->loyalty_tier);
             $total = max(0, (int) round($subtotal - $loyaltyDiscount));
 
+            $paymentMethod = PaymentMethod::tryFrom((int) $payload['payment_method']);
+            $txnRef = ($paymentMethod === PaymentMethod::VNPAY) ? $this->allocateUniqueVnpTxnRef() : null;
+
             $order = $this->orderModel->query()->create([
                 'customer_id' => $customerId,
                 'loyalty_discount_amount' => $loyaltyDiscount,
@@ -100,6 +105,7 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
                 'payment_method' => (int) $payload['payment_method'],
                 'payment_status' => PaymentStatus::PENDING,
                 'notes' => $payload['notes'] ?? null,
+                'vnp_txn_ref' => $txnRef,
             ]);
 
             $order->update([
@@ -258,5 +264,121 @@ class SiteOrderRepository implements SiteOrderRepositoryInterface
 
             return $addedCount;
         });
+    }
+
+    public function lockOrderByVnpTxnRef(string $txnRef): ?Order
+    {
+        $trimmed = trim($txnRef);
+        if ($trimmed === '') {
+            return null;
+        }
+
+        /** @var Order|null $row */
+        $row = $this->orderModel->query()
+            ->where('vnp_txn_ref', $trimmed)
+            ->lockForUpdate()
+            ->first();
+
+        return $row;
+    }
+
+    public function finalizeVnpayOnlinePayment(Order $lockedOrder, int $vnpScaledAmount, bool $paidByGateway, ?string $vnpTransactionNo): array
+    {
+        $method = $lockedOrder->payment_method;
+        if ($method !== PaymentMethod::VNPAY) {
+            return ['rsp_code' => '01', 'message' => 'Order not found', 'became_paid' => false];
+        }
+
+        $expectedScaled = (int) round((float) $lockedOrder->total_amount * 100);
+        if ($vnpScaledAmount !== $expectedScaled) {
+            return ['rsp_code' => '04', 'message' => 'invalid amount', 'became_paid' => false];
+        }
+
+        $wasPaid = $lockedOrder->payment_status === PaymentStatus::PAID;
+
+        if ($paidByGateway) {
+            if ($wasPaid) {
+                return ['rsp_code' => '00', 'message' => 'Confirm Success', 'became_paid' => false];
+            }
+
+            $lockedOrder->update([
+                'payment_status' => PaymentStatus::PAID,
+            ]);
+
+            OrderHistory::query()->create([
+                'order_id' => $lockedOrder->id,
+                'action' => 'vnpay_payment',
+                'note' => 'VNPay: thanh toán thành công'.($vnpTransactionNo !== null && $vnpTransactionNo !== '' ? (' (GD: '.$vnpTransactionNo.')') : ''),
+                'changed_by' => null,
+            ]);
+
+            return ['rsp_code' => '00', 'message' => 'Confirm Success', 'became_paid' => true];
+        }
+
+        if ($lockedOrder->payment_status === PaymentStatus::PENDING) {
+            $lockedOrder->update([
+                'payment_status' => PaymentStatus::FAILED,
+            ]);
+
+            OrderHistory::query()->create([
+                'order_id' => $lockedOrder->id,
+                'action' => 'vnpay_payment',
+                'note' => 'VNPay: thanh toán không thành công',
+                'changed_by' => null,
+            ]);
+        }
+
+        return ['rsp_code' => '00', 'message' => 'Confirm Success', 'became_paid' => false];
+    }
+
+    public function renewVnpTxnRefAfterFailure(int $customerId, int $orderId): Order
+    {
+        return DB::transaction(function () use ($customerId, $orderId): Order {
+            /** @var Order $order */
+            $order = $this->orderModel->query()
+                ->where('customer_id', $customerId)
+                ->whereKey($orderId)
+                ->lockForUpdate()
+                ->firstOrFail();
+
+            if ($order->payment_method !== PaymentMethod::VNPAY) {
+                throw new \RuntimeException('Đơn không áp dụng thanh toán VNPay.');
+            }
+
+            if ($order->payment_status !== PaymentStatus::FAILED) {
+                throw new \RuntimeException('Chỉ có thể thanh toán lại khi thanh toán trước đó đã thất bại.');
+            }
+
+            if ($order->status === OrderStatus::CANCELLED) {
+                throw new \RuntimeException('Đơn đã huỷ, không thể thanh toán lại.');
+            }
+
+            $order->update([
+                'vnp_txn_ref' => $this->allocateUniqueVnpTxnRef(),
+                'payment_status' => PaymentStatus::PENDING,
+            ]);
+
+            OrderHistory::query()->create([
+                'order_id' => $order->id,
+                'action' => 'vnpay_retry',
+                'note' => 'Khách chủ động thanh toán lại qua VNPay sau giao dịch thất bại',
+                'changed_by' => null,
+            ]);
+
+            return $order->fresh();
+        });
+    }
+
+    private function allocateUniqueVnpTxnRef(): string
+    {
+        for ($i = 0; $i < 8; $i++) {
+            $candidate = Str::upper(Str::random(20));
+            $exists = $this->orderModel->query()->where('vnp_txn_ref', $candidate)->exists();
+            if (! $exists) {
+                return $candidate;
+            }
+        }
+
+        return Str::upper(Str::uuid()->toString());
     }
 }

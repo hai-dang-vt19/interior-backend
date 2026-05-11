@@ -23,6 +23,9 @@ final class CustomerOrderNotifier
     /** Khách huỷ đơn trên website */
     public const CONTEXT_CUSTOMER_CANCEL = 'customer_cancel';
 
+    /** Thanh toán VNPay thành công (IPN / return) */
+    public const CONTEXT_VNPAY_PAID = 'vnpay_paid';
+
     public static function sendOrderUpdatedEmail(Order $order, string $context): void
     {
         $order->loadMissing('customer');

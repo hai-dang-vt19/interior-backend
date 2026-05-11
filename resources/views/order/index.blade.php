@@ -95,14 +95,30 @@
                 </thead>
                 <tbody>
                     @forelse ($orders as $order)
+                        @php
+                            $orderStatusBadge = match ($order->status?->value) {
+                                1 => 'text-bg-warning text-dark',
+                                2 => 'text-bg-info',
+                                3 => 'text-bg-primary',
+                                4 => 'text-bg-success',
+                                5 => 'text-bg-secondary',
+                                default => 'text-bg-light text-dark border',
+                            };
+                            $paymentStatusBadge = match ($order->payment_status?->value) {
+                                1 => 'text-bg-warning text-dark',
+                                2 => 'text-bg-success',
+                                3 => 'text-bg-danger',
+                                default => 'text-bg-light text-dark border',
+                            };
+                        @endphp
                         <tr>
                             <td class="text-center"><code class="small">{{ $order->order_code ?? $order->id }}</code></td>
                             <td>{{ $order->customer?->full_name }}</td>
                             <td class="text-center">{{ $order->items->count() }}</td>
                             <td>{{ $order->getTotalDisplay() }}</td>
-                            <td>{{ $order->status?->label() }}</td>
+                            <td><span class="badge rounded-pill {{ $orderStatusBadge }}">{{ $order->status?->label() }}</span></td>
                             <td>{{ $order->payment_method?->label() }}</td>
-                            <td>{{ $order->payment_status?->label() }}</td>
+                            <td><span class="badge rounded-pill {{ $paymentStatusBadge }}">{{ $order->payment_status?->label() }}</span></td>
                             <td>{{ $order->formatCreatedAt() }}</td>
                             <td>
                                 <div class="d-flex justify-content-center gap-1">

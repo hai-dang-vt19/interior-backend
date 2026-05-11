@@ -1,3 +1,4 @@
+# không đọc file env
 # kiểm tra model liên quan
 -> Chưa tồn tại hoặc cập nhật thì tạo migrate bằng lệnh
 # kiểm tra repository liên quan
