@@ -2,10 +2,13 @@
 
 use App\Http\Controllers\Site\SiteAuthController;
 use App\Http\Controllers\Site\SiteCartController;
-use App\Http\Controllers\Site\SiteOrderController;
 use App\Http\Controllers\Site\SiteController;
+use App\Http\Controllers\Site\SiteOrderController;
 use App\Http\Controllers\Site\SiteProductReviewController;
+use App\Http\Controllers\Site\SiteVnpayController;
 use Illuminate\Support\Facades\Route;
+
+Route::get('payment/vnpay/ipn', [SiteVnpayController::class, 'ipn'])->name('site.payment.vnpay.ipn');
 
 Route::get('/', [SiteController::class, 'home'])->name('site.home');
 Route::get('products', [SiteController::class, 'products'])->name('site.products.index');
@@ -33,10 +36,12 @@ Route::middleware('customer.auth')->group(function () {
     Route::delete('cart/items/{id}', [SiteCartController::class, 'destroy'])->name('site.cart.items.destroy');
     Route::get('checkout', [SiteOrderController::class, 'checkout'])->name('site.checkout');
     Route::post('checkout', [SiteOrderController::class, 'placeOrder'])->name('site.checkout.submit');
+    Route::get('payment/vnpay/return', [SiteVnpayController::class, 'return'])->name('site.payment.vnpay.return');
     Route::get('orders', [SiteOrderController::class, 'index'])->name('site.orders.index');
     Route::get('orders/{id}', [SiteOrderController::class, 'show'])->name('site.orders.show');
     Route::post('orders/{id}/cancel', [SiteOrderController::class, 'cancel'])->name('site.orders.cancel');
     Route::post('orders/{id}/reorder', [SiteOrderController::class, 'reorder'])->name('site.orders.reorder');
+    Route::post('orders/{id}/vnpay/retry', [SiteOrderController::class, 'retryVnpay'])->name('site.orders.vnpay.retry');
     Route::post('products/{productId}/reviews', [SiteProductReviewController::class, 'store'])->name('site.products.reviews.store');
     Route::patch('products/{productId}/reviews/{reviewId}', [SiteProductReviewController::class, 'update'])->name('site.products.reviews.update');
 });

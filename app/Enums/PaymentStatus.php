@@ -11,9 +11,9 @@ enum PaymentStatus: int
     public function label(): string
     {
         return match ($this) {
-            self::PENDING => 'Pending',
-            self::PAID => 'Paid',
-            self::FAILED => 'Failed',
+            self::PENDING => 'Chưa thanh toán',
+            self::PAID => 'Đã thanh toán',
+            self::FAILED => 'Thanh toán thất bại',
         };
     }
-} 
+}

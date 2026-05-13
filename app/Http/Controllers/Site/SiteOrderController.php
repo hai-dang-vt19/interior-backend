@@ -2,16 +2,20 @@
 
 namespace App\Http\Controllers\Site;
 
+use App\Enums\PaymentMethod;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SiteCheckoutRequest;
 use App\Services\SiteOrderService;
+use App\Services\VnpayPaymentService;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Http\Request;
+use InvalidArgumentException;
 
 class SiteOrderController extends Controller
 {
     public function __construct(
-        private SiteOrderService $siteOrderService
+        private SiteOrderService $siteOrderService,
+        private VnpayPaymentService $vnpayPaymentService
     ) {}
 
     public function checkout(Request $request)
@@ -61,6 +65,20 @@ class SiteOrderController extends Controller
             return redirect()->route('site.cart.index')->with('dataError', $e->getMessage());
         }
 
+        if ($order->payment_method === PaymentMethod::VNPAY) {
+            try {
+                $paymentUrl = $this->vnpayPaymentService->paymentRedirectUrl(
+                    $order->fresh(),
+                    (string) $request->ip()
+                );
+
+                return redirect()->away($paymentUrl);
+            } catch (\InvalidArgumentException $e) {
+                return redirect()->route('site.orders.show', $order->id)
+                    ->with('dataError', $e->getMessage());
+            }
+        }
+
         return redirect()->route('site.orders.show', $order->id)->with('dataSuccess', 'Đặt hàng thành công');
     }
 
@@ -107,5 +125,26 @@ class SiteOrderController extends Controller
         }
 
         return redirect()->route('site.orders.show', $id)->with('dataSuccess', 'Đã huỷ đơn hàng.');
+    }
+
+    public function retryVnpay(Request $request, int $id)
+    {
+        $customerId = (int) auth()->guard('customer')->id();
+
+        try {
+            $order = $this->siteOrderService->renewOrderForVnpayRetry($customerId, $id);
+            $paymentUrl = $this->vnpayPaymentService->paymentRedirectUrl(
+                $order->fresh(),
+                (string) $request->ip()
+            );
+
+            return redirect()->away($paymentUrl);
+        } catch (ModelNotFoundException $e) {
+            abort(404);
+        } catch (InvalidArgumentException $e) {
+            return redirect()->route('site.orders.show', $id)->with('dataError', $e->getMessage());
+        } catch (\RuntimeException $e) {
+            return redirect()->route('site.orders.show', $id)->with('dataError', $e->getMessage());
+        }
     }
 }

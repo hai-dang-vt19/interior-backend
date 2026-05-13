@@ -145,7 +145,18 @@
             <div class="modal-dialog modal-lg modal-dialog-centered">
                 <div class="modal-content site-auth-modal-content">
                     <div class="site-auth-modal-visual"
-                        style="background-image: url({{ asset('storage/images/image_login.jpg') }});"></div>
+                        style="background-image: url({{ asset('storage/images/image_login.jpg') }});">
+                        <div class="site-auth-modal-visual-overlay"></div>
+                        <div class="site-auth-modal-visual-content">
+                            <h4>Chung Si Interior</h4>
+                            <p>Không gian sống tinh tế, tiện nghi và phù hợp gu của bạn.</p>
+                            <ul class="mb-0">
+                                <li>Cập nhật ưu đãi nội thất mới nhất</li>
+                                <li>Theo dõi đơn hàng nhanh chóng</li>
+                                <li>Lưu lịch sử mua sắm và sản phẩm yêu thích</li>
+                            </ul>
+                        </div>
+                    </div>
                     <div class="site-auth-modal-form-wrap">
                         <button type="button" class="btn-close site-auth-modal-close" data-bs-dismiss="modal"
                             aria-label="Close"></button>
@@ -163,9 +174,9 @@
                                 <input type="text" class="form-control" name="phone"
                                     value="{{ old('auth_form') === 'login' ? old('phone') : '' }}" placeholder="Số điện thoại"
                                     required>
-                                <input type="password" class="form-control" name="password" placeholder="Password"
+                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu"
                                     required>
-                                <button type="submit" class="btn btn-success w-100 mt-1">Đăng nhập</button>
+                                <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Đăng nhập</button>
                             </form>
                         </div>
 
@@ -187,7 +198,7 @@
                                     required>
                                 <input type="password" class="form-control" name="password_confirmation"
                                     placeholder="Xác nhận mật khẩu" required>
-                                <button type="submit" class="btn btn-success w-100 mt-1">Đăng ký</button>
+                                <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Đăng ký</button>
                             </form>
                         </div>
                     </div>

@@ -45,12 +45,7 @@
                         <tbody>
                             @foreach ($orders as $order)
                                 @php($statusLabel = $order->status?->label() ?? 'Không xác định')
-                                @php($paymentLabel = match ($order->payment_status?->value) {
-                                    1 => 'Chưa thanh toán',
-                                    2 => 'Đã thanh toán',
-                                    3 => 'Thanh toán lỗi',
-                                    default => 'Không xác định'
-                                })
+                                @php($paymentLabel = $order->payment_status?->label() ?? 'Không xác định')
                                 @php($statusClass = match ($order->status?->value) {
                                     1 => 'site-badge-status-pending',
                                     2 => 'site-badge-status-confirmed',
@@ -75,7 +70,19 @@
                                     <td><span class="site-badge {{ $statusClass }}">{{ $statusLabel }}</span></td>
                                     <td><span class="site-badge {{ $paymentClass }}">{{ $paymentLabel }}</span></td>
                                     <td>
-                                        <a href="{{ route('site.orders.show', $order->id) }}" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                                        <div class="d-flex flex-wrap gap-1 justify-content-end">
+                                            <a href="{{ route('site.orders.show', $order->id) }}" class="btn btn-sm btn-outline-dark">Chi tiết</a>
+                                            @if (
+                                                $order->payment_method === \App\Enums\PaymentMethod::VNPAY
+                                                && $order->payment_status === \App\Enums\PaymentStatus::FAILED
+                                                && $order->status !== \App\Enums\OrderStatus::CANCELLED
+                                            )
+                                                <form action="{{ route('site.orders.vnpay.retry', $order->id) }}" method="POST" class="d-inline">
+                                                    @csrf
+                                                    <button type="submit" class="btn btn-sm btn-primary">Thanh toán lại</button>
+                                                </form>
+                                            @endif
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach

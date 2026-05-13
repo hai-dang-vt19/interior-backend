@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Enums\PaymentMethod;
-use App\Enums\PaymentStatus;
 use App\Models\Order;
 use App\Support\CustomerOrderNotifier;
 use Illuminate\Bus\Queueable;
@@ -19,7 +18,7 @@ class CustomerOrderUpdatedMail extends Mailable
     use Queueable, SerializesModels;
 
     /**
-     * @param  string  $updateContext Một trong các hằng {@see \App\Support\CustomerOrderNotifier}
+     * @param  string  $updateContext  Một trong các hằng {@see \App\Support\CustomerOrderNotifier}
      */
     public function __construct(
         public Order $order,
@@ -31,6 +30,7 @@ class CustomerOrderUpdatedMail extends Mailable
         $suffix = match ($this->updateContext) {
             CustomerOrderNotifier::CONTEXT_ADMIN_SHIPPING => ' (giao hàng)',
             CustomerOrderNotifier::CONTEXT_CUSTOMER_CANCEL => ' (huỷ đơn)',
+            CustomerOrderNotifier::CONTEXT_VNPAY_PAID => ' (thanh toán)',
             default => '',
         };
 
@@ -66,12 +66,10 @@ class CustomerOrderUpdatedMail extends Mailable
     private function resolveIntroLine(): string
     {
         return match ($this->updateContext) {
-            CustomerOrderNotifier::CONTEXT_ADMIN_SHIPPING
-                => 'Cửa hàng vừa cập nhật thông tin giao hàng hoặc tiến độ xử lý đơn của bạn. Chi tiết như sau:',
-            CustomerOrderNotifier::CONTEXT_CUSTOMER_CANCEL
-                => 'Chúng tôi đã ghi nhận yêu cầu huỷ đơn. Trạng thái đơn và tổng tiền tham khảo trong bảng bên dưới.',
-            default
-                => 'Đơn hàng của bạn vừa được cập nhật trên hệ thống. Vui lòng kiểm tra lại thông tin và trạng thái thanh toán.',
+            CustomerOrderNotifier::CONTEXT_ADMIN_SHIPPING => 'Cửa hàng vừa cập nhật thông tin giao hàng hoặc tiến độ xử lý đơn của bạn. Chi tiết như sau:',
+            CustomerOrderNotifier::CONTEXT_CUSTOMER_CANCEL => 'Chúng tôi đã ghi nhận yêu cầu huỷ đơn. Trạng thái đơn và tổng tiền tham khảo trong bảng bên dưới.',
+            CustomerOrderNotifier::CONTEXT_VNPAY_PAID => 'Hệ thống đã ghi nhận thanh toán VNPay thành công cho đơn của bạn. Chi tiết đơn hàng và trạng thái:',
+            default => 'Đơn hàng của bạn vừa được cập nhật trên hệ thống. Vui lòng kiểm tra lại thông tin và trạng thái thanh toán.',
         };
     }
 
@@ -82,14 +80,7 @@ class CustomerOrderUpdatedMail extends Mailable
 
     private function vietnamesePaymentStatus(): string
     {
-        $p = $this->order->payment_status;
-
-        return match ($p) {
-            PaymentStatus::PENDING => 'Chưa thanh toán',
-            PaymentStatus::PAID => 'Đã thanh toán',
-            PaymentStatus::FAILED => 'Thanh toán thất bại',
-            default => (string) ($p?->label() ?? '—'),
-        };
+        return (string) ($this->order->payment_status?->label() ?? '—');
     }
 
     private function vietnamesePaymentMethod(): string
@@ -101,6 +92,7 @@ class CustomerOrderUpdatedMail extends Mailable
             PaymentMethod::COD => 'Thu hộ (COD)',
             PaymentMethod::BANK_TRANSFER => 'Chuyển khoản',
             PaymentMethod::E_WALLET => 'Ví điện tử',
+            PaymentMethod::VNPAY => 'VNPay',
             default => (string) ($m?->label() ?? '—'),
         };
     }
