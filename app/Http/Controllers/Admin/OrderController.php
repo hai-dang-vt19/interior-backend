@@ -8,6 +8,7 @@ use App\Http\Requests\OrderRequest;
 use App\Http\Requests\OrderReturnRequestStore;
 use App\Http\Requests\OrderReturnRequestUpdate;
 use App\Http\Requests\OrderShippingRequest;
+use App\Enums\UserRole;
 use App\Models\Product;
 use App\Services\OrderService;
 use App\Support\ProductLinePricing;
@@ -73,7 +74,20 @@ class OrderController extends BaseController
 
     public function update(int $id, OrderEditRequest $request)
     {
-        $this->orderService->updateOrderByID($id, $request->validated());
+        $data = $request->validated();
+        if (Auth::user()?->role !== UserRole::ADMIN) {
+            $order = $this->orderService->getOrderByID($id);
+            $order->loadMissing('items');
+            $data['order_items'] = $order->items->map(static function ($item): array {
+                return [
+                    'product_id' => (int) $item->product_id,
+                    'product_variant_id' => $item->product_variant_id,
+                    'quantity' => (int) $item->quantity,
+                ];
+            })->values()->all();
+        }
+
+        $this->orderService->updateOrderByID($id, $data);
 
         return redirect()->back()->with('dataSuccess', 'Cập nhật đơn hàng thành công');
     }

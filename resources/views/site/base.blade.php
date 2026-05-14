@@ -4,6 +4,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Chung Si Interior') }}</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@12/swiper-bundle.min.css" />
     @vite(['resources/scss/app.scss', 'resources/scss/custom.scss', 'resources/js/app.js'])
@@ -315,6 +316,115 @@
 
         if (shouldOpenAuthModal) {
             authModalInstance?.show();
+        }
+
+        const siteAuthModalEl = document.getElementById('siteAuthModal');
+        if (siteAuthModalEl) {
+            const clearSiteAuthFieldErrors = (form) => {
+                form.querySelectorAll('.is-invalid').forEach((el) => el.classList.remove('is-invalid'));
+                form.querySelectorAll('.invalid-feedback').forEach((el) => el.remove());
+                const alertEl = form.querySelector('.site-auth-form-alert');
+                if (alertEl) {
+                    alertEl.remove();
+                }
+            };
+
+            const showSiteAuthFormAlert = (form, text) => {
+                clearSiteAuthFieldErrors(form);
+                const div = document.createElement('div');
+                div.className = 'alert alert-danger site-auth-form-alert py-2 px-3 small mb-2';
+                div.setAttribute('role', 'alert');
+                div.textContent = text;
+                form.insertBefore(div, form.firstChild);
+            };
+
+            const applySiteAuthValidationErrors = (form, errors) => {
+                clearSiteAuthFieldErrors(form);
+                Object.entries(errors).forEach(([field, messages]) => {
+                    const input = form.querySelector(`[name="${field}"]`);
+                    if (!input) {
+                        return;
+                    }
+                    input.classList.add('is-invalid');
+                    const fb = document.createElement('div');
+                    fb.className = 'invalid-feedback d-block';
+                    const first = Array.isArray(messages) ? messages[0] : String(messages ?? '');
+                    fb.textContent = first;
+                    input.insertAdjacentElement('afterend', fb);
+                });
+            };
+
+            const syncCsrfMeta = (token) => {
+                if (!token) {
+                    return;
+                }
+                const meta = document.querySelector('meta[name="csrf-token"]');
+                if (meta) {
+                    meta.setAttribute('content', token);
+                }
+                const input = siteAuthModalEl.querySelector('input[name="_token"]');
+                if (input) {
+                    input.value = token;
+                }
+            };
+
+            siteAuthModalEl.querySelectorAll('form').forEach((form) => {
+                form.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    clearSiteAuthFieldErrors(form);
+
+                    const meta = document.querySelector('meta[name="csrf-token"]');
+                    const csrf = meta?.getAttribute('content') ?? '';
+
+                    try {
+                        const res = await fetch(form.action, {
+                            method: 'POST',
+                            headers: {
+                                'X-Requested-With': 'XMLHttpRequest',
+                                'Accept': 'application/json',
+                                'X-CSRF-TOKEN': csrf,
+                            },
+                            body: new FormData(form),
+                            credentials: 'same-origin',
+                        });
+
+                        const newToken = res.headers.get('X-CSRF-TOKEN');
+                        if (newToken) {
+                            syncCsrfMeta(newToken);
+                        }
+
+                        if (res.status === 419) {
+                            window.alert('Phiên làm việc đã hết hạn. Trang sẽ được tải lại.');
+                            window.location.reload();
+                            return;
+                        }
+
+                        const ct = res.headers.get('content-type') ?? '';
+                        const data = ct.includes('application/json') ? await res.json() : {};
+
+                        if (res.ok && data.redirect) {
+                            window.location.href = data.redirect;
+                            return;
+                        }
+
+                        if (res.status === 422) {
+                            const errs = data.errors && typeof data.errors === 'object' ? data.errors : {};
+                            if (Object.keys(errs).length) {
+                                applySiteAuthValidationErrors(form, errs);
+                            } else if (data.message) {
+                                showSiteAuthFormAlert(form, data.message);
+                            }
+                            return;
+                        }
+
+                        if (data.message) {
+                            showSiteAuthFormAlert(form, data.message);
+                        }
+                    } catch {
+                        showSiteAuthFormAlert(form, 'Không thể kết nối máy chủ. Vui lòng thử lại.');
+                    }
+                });
+            });
         }
 
         const cartPanelEl = document.getElementById('siteCartPanel');
@@ -657,6 +767,19 @@
             });
         }
     </script>
+    <!--Start of Tawk.to Script-->
+    <script type="text/javascript">
+        var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+        (function(){
+        var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+        s1.async=true;
+        s1.src='https://embed.tawk.to/6a0490cbd4796f1c35e0617a/1jogtb6v0';
+        s1.charset='UTF-8';
+        s1.setAttribute('crossorigin','*');
+        s0.parentNode.insertBefore(s1,s0);
+        })();
+    </script>
+    <!--End of Tawk.to Script-->
 </body>
 
 </html>

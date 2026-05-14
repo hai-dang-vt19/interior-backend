@@ -39,7 +39,7 @@
             <div class="col-md-6">
               <label class="form-label">Phương thức thanh toán</label>
               <select class="form-select" name="payment_method">
-                @foreach (App\Enums\PaymentMethod::cases() as $method)
+                @foreach (App\Enums\PaymentMethod::forSiteCheckout() as $method)
                     <option value="{{ $method->value }}">{{ $method->label() }}</option>
                 @endforeach
               </select>

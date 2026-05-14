@@ -9,6 +9,7 @@ use App\Enums\PaymentStatus;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\Rule;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
 
@@ -32,7 +33,10 @@ class OrderRequest extends FormRequest
             'shipped_at' => ['nullable', 'date'],
             'delivered_at' => ['nullable', 'date'],
             'status' => ['required', new Enum(OrderStatus::class)],
-            'payment_method' => ['required', new Enum(PaymentMethod::class)],
+            'payment_method' => [
+                'required',
+                Rule::in(array_map(static fn (PaymentMethod $m) => $m->value, PaymentMethod::forSiteCheckout())),
+            ],
             'payment_status' => ['required', new Enum(PaymentStatus::class)],
             'notes' => ['nullable', 'string'],
             'order_items' => ['required', 'array', 'min:1'],

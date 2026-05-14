@@ -39,8 +39,8 @@
             <div class="col-md-6">
               <label class="form-label">Phương thức thanh toán</label>
               <select class="form-select" name="payment_method">
-                @foreach (App\Enums\PaymentMethod::cases() as $method)
-                    <option value="{{ $method->value }}">{{ $method->label() }}</option>
+                @foreach (App\Enums\PaymentMethod::forAdminOrderForm() as $method)
+                    <option value="{{ $method->value }}">{{ $method->label() }}@if (! in_array($method, App\Enums\PaymentMethod::forSiteCheckout(), true)) (dữ liệu cũ)@endif</option>
                 @endforeach
               </select>
             </div>
@@ -61,12 +61,20 @@
               <textarea class="form-control" name="notes" rows="2"></textarea>
             </div>
             <div class="col-12">
-              <div class="d-flex justify-content-between align-items-center mb-2">
-                <label class="form-label mb-0">Sản phẩm trong đơn</label>
-                <button type="button" class="btn btn-sm btn-outline-primary btn-add-order-item-edit">Thêm dòng</button>
-              </div>
-              <div class="order-items-edit"></div>
-              <small class="text-muted">Đơn giá đồng bộ website; tổng thanh toán trừ chiết khấu theo hạng khách khi lưu. Hạng áp dụng được lưu trên đơn.</small>
+              @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <label class="form-label mb-0">Sản phẩm trong đơn</label>
+                  <button type="button" class="btn btn-sm btn-outline-primary btn-add-order-item-edit">Thêm dòng</button>
+                </div>
+                <div class="order-items-edit"></div>
+                <small class="text-muted">Đơn giá đồng bộ website; tổng thanh toán trừ chiết khấu theo hạng khách khi lưu. Hạng áp dụng được lưu trên đơn.</small>
+              @else
+                <label class="form-label mb-2">Sản phẩm trong đơn</label>
+                <p class="text-muted small mb-2">
+                  Chỉ <strong>Administrator</strong> được thêm, xóa hoặc đổi dòng sản phẩm. Danh sách bên dưới chỉ xem.
+                </p>
+                <div class="order-items-edit-readonly border rounded p-0 overflow-hidden bg-light"></div>
+              @endif
             </div>
           </form>
         </div>

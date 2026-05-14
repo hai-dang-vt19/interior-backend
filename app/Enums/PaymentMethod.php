@@ -16,6 +16,28 @@ enum PaymentMethod: int
         return [self::CASH, self::COD, self::VNPAY];
     }
 
+    /**
+     * Form sửa đơn admin: cùng các lựa chọn với checkout site, thêm các enum còn lại để đơn lịch sử vẫn hiển thị đúng.
+     *
+     * @return list<self>
+     */
+    public static function forAdminOrderForm(): array
+    {
+        $primary = self::forSiteCheckout();
+        $seen = [];
+        foreach ($primary as $m) {
+            $seen[$m->value] = true;
+        }
+        $tail = [];
+        foreach (self::cases() as $case) {
+            if (! isset($seen[$case->value])) {
+                $tail[] = $case;
+            }
+        }
+
+        return array_merge($primary, $tail);
+    }
+
     public function label(): string
     {
         return match ($this) {

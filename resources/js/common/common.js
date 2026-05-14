@@ -20,6 +20,9 @@ export const Common = {
 
     handleFormLoading: function() {
         $('form').on('submit', function() {
+            if ($(this).closest('#siteAuthModal').length) {
+                return;
+            }
             Loading.show();
         });
     },
