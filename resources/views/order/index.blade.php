@@ -194,10 +194,45 @@
 <script type="application/json" id="admin-order-catalog-json">@json($orderCatalogForJs)</script>
 <script type="module">
 $(document).ready(function() {
+    const canEditOrderItems = @json(auth()->user()->role === \App\Enums\UserRole::ADMIN);
     const catalog = JSON.parse(document.getElementById('admin-order-catalog-json').textContent || '[]');
     const catalogById = Object.fromEntries(catalog.map((p) => [String(p.id), p]));
 
     const formatMoney = (v) => new Intl.NumberFormat('vi-VN').format(Math.round(Number(v))) + ' đ';
+
+    const escapeHtml = (unsafe) => String(unsafe ?? '')
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;')
+        .replaceAll("'", '&#039;');
+
+    const buildReadonlyOrderItemsHtml = (items) => {
+        if (!items.length) {
+            return '<p class="text-muted small mb-0 px-2 py-2">Chưa có dòng sản phẩm.</p>';
+        }
+        const rows = items.map((item, idx) => {
+            const p = catalogById[String(item.product_id)];
+            const pname = escapeHtml(p?.name ?? ('Sản phẩm #' + item.product_id));
+            const vidRaw = item.product_variant_id;
+            const vid = vidRaw != null && vidRaw !== '' ? String(vidRaw) : '';
+            let variantLabel = '—';
+            let unitText = '—';
+            if (p) {
+                if (vid && p.variants && p.variants.length) {
+                    const v = p.variants.find((x) => String(x.id) === vid);
+                    variantLabel = escapeHtml(v?.label ?? ('#' + vidRaw));
+                    unitText = v ? formatMoney(v.unit) : formatMoney(p.display_unit);
+                } else {
+                    variantLabel = '—';
+                    unitText = formatMoney(p.display_unit);
+                }
+            }
+            const qty = Number(item.quantity) || 0;
+            return `<tr><td class="text-center text-muted">${idx + 1}</td><td>${pname}</td><td>${variantLabel}</td><td class="text-end">${qty}</td><td class="text-end">${unitText}</td></tr>`;
+        }).join('');
+        return `<div class="table-responsive"><table class="table table-sm table-bordered mb-0 bg-white"><thead class="table-light"><tr><th class="text-center" style="width:2.5rem">#</th><th>Sản phẩm</th><th>Phiên bản</th><th class="text-end" style="width:4rem">SL</th><th class="text-end" style="width:7rem">Đơn giá</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+    };
 
     const refreshVariantSelect = ($row) => {
         const pid = String($row.find('.js-order-product').val() || '');
@@ -300,24 +335,31 @@ $(document).ready(function() {
         $(`${target} select[name=payment_status]`).val($(this).data('payment-status')).trigger('change');
         $(`${target} textarea[name=notes]`).val($(this).data('notes'));
 
-        const wrap = $('#modalEditOrder .order-items-edit');
         const items = $(this).data('items') || [];
-        wrap.html('');
+        const wrapEdit = $('#modalEditOrder .order-items-edit');
+        const wrapReadonly = $('#modalEditOrder .order-items-edit-readonly');
 
-        if (!items.length) {
-            wrap.append(buildItemRow('order_items', 0));
-            wrap.find('select[name="order_items[0][product_id]"] option:first').prop('selected', true);
-            refreshVariantSelect(wrap.find('.order-item-row').first());
-            return;
+        if (canEditOrderItems && wrapEdit.length) {
+            wrapEdit.html('');
+            if (!items.length) {
+                wrapEdit.append(buildItemRow('order_items', 0));
+                wrapEdit.find('select[name="order_items[0][product_id]"] option:first').prop('selected', true);
+                refreshVariantSelect(wrapEdit.find('.order-item-row').first());
+            } else {
+                items.forEach((item, index) => {
+                    const vid = item.product_variant_id != null ? item.product_variant_id : '';
+                    wrapEdit.append(buildItemRow('order_items', index, item.product_id, vid, item.quantity));
+                });
+            }
+        } else if (wrapReadonly.length) {
+            wrapReadonly.html(buildReadonlyOrderItemsHtml(items));
         }
-
-        items.forEach((item, index) => {
-            const vid = item.product_variant_id != null ? item.product_variant_id : '';
-            wrap.append(buildItemRow('order_items', index, item.product_id, vid, item.quantity));
-        });
     });
 
     $('.btn-add-order-item-edit').on('click', function() {
+        if (!canEditOrderItems) {
+            return;
+        }
         const wrap = $('#modalEditOrder .order-items-edit');
         const index = wrap.find('.order-item-row').length;
         const $row = buildItemRow('order_items', index);

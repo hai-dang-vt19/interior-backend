@@ -6,8 +6,10 @@ use App\Http\Requests\Concerns\ValidatesAdminOrderItemVariants;
 use App\Enums\OrderStatus;
 use App\Enums\PaymentMethod;
 use App\Enums\PaymentStatus;
+use App\Enums\UserRole;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rules\Enum;
 use Illuminate\Validation\ValidationException;
@@ -23,7 +25,7 @@ class OrderEditRequest extends FormRequest
 
     public function rules(): array
     {
-        return [
+        $rules = [
             'customer_id' => ['required', 'integer', 'exists:customers,id'],
             'shipping_address' => ['required', 'string'],
             'shipping_phone' => ['required', 'string', 'max:20'],
@@ -35,11 +37,18 @@ class OrderEditRequest extends FormRequest
             'payment_method' => ['required', new Enum(PaymentMethod::class)],
             'payment_status' => ['required', new Enum(PaymentStatus::class)],
             'notes' => ['nullable', 'string'],
-            'order_items' => ['required', 'array', 'min:1'],
-            'order_items.*.product_id' => ['required', 'integer', 'exists:products,id'],
-            'order_items.*.product_variant_id' => ['nullable', 'integer'],
-            'order_items.*.quantity' => ['required', 'integer', 'min:1'],
         ];
+
+        if (Auth::user()?->role === UserRole::ADMIN) {
+            $rules['order_items'] = ['required', 'array', 'min:1'];
+            $rules['order_items.*.product_id'] = ['required', 'integer', 'exists:products,id'];
+            $rules['order_items.*.product_variant_id'] = ['nullable', 'integer'];
+            $rules['order_items.*.quantity'] = ['required', 'integer', 'min:1'];
+        } else {
+            $rules['order_items'] = ['prohibited'];
+        }
+
+        return $rules;
     }
 
     protected function failedValidation(Validator $validator)

@@ -239,6 +239,15 @@ class OrderRepository implements OrderRepositoryInterface
                     'note' => 'Cập nhật thông tin đơn hàng',
                     'changed_by' => auth()->id(),
                 ]);
+
+                if ($previousStatusValue !== $newStatusValue) {
+                    OrderHistory::query()->create([
+                        'order_id' => $order->id,
+                        'action' => 'status_updated',
+                        'note' => $this->formatOrderStatusTransitionNote($previousStatusValue, $newStatusValue),
+                        'changed_by' => auth()->id(),
+                    ]);
+                }
             }
 
             $this->syncCustomerLoyalty($oldCustomerId);
@@ -381,6 +390,16 @@ class OrderRepository implements OrderRepositoryInterface
                 'note' => $params['note'] ?? 'Cập nhật thông tin giao hàng',
                 'changed_by' => $userId,
             ]);
+
+            if ($previousStatusValue !== $newStatusValue) {
+                OrderHistory::query()->create([
+                    'order_id' => $order->id,
+                    'action' => 'status_updated',
+                    'note' => $this->formatOrderStatusTransitionNote($previousStatusValue, $newStatusValue),
+                    'changed_by' => $userId,
+                ]);
+            }
+
             $this->syncCustomerLoyalty((int) $order->customer_id);
         }
 
@@ -406,6 +425,16 @@ class OrderRepository implements OrderRepositoryInterface
             ->latest('id')
             ->limit($limit)
             ->get(['id', 'order_code', 'customer_id', 'total_amount', 'created_at']);
+    }
+
+    private function formatOrderStatusTransitionNote(int $fromValue, int $toValue): string
+    {
+        $from = OrderStatus::tryFrom($fromValue);
+        $to = OrderStatus::tryFrom($toValue);
+        $fromLabel = $from?->label() ?? (string) $fromValue;
+        $toLabel = $to?->label() ?? (string) $toValue;
+
+        return 'Cập nhật trạng thái: '.$fromLabel.' → '.$toLabel;
     }
 
     /**

@@ -25,20 +25,32 @@ class SiteAuthController extends Controller
         $credentials = $request->validated();
         $customer = $this->siteAuthService->attemptLogin($credentials['phone'], $credentials['password']);
         if (!$customer) {
-            return redirect()->back()
-                ->with('dataError', 'Số điện thoại hoặc mật khẩu không đúng')
-                ->with('auth_tab', 'login')
-                ->withInput();
+            return $this->respondSiteAuthFailure(
+                $request,
+                'Số điện thoại hoặc mật khẩu không đúng',
+                ['phone' => ['Số điện thoại hoặc mật khẩu không đúng.']]
+            );
         }
 
         if (!$customer->hasVerifiedEmail()) {
-            return redirect()->back()
-                ->with('dataError', 'Email chưa được xác thực. Vui lòng kiểm tra hộp thư đến hoặc mục spam.')
-                ->with('auth_tab', 'login')
-                ->withInput();
+            return $this->respondSiteAuthFailure(
+                $request,
+                'Email chưa được xác thực. Vui lòng kiểm tra hộp thư đến hoặc mục spam.',
+                ['phone' => ['Email chưa được xác thực. Vui lòng kiểm tra hộp thư đến hoặc mục spam.']]
+            );
         }
 
         Auth::guard('customer')->login($customer);
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('dataSuccess', 'Đăng nhập thành công');
+
+            return response()->json([
+                'redirect' => route('site.home'),
+                'message' => 'Đăng nhập thành công',
+            ]);
+        }
+
         return redirect()->route('site.home')->with('dataSuccess', 'Đăng nhập thành công');
     }
 
@@ -52,10 +64,39 @@ class SiteAuthController extends Controller
         $payload = $request->validated();
         $this->siteAuthService->registerCustomer($payload);
 
-        return redirect()->route('site.home')->with(
-            'dataSuccess',
-            'Đăng ký thành công. Vui lòng mở email và nhấn nút “Xác thực tài khoản” để hoàn tất trước khi đăng nhập.'
-        );
+        $successMessage = 'Đăng ký thành công. Vui lòng mở email và nhấn nút “Xác thực tài khoản” để hoàn tất trước khi đăng nhập.';
+
+        if ($request->expectsJson()) {
+            $request->session()->flash('dataSuccess', $successMessage);
+
+            return response()->json([
+                'redirect' => route('site.home'),
+                'message' => $successMessage,
+            ]);
+        }
+
+        return redirect()->route('site.home')->with('dataSuccess', $successMessage);
+    }
+
+    /**
+     * @param  array<string, array<int, string>>  $errors
+     */
+    private function respondSiteAuthFailure(
+        Request $request,
+        string $message,
+        array $errors
+    ): \Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse {
+        if ($request->expectsJson()) {
+            return response()->json([
+                'message' => $message,
+                'errors' => $errors,
+            ], 422);
+        }
+
+        return redirect()->back()
+            ->with('dataError', $message)
+            ->with('auth_tab', 'login')
+            ->withInput();
     }
 
     /**
