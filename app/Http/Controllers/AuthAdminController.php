@@ -68,8 +68,8 @@ class AuthAdminController extends BaseController
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
-        
-        return $this->sendSuccess('admin.login');
+
+        return redirect()->route('admin.login')->with('dataSuccess', 'Đã đăng xuất');
     }
 
     public function showChangePasswordForm()

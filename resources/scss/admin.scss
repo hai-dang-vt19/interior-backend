@@ -1,9 +1,530 @@
 @use "variable" as *;
 @use "functions" as *;
 
+// -----------------------------------------------------------------------------
+// Admin panel — design tokens (chỉ áp dụng trong .admin-body)
+// -----------------------------------------------------------------------------
+.admin-body {
+    --admin-primary: #{$bg-main-dark};
+    --admin-primary-hover: #{$hover-primary};
+    --admin-accent: #3d5a80;
+    --admin-surface: #ffffff;
+    --admin-surface-muted: #f4f7fb;
+    --admin-border: rgba(44, 62, 80, 0.1);
+    --admin-text: #{$txt-main};
+    --admin-text-muted: #5f6f7f;
+    --admin-radius: 14px;
+    --admin-radius-sm: 10px;
+    --admin-shadow: 0 10px 30px rgba(44, 62, 80, 0.08);
+    --admin-shadow-sm: 0 4px 14px rgba(44, 62, 80, 0.06);
+    --admin-nav-h: 64px;
+
+    font-family: var(--font-sans, ui-sans-serif, system-ui, sans-serif);
+    color: var(--admin-text);
+    background: linear-gradient(165deg, #eef3f9 0%, #e4ebf4 42%, #dce6f2 100%);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+}
+
+.admin-header {
+    position: sticky;
+    top: 0;
+    z-index: 1030;
+}
+
+.admin-main {
+    max-width: 1600px;
+    margin-inline: auto;
+    padding: 1.25rem clamp(1rem, 2vw, 2rem) 2.5rem;
+}
+
+.admin-breadcrumb-wrap {
+    margin-bottom: 1rem;
+
+    .breadcrumb {
+        margin-bottom: 0;
+        padding: 0.55rem 1rem;
+        background: rgba(255, 255, 255, 0.72);
+        border: 1px solid var(--admin-border);
+        border-radius: 999px;
+        box-shadow: var(--admin-shadow-sm);
+        backdrop-filter: blur(8px);
+    }
+
+    .breadcrumb-item {
+        font-size: 0.875rem;
+        color: var(--admin-text-muted);
+
+        a {
+            color: var(--admin-accent);
+            text-decoration: none;
+            font-weight: 500;
+
+            &:hover {
+                color: var(--admin-primary);
+            }
+        }
+
+        &.active {
+            color: var(--admin-text);
+            font-weight: 600;
+        }
+
+        + .breadcrumb-item::before {
+            color: #9aa8b6;
+        }
+    }
+}
+
+// Navbar
+.custom-navbar {
+    min-height: var(--admin-nav-h);
+    padding-block: 0.35rem;
+    background: linear-gradient(120deg, #1f2d3d 0%, #2c3e50 55%, #34495e 100%) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 8px 24px rgba(15, 23, 34, 0.22);
+    backdrop-filter: blur(12px);
+
+    .navbar-brand {
+        color: #fff !important;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+        font-size: 1.05rem;
+    }
+
+    .navbar-toggler {
+        border-color: rgba(255, 255, 255, 0.35);
+    }
+
+    .navbar-toggler-icon {
+        filter: invert(1);
+    }
+
+    .navbar-nav {
+        gap: 0.15rem;
+
+        .nav-item .nav-link {
+            color: rgba(255, 255, 255, 0.78) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 0.45rem 0.85rem;
+            border-radius: 999px;
+            transition: background 0.15s ease, color 0.15s ease;
+        }
+
+        .nav-item .nav-link.active {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .nav-item:hover .nav-link {
+            color: #fff !important;
+            background: rgba(255, 255, 255, 0.1);
+        }
+    }
+
+    .navbar-text {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .admin-nav-user {
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.875rem;
+        font-weight: 500;
+        padding: 0.35rem 0.65rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-outline-secondary.text-white,
+    .btn-outline-primary.text-white {
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 0.35rem 0.85rem;
+        border-color: rgba(255, 255, 255, 0.35) !important;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.14) !important;
+            color: #fff !important;
+        }
+    }
+
+    .btn-danger {
+        border-radius: 999px;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        padding: 0.35rem 0.75rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.35rem;
+        border: 0;
+        background: #c0392b;
+
+        &:hover {
+            background: #a93226;
+        }
+
+        svg {
+            width: 18px;
+            height: 18px;
+            fill: currentColor;
+        }
+    }
+
+    #adminPendingOrdersBtn {
+        border-radius: 999px;
+        padding: 0.4rem !important;
+        transition: background 0.15s ease;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.12) !important;
+        }
+    }
+}
+
+// Cards
+.admin-body .card {
+    background: var(--admin-surface);
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius);
+    box-shadow: var(--admin-shadow-sm);
+    color: var(--admin-text);
+    overflow: hidden;
+    transition: box-shadow 0.2s ease, transform 0.2s ease;
+
+    &:hover {
+        box-shadow: var(--admin-shadow);
+    }
+
+    .card-header {
+        background: linear-gradient(180deg, #fafcfe 0%, #f3f7fc 100%);
+        border-bottom: 1px solid var(--admin-border);
+        padding: 0.9rem 1.15rem;
+
+        h5,
+        h6 {
+            font-weight: 700;
+            color: var(--admin-text);
+            letter-spacing: -0.01em;
+        }
+    }
+
+    .card-body {
+        padding: 1.15rem;
+    }
+}
+
+// Forms
+.admin-body {
+    .form-label {
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: var(--admin-text-muted);
+        margin-bottom: 0.35rem;
+    }
+
+    .form-control,
+    .form-select {
+        border-radius: var(--admin-radius-sm);
+        border-color: #d5dee8;
+        min-height: 2.5rem;
+        font-size: 0.9rem;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+        &:focus {
+            border-color: var(--admin-accent);
+            box-shadow: 0 0 0 3px rgba(61, 90, 128, 0.15);
+        }
+    }
+
+    textarea.form-control {
+        min-height: auto;
+    }
+}
+
+// Buttons
+.admin-body {
+    .btn {
+        border-radius: var(--admin-radius-sm);
+        font-weight: 600;
+        font-size: 0.875rem;
+        transition: transform 0.12s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+
+    .btn-primary {
+        background: var(--admin-primary);
+        border-color: var(--admin-primary);
+
+        &:hover {
+            background: var(--admin-primary-hover);
+            border-color: var(--admin-primary-hover);
+        }
+    }
+
+    .btn-success {
+        border: 0;
+        box-shadow: 0 4px 12px rgba(25, 135, 84, 0.25);
+    }
+}
+
+// Tables
+.admin-body .table-responsive {
+    border-radius: var(--admin-radius-sm);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-body .table {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+
+    thead th {
+        background: #f0f4f9;
+        color: var(--admin-text-muted);
+        font-weight: 700;
+        font-size: 0.78rem;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
+        border-bottom: 1px solid var(--admin-border);
+        padding: 0.75rem 0.85rem;
+        white-space: nowrap;
+    }
+
+    tbody td {
+        padding: 0.8rem 0.85rem;
+        vertical-align: middle;
+        border-color: #edf1f6;
+    }
+
+    tbody tr {
+        transition: background 0.12s ease;
+    }
+
+    &.table-striped > tbody > tr:nth-of-type(odd) > * {
+        background-color: #fafcfe;
+    }
+
+    &.table-hover > tbody > tr:hover > * {
+        background-color: #eef4fc;
+    }
+
+    code.small {
+        background: #eef3f8;
+        color: var(--admin-accent);
+        padding: 0.2rem 0.45rem;
+        border-radius: 6px;
+        font-size: 0.8rem;
+    }
+}
+
+// Icon action buttons (class dùng trong JS — không đổi tên)
+.admin-body {
+    .btn-edit,
+    .btn-delete,
+    .btn-info.btn-sm,
+    .btn-dark.btn-sm,
+    .btn-success.btn-sm {
+        width: 2.25rem;
+        height: 2.25rem;
+        padding: 0 !important;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        line-height: 0 !important;
+        scale: 1;
+        border: 0;
+        box-shadow: var(--admin-shadow-sm);
+
+        svg {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+            flex-shrink: 0;
+        }
+
+        &:hover {
+            scale: 1.04;
+            transform: translateY(-1px);
+        }
+    }
+
+    .btn-edit {
+        background: var(--admin-primary) !important;
+        color: #fff;
+
+        &:hover {
+            background: var(--admin-primary-hover) !important;
+        }
+    }
+
+    .btn-delete,
+    .btn-danger.btn-sm:not(.btn-edit) {
+        background: #dc3545 !important;
+        color: #fff;
+
+        &:hover {
+            background: #bb2d3b !important;
+        }
+    }
+
+    .btn-info.btn-sm {
+        background: #0d6efd !important;
+        color: #fff;
+    }
+
+    .btn-success.btn-sm {
+        background: #198754 !important;
+        color: #fff;
+    }
+
+    .btn-dark.btn-sm {
+        background: #495057 !important;
+        color: #fff;
+    }
+
+    // Nút xóa dòng sản phẩm trong modal (×)
+    .btn-remove-item {
+        min-height: 2.5rem;
+        border-radius: var(--admin-radius-sm);
+        font-weight: 700;
+    }
+}
+
+// Modals
+.admin-body .modal-content {
+    border: 0;
+    border-radius: calc(var(--admin-radius) + 2px);
+    box-shadow: 0 24px 48px rgba(15, 23, 34, 0.18);
+    overflow: hidden;
+}
+
+.admin-body .modal-header {
+    background: linear-gradient(180deg, #fafcfe 0%, #f3f7fc 100%);
+    border-bottom: 1px solid var(--admin-border);
+    padding: 1rem 1.25rem;
+
+    .modal-title {
+        font-weight: 700;
+        color: var(--admin-text);
+    }
+}
+
+.admin-body .modal-body {
+    padding: 1.25rem;
+}
+
+.admin-body .modal-footer {
+    border-top: 1px solid var(--admin-border);
+    background: #fafcfe;
+    padding: 0.85rem 1.25rem;
+}
+
+// Badges
+.admin-body .badge.rounded-pill {
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 0.35em 0.65em;
+}
+
+// Pagination
+.admin-body .pagination .page-link {
+    border-radius: 8px;
+    margin: 0 2px;
+    border-color: #d5dee8;
+    color: var(--admin-text);
+    font-size: 0.875rem;
+}
+
+.admin-body .pagination .page-item.active .page-link {
+    background: var(--admin-primary);
+    border-color: var(--admin-primary);
+}
+
+// Dashboard quick tiles
+.admin-body .admin-dash-tile {
+    border: 1px solid var(--admin-border);
+    border-radius: var(--admin-radius-sm);
+    padding: 1rem;
+    height: 100%;
+    background: linear-gradient(180deg, #fff 0%, #f8fafc 100%);
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+    &:hover {
+        border-color: rgba(61, 90, 128, 0.25);
+        box-shadow: var(--admin-shadow-sm);
+    }
+
+    h6 {
+        font-weight: 700;
+        margin-bottom: 0.75rem;
+        color: var(--admin-text);
+    }
+}
+
+// Order items in modal
+.admin-body .order-item-row {
+    padding: 0.65rem;
+    border-radius: var(--admin-radius-sm);
+    background: var(--admin-surface-muted);
+    border: 1px solid var(--admin-border);
+}
+
+.admin-body .order-items-edit-readonly {
+    .table {
+        margin-bottom: 0;
+    }
+}
+
+// Pending orders notify
+.order-pending-notify-wrap .badge {
+    font-size: 0.65rem;
+    min-width: 1.25rem;
+}
+
+.admin-pending-order-item {
+    border-left: 3px solid transparent;
+    border-radius: 8px;
+    transition: background 0.12s ease, border-color 0.12s ease;
+
+    &:hover {
+        border-left-color: var(--admin-accent);
+        background: #f4f8fd;
+    }
+}
+
+.offcanvas-header {
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.custom-tooltip {
+    --bs-tooltip-bg: #2c3e50;
+    --bs-tooltip-color: #fdfefe;
+}
+
+// Auth pages (login admin)
+.auth-admin-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    background: linear-gradient(165deg, #eef3f9 0%, #dce6f2 100%);
+
+    .card {
+        border: 0;
+        border-radius: 16px;
+        box-shadow: 0 20px 40px rgba(44, 62, 80, 0.12);
+        max-width: 420px;
+        width: 100%;
+    }
+}
 
 .login-form {
-    // background-color: $secondary;
     padding: 20px;
     border-radius: 10px;
 
@@ -14,90 +535,16 @@
     }
 }
 
-.custom-navbar {
-    background-color: $bg-main-dark;
-    backdrop-filter: blur(10px);
-    .navbar-brand {
-        color: $white;
+@media (max-width: 991.98px) {
+    .custom-navbar .navbar-collapse {
+        padding: 0.75rem 0 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        margin-top: 0.5rem;
     }
-    .navbar-nav {
-        .nav-item {
-            .nav-link {
-                color: $accent;
-            }
-            .active {
-                color: $white;
-            }
 
-            &:hover {
-                .nav-link {
-                    color: $white;
-                    transition: all 0.3s ease;
-                }
-            }
-        }
+    .custom-navbar .navbar-text {
+        padding-top: 0.75rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        width: 100%;
     }
-}
-.card {
-    background-color: $bg-light;
-    border: 1px solid $border-color;
-    color: $txt-main;
-
-    &:hover {
-        box-shadow: 0 2px 4px $shadow-color;
-    }
-}
-
-// button
-.btn-delete {
-    scale: 0.8;
-    line-height: 0 !important;
-    &:hover {
-        scale: 0.9;
-        transition: all 0.3s ease;
-    }
-}
-.btn-edit {
-    scale: 0.8;
-    line-height: 0 !important;
-    background-color: $btn-primary !important;
-    &:hover {
-        background-color: $hover-primary !important;
-        scale: 0.9;
-        transition: all 0.3s ease;
-    }
-}
-
-.btn {
-    &:not(.btn-success, .btn-primary, .btn-secondary) {
-        scale: 0.8;
-    }
-    &:not(.btn-outline-secondary) {
-        svg {
-            fill: $white;
-        }
-    }
-}
-
-.offcanvas-header {
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-}
-.custom-tooltip {
-    --bs-tooltip-bg: #2C3E50;
-    --bs-tooltip-color: #FDFEFE;
-}
-
-.order-pending-notify-wrap {
-    .badge {
-        font-size: 0.65rem;
-        min-width: 1.25rem;
-    }
-}
-
-.admin-pending-order-item {
-    border-left: 3px solid transparent;
-}
-
-.admin-pending-order-item:hover {
-    border-left-color: var(--bs-primary, #0d6efd);
 }

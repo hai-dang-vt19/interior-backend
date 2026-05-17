@@ -144,7 +144,7 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-2">
                     <h6 class="mb-0">Cập nhật giao hàng</h6>
-                    <a href="{{ route('admin.order.invoice', $order->id) }}" class="btn btn-sm btn-success">Xuất hóa đơn
+                    <a href="{{ route('admin.order.invoice', $order->id) }}" class="btn btn-success">Xuất hóa đơn
                         PDF</a>
                 </div>
                 <div class="card-body">
