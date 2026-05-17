@@ -67,10 +67,10 @@
               <input class="form-check-input" type="checkbox" name="is_active" id="create_is_active" value="1" @checked(old('is_active', 1))>
               <label class="form-check-label" for="create_is_active">Hiển thị sản phẩm</label>
             </div>
-            <div class="col-md-4 form-check mt-4 ms-2">
+            {{-- <div class="col-md-4 form-check mt-4 ms-2">
               <input class="form-check-input" type="checkbox" name="is_customizable" id="create_is_customizable" value="1" @checked(old('is_customizable', 0))>
               <label class="form-check-label" for="create_is_customizable">Cho phép tùy chỉnh</label>
-            </div>
+            </div> --}}
             <div class="col-12">
               <p class="form-text text-muted mb-0">Ảnh sản phẩm thêm tại màn <strong>Quản lý ảnh</strong> sau khi tạo sản phẩm.</p>
             </div>

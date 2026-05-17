@@ -131,9 +131,9 @@
                                 </a>
                             </td>
                             <td>
-                                <div class="d-flex flex-warp justify-content-center">
+                                <div class="d-flex flex-warp justify-content-center align-items-center gap-1">
                                     <div>
-                                        <a href="{{ route('admin.product.images', $product->id) }}" class="btn btn-info btn-sm me-1" title="Quản lý ảnh">
+                                        <a href="{{ route('admin.product.images', $product->id) }}" class="btn btn-info btn-sm" title="Quản lý ảnh">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-image" viewBox="0 0 24 24">
                                                 <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0"/>
                                                 <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093l-3.71 3.71-2.66-1.772a.5.5 0 0 0-.63.062L1.002 12V3a1 1 0 0 1 1-1z"/>
@@ -141,7 +141,7 @@
                                         </a>
                                     </div>
                                     <div>
-                                        <a href="{{ route('admin.product.inventory', $product->id) }}" class="btn btn-warning btn-sm me-1" title="Tồn kho">
+                                        <a href="{{ route('admin.product.inventory', $product->id) }}" class="btn btn-warning btn-sm" title="Tồn kho">
                                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-box-seam-fill" viewBox="0 0 24 24">
                                                 <path fill-rule="evenodd" d="M15.528 2.973a.75.75 0 0 1 .472.696v8.662a.75.75 0 0 1-.472.696l-7.25 2.9a.75.75 0 0 1-.557 0l-7.25-2.9A.75.75 0 0 1 0 12.331V3.669a.75.75 0 0 1 .471-.696L7.443.184l.01-.003.268-.108a.75.75 0 0 1 .558 0l.269.108.01.003zM10.404 2 4.25 4.461 1.846 3.5 1 3.839v.4l6.5 2.6v7.922l.5.2.5-.2V6.84l6.5-2.6v-.4l-.846-.339L8 5.961 5.596 5l6.154-2.461z"/>
                                             </svg>
@@ -299,7 +299,9 @@
                             <input type="number" class="form-control" min="0" name="${prefix}[${index}][price]" value="${escapeHtml(row.price)}">
                         </div>
                         <div class="col-md-1">
-                            <button type="button" class="btn btn-outline-danger w-100 js-remove-variant-row">X</button>
+                            <button type="button" class="btn btn-danger w-100 js-remove-variant-row">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path></svg>
+                            </button>
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Tiền tệ</label>
@@ -348,30 +350,21 @@
                         </div>
                         <div class="col-md-1">
                             <label class="form-label">Unit</label>
-                            <input type="text" class="form-control" name="${prefix}[${index}][spec_unit]" value="${escapeHtml(row.spec_unit)}">
+                            <input type="text" class="form-control" name="${prefix}[${index}][spec_unit]" value="${escapeHtml(row.spec_unit) ?? 'mm'}">
                         </div>
                         <div class="col-md-1">
                             <label class="form-label">Sort</label>
                             <input type="number" class="form-control" min="0" name="${prefix}[${index}][sort_order]" value="${escapeHtml(row.sort_order ?? 0)}">
                         </div>
+                        {{-- Tạm ẩn UI: Dài / Rộng / Cao / Nặng — giữ hidden để không mất dữ liệu khi sửa --}}
+                        <input type="hidden" name="${prefix}[${index}][length_mm]" value="${escapeHtml(row.length_mm ?? '')}">
+                        <input type="hidden" name="${prefix}[${index}][width_mm]" value="${escapeHtml(row.width_mm ?? '')}">
+                        <input type="hidden" name="${prefix}[${index}][height_mm]" value="${escapeHtml(row.height_mm ?? '')}">
+                        <input type="hidden" name="${prefix}[${index}][weight_kg]" value="${escapeHtml(row.weight_kg ?? '')}">
                         <div class="col-md-1">
-                            <label class="form-label">Dài</label>
-                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][length_mm]" value="${escapeHtml(row.length_mm)}">
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">Rộng</label>
-                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][width_mm]" value="${escapeHtml(row.width_mm)}">
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">Cao</label>
-                            <input type="number" class="form-control" min="0" step="0.01" name="${prefix}[${index}][height_mm]" value="${escapeHtml(row.height_mm)}">
-                        </div>
-                        <div class="col-md-1">
-                            <label class="form-label">Nặng</label>
-                            <input type="number" class="form-control" min="0" step="0.001" name="${prefix}[${index}][weight_kg]" value="${escapeHtml(row.weight_kg)}">
-                        </div>
-                        <div class="col-md-1">
-                            <button type="button" class="btn btn-outline-danger w-100 js-remove-spec-row">X</button>
+                            <button type="button" class="btn btn-danger w-100 js-remove-spec-row">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"><path d="M5 20a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8h2V6h-4V4a2 2 0 0 0-2-2H9a2 2 0 0 0-2 2v2H3v2h2zM9 4h6v2H9zM8 8h9v12H7V8z"></path><path d="M9 10h2v8H9zm4 0h2v8h-2z"></path></svg>
+                            </button>
                         </div>
                     </div>
                 </div>

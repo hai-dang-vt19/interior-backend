@@ -16,7 +16,7 @@
     <div class="card-body">
         <div class="row g-3">
             <div class="col-lg-3 col-md-6">
-                <div class="border rounded p-3 h-100">
+                <div class="admin-dash-tile">
                     <h6 class="mb-2">Quản lý sản phẩm</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('admin.product.index') }}" class="btn btn-sm btn-outline-primary">Danh sách / lọc</a>
@@ -27,7 +27,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="border rounded p-3 h-100">
+                <div class="admin-dash-tile">
                     <h6 class="mb-2">Quản lý đơn hàng</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('admin.order.index') }}" class="btn btn-sm btn-outline-primary">Danh sách / lọc</a>
@@ -38,7 +38,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="border rounded p-3 h-100">
+                <div class="admin-dash-tile">
                     <h6 class="mb-2">Quản lý khách hàng</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('admin.customer.index') }}" class="btn btn-sm btn-outline-primary">Danh sách / lọc</a>
@@ -49,7 +49,7 @@
                 </div>
             </div>
             <div class="col-lg-3 col-md-6">
-                <div class="border rounded p-3 h-100">
+                <div class="admin-dash-tile">
                     <h6 class="mb-2">Hệ thống & báo cáo</h6>
                     <div class="d-flex flex-wrap gap-2">
                         <a href="{{ route('admin.staff.index') }}" class="btn btn-sm btn-outline-primary">Nhân viên</a>
