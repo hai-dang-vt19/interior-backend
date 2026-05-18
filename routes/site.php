@@ -20,6 +20,9 @@ Route::middleware('guest:customer')->group(function () {
     Route::post('login', [SiteAuthController::class, 'login'])->name('site.login.submit');
     Route::get('register', [SiteAuthController::class, 'showRegister'])->name('site.register');
     Route::post('register', [SiteAuthController::class, 'register'])->name('site.register.submit');
+    Route::post('password/forgot', [SiteAuthController::class, 'forgotPassword'])
+        ->middleware('throttle:5,1')
+        ->name('site.password.forgot');
 });
 Route::middleware('customer.auth')->group(function () {
     Route::post('logout', [SiteAuthController::class, 'logout'])->name('site.logout');

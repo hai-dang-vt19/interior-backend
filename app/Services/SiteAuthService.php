@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use App\Mail\CustomerPasswordResetMail;
 use App\Mail\CustomerRegistrationVerifyMail;
 use App\Models\Customer;
 use App\Repositories\SiteAuth\SiteAuthRepositoryInterface;
@@ -83,5 +84,22 @@ class SiteAuthService extends BaseService
         $this->siteAuthRepository->markCustomerEmailVerified($customer);
 
         return ['status' => 'success'];
+    }
+
+    /**
+     * Đặt mật khẩu ngẫu nhiên và gửi email nếu tìm thấy khách theo email.
+     * Không báo lỗi khi email không tồn tại (tránh lộ thông tin tài khoản).
+     */
+    public function resetPasswordByEmail(string $email): void
+    {
+        $customer = $this->siteAuthRepository->findCustomerByEmail($email);
+        if (!$customer) {
+            return;
+        }
+
+        $plainPassword = Str::password(12, letters: true, numbers: true, symbols: false);
+        $this->siteAuthRepository->updateCustomerPassword($customer, $plainPassword);
+
+        Mail::to($customer->email)->send(new CustomerPasswordResetMail($customer, $plainPassword));
     }
 }
