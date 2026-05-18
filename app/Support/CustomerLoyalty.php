@@ -128,7 +128,7 @@ final class CustomerLoyalty
                     sprintf('Silver: %s.', self::benefitLabel('silver')),
                     sprintf('Gold: %s.', self::benefitLabel('gold')),
                     sprintf('Platinum: %s.', self::benefitLabel('platinum')),
-                    'Đơn tạo từ admin: đơn giá dòng = giá website (KM + phiên bản); tạm tính trừ % hạng của khách tại thời điểm lưu (giống site). Trường loyalty_tier_snapshot ghi lại hạng đã áp dụng.',
+                    'Đơn tạo từ admin: đơn giá dòng = giá website (KM + phiên bản); tạm tính trừ % hạng của khách tại thời điểm lưu.',
                 ],
             ],
         ];

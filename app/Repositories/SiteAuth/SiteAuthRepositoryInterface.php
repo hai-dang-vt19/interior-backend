@@ -10,6 +10,10 @@ interface SiteAuthRepositoryInterface
 {
     public function findCustomerByPhone(string $phone): ?Customer;
 
+    public function findCustomerByEmail(string $email): ?Customer;
+
+    public function updateCustomerPassword(Customer $customer, string $plainPassword): void;
+
     /** Tìm khách theo SHA-256 của token xác thực gửi qua email */
     public function findCustomerByEmailVerificationTokenHash(string $tokenHash): ?Customer;
 

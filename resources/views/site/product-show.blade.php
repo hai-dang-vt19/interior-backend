@@ -1,7 +1,24 @@
 @extends('site.base')
 
 @section('content')
-    @php($mainImageUrl = \App\Models\ProductImage::resolvePublicUrl(optional($product->images->firstWhere('is_primary', true))->image_url ?: optional($product->images->first())->image_url))
+    @php($defaultImageUrl = asset('storage/images/image_default.jpg'))
+    @php(
+        $productGalleryItems = $product->images
+            ->sortBy([
+                ['is_primary', 'desc'],
+                ['id', 'asc'],
+            ])
+            ->map(fn ($img) => [
+                'url' => \App\Models\ProductImage::resolvePublicUrl($img->image_url),
+            ])
+            ->filter(fn ($item) => ! empty($item['url']))
+            ->values()
+    )
+    @php(
+        $productGalleryItems = $productGalleryItems->isNotEmpty()
+            ? $productGalleryItems
+            : collect([['url' => $defaultImageUrl]])
+    )
     @php($initialVariant = $product->variants->isNotEmpty() ? ($product->variants->firstWhere('is_default', true) ?? $product->variants->first()) : null)
     @php($productBaseUnit = \App\Support\ProductLinePricing::baseUnit($product))
     @php($displayPrice = \App\Support\ProductLinePricing::unitTotal($product, $initialVariant))
@@ -18,11 +35,35 @@
 
         <div class="row g-4 align-items-start">
             <div class="col-lg-6">
-                <div class="spd-gallery-card">
-                    @if ($mainImageUrl)
-                        <img src="{{ $mainImageUrl }}" class="img-fluid site-skeleton-image spd-main-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
-                    @else
-                        <img src="{{ asset('storage/images/image_default.jpg') }}" class="img-fluid site-skeleton-image spd-main-image" alt="{{ $product->name }}" loading="lazy" onload="this.classList.add('loaded')">
+                <div class="spd-gallery-wrap">
+                    <div id="spd-product-lightgallery" class="spd-gallery-card spd-lightgallery">
+                        @foreach ($productGalleryItems as $index => $item)
+                            <a href="{{ $item['url'] }}" class="spd-lg-item" data-lg-size="1600-1600"
+                                @if ($index > 0) hidden @endif>
+                                <img src="{{ $item['url'] }}"
+                                    class="img-fluid site-skeleton-image spd-main-image"
+                                    alt="{{ $product->name }}@if ($productGalleryItems->count() > 1) — ảnh {{ $index + 1 }}@endif"
+                                    loading="{{ $index === 0 ? 'eager' : 'lazy' }}"
+                                    onload="this.classList.add('loaded')">
+                            </a>
+                        @endforeach
+                    </div>
+                    @if ($productGalleryItems->count() > 1)
+                        <div class="spd-gallery-thumbs row g-2 mt-2" role="list">
+                            @foreach ($productGalleryItems as $index => $item)
+                                <div class="col-3 col-2" role="listitem">
+                                    <button type="button"
+                                        class="spd-gallery-thumb-btn {{ $index === 0 ? 'is-active' : '' }}"
+                                        data-spd-gallery-index="{{ $index }}"
+                                        aria-label="Xem ảnh {{ $index + 1 }}">
+                                        <img src="{{ $item['url'] }}" class="spd-gallery-thumb-img" alt=""
+                                            loading="lazy">
+                                    </button>
+                                </div>
+                            @endforeach
+                        </div>
+                        <p class="small text-muted mt-2 mb-0">Nhấn ảnh để xem phóng to và duyệt toàn bộ
+                            {{ $productGalleryItems->count() }} ảnh.</p>
                     @endif
                 </div>
             </div>
@@ -276,6 +317,63 @@
 @endsection
 
 @section('scripts')
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.8.3/css/lightgallery-bundle.min.css"
+        crossorigin="anonymous" referrerpolicy="no-referrer">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.8.3/lightgallery.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.8.3/plugins/thumbnail/lg-thumbnail.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/lightgallery/2.8.3/plugins/zoom/lg-zoom.umd.min.js"
+        crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script>
+        (function () {
+            const galleryEl = document.getElementById('spd-product-lightgallery');
+            if (!galleryEl || typeof lightGallery === 'undefined') {
+                return;
+            }
+            const plugins = [];
+            if (typeof lgThumbnail !== 'undefined') {
+                plugins.push(lgThumbnail);
+            }
+            if (typeof lgZoom !== 'undefined') {
+                plugins.push(lgZoom);
+            }
+            const lgInstance = lightGallery(galleryEl, {
+                selector: '.spd-lg-item',
+                plugins,
+                speed: 400,
+                download: false,
+                mobileSettings: {
+                    showCloseIcon: true,
+                },
+            });
+            const items = galleryEl.querySelectorAll('.spd-lg-item');
+            const setHeroIndex = (index) => {
+                items.forEach((link, i) => {
+                    if (i === index) {
+                        link.removeAttribute('hidden');
+                    } else {
+                        link.setAttribute('hidden', '');
+                    }
+                });
+                document.querySelectorAll('.spd-gallery-thumb-btn').forEach((btn, i) => {
+                    btn.classList.toggle('is-active', i === index);
+                });
+            };
+            document.querySelectorAll('[data-spd-gallery-index]').forEach((btn) => {
+                btn.addEventListener('click', () => {
+                    const index = Number(btn.getAttribute('data-spd-gallery-index') || 0);
+                    setHeroIndex(index);
+                    lgInstance.openGallery(index);
+                });
+            });
+            galleryEl.addEventListener('lgAfterSlide', (event) => {
+                const index = event.detail?.index ?? 0;
+                setHeroIndex(index);
+            });
+        })();
+    </script>
     <script>
         (function () {
             const mainPriceEl = document.querySelector('[data-spd-main-price]');

@@ -80,22 +80,46 @@
 </div>
 
 <div class="row g-3 mb-3">
-    <div class="col-md-4">
+    <div class="col-md-6">
+        <div class="card"><div class="card-body">
+            <small class="text-muted">Doanh thu đã thanh toán</small>
+            <h4 class="mb-0">{{ number_format($summary['paid_revenue'], 0, ',', '.') }} đ</h4>
+        </div></div>
+    </div>
+    <div class="col-md-6">
         <div class="card"><div class="card-body">
             <small class="text-muted">Tổng đơn</small>
             <h4 class="mb-0">{{ number_format($summary['orders_total']) }}</h4>
         </div></div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
         <div class="card"><div class="card-body">
-            <small class="text-muted">Đơn đã giao</small>
-            <h4 class="mb-0">{{ number_format($summary['delivered_total']) }}</h4>
+            <small class="text-muted">Đơn chờ xác nhận</small>
+            <h4 class="mb-0 text-warning">{{ number_format($summary['pending_total']) }}</h4>
         </div></div>
     </div>
-    <div class="col-md-4">
+    <div class="col-md-2">
         <div class="card"><div class="card-body">
-            <small class="text-muted">Doanh thu đã thanh toán</small>
-            <h4 class="mb-0">{{ number_format($summary['paid_revenue'], 0, ',', '.') }} đ</h4>
+            <small class="text-muted">Đơn đã xác nhận</small>
+            <h4 class="mb-0 text-info">{{ number_format($summary['confirmed_total']) }}</h4>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <small class="text-muted">Đơn đang giao</small>
+            <h4 class="mb-0 text-primary">{{ number_format($summary['shipping_total']) }}</h4>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <small class="text-muted">Đơn đã giao</small>
+            <h4 class="mb-0 text-success">{{ number_format($summary['delivered_total']) }}</h4>
+        </div></div>
+    </div>
+    <div class="col-md-2">
+        <div class="card"><div class="card-body">
+            <small class="text-muted">Đơn đã hủy</small>
+            <h4 class="mb-0 text-secondary">{{ number_format($summary['cancelled_total']) }}</h4>
         </div></div>
     </div>
 </div>

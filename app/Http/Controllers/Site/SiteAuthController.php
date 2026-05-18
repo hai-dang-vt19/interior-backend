@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Site;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\SiteForgotPasswordRequest;
 use App\Http\Requests\SiteLoginRequest;
 use App\Http\Requests\SiteRegisterRequest;
 use App\Services\SiteAuthService;
@@ -76,6 +77,23 @@ class SiteAuthController extends Controller
         }
 
         return redirect()->route('site.home')->with('dataSuccess', $successMessage);
+    }
+
+    public function forgotPassword(SiteForgotPasswordRequest $request)
+    {
+        $this->siteAuthService->resetPasswordByEmail($request->validated('email'));
+
+        $message = 'Nếu email đã đăng ký, mật khẩu mới đã được gửi vào hộp thư của bạn.';
+
+        if ($request->expectsJson()) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+            ]);
+        }
+
+        return redirect()->route('site.home', ['auth' => 'login'])
+            ->with('dataSuccess', $message);
     }
 
     /**

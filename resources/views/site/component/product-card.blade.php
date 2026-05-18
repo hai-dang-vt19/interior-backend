@@ -18,7 +18,7 @@
         <small class="text-muted mb-1">{{ $product->category?->name ?? 'Chưa phân loại' }}</small>
         <h3 class="h6 mb-2">{{ $product->name }}</h3>
         <div class="nx-price mb-3">{{ number_format($cardUnitPrice, 0, ',', '.') }} đ</div>
-        <small class="text-muted mb-3">Tồn kho: {{ (int) $stockDisplay }}@if($defaultVariantForCart) <span class="text-muted">(phiên bản mặc định)</span>@endif</small>
+        <small class="text-muted mb-3">Số lượng: {{ (int) $stockDisplay }}@if($defaultVariantForCart) <span class="text-muted">(phiên bản mặc định)</span>@endif</small>
         <div class="mt-auto d-grid gap-2">
             <a href="{{ route('site.products.show', $product->id) }}" class="btn btn-outline-dark btn-sm nx-no-card-nav">Xem chi tiết</a>
             @if (auth()->guard('customer')->check())

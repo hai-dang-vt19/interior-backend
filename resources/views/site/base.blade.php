@@ -178,6 +178,21 @@
                                 <input type="password" class="form-control" name="password" placeholder="Mật khẩu"
                                     required>
                                 <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Đăng nhập</button>
+                                <div class="text-end mt-1">
+                                    <button type="button" class="btn btn-link btn-sm p-0 site-auth-forgot-link">Quên mật khẩu?</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <div class="site-auth-panel" data-auth-panel="forgot">
+                            <button type="button" class="btn btn-link btn-sm p-0 mb-2 site-auth-back-login">← Quay lại đăng nhập</button>
+                            <h5 class="mb-3">Quên mật khẩu</h5>
+                            <p class="small text-muted mb-3">Nhập email đã đăng ký. Hệ thống sẽ gửi mật khẩu mới vào hộp thư.</p>
+                            <form action="{{ route('site.password.forgot') }}" method="POST" class="d-grid gap-2">
+                                @csrf
+                                <input type="hidden" name="auth_form" value="forgot">
+                                <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Gửi mật khẩu mới</button>
                             </form>
                         </div>
 
@@ -286,7 +301,8 @@
         const shouldOpenAuthModal = @json((bool) (session('auth_tab') || old('auth_form') || request('auth')));
 
         const setAuthTab = (tab) => {
-            const next = tab === 'register' ? 'register' : 'login';
+            const validTabs = ['login', 'register', 'forgot'];
+            const next = validTabs.includes(tab) ? tab : 'login';
             authTabButtons.forEach((btn) => {
                 const active = btn.getAttribute('data-auth-target') === next;
                 btn.classList.toggle('is-active', active);
@@ -296,6 +312,13 @@
                 panel.classList.toggle('is-active', active);
             });
         };
+
+        document.querySelectorAll('.site-auth-forgot-link').forEach((btn) => {
+            btn.addEventListener('click', () => setAuthTab('forgot'));
+        });
+        document.querySelectorAll('.site-auth-back-login').forEach((btn) => {
+            btn.addEventListener('click', () => setAuthTab('login'));
+        });
 
         authTabButtons.forEach((btn) => {
             btn.addEventListener('click', () => {
@@ -329,10 +352,10 @@
                 }
             };
 
-            const showSiteAuthFormAlert = (form, text) => {
+            const showSiteAuthFormAlert = (form, text, type = 'danger') => {
                 clearSiteAuthFieldErrors(form);
                 const div = document.createElement('div');
-                div.className = 'alert alert-danger site-auth-form-alert py-2 px-3 small mb-2';
+                div.className = `alert alert-${type} site-auth-form-alert py-2 px-3 small mb-2`;
                 div.setAttribute('role', 'alert');
                 div.textContent = text;
                 form.insertBefore(div, form.firstChild);
@@ -404,6 +427,17 @@
 
                         if (res.ok && data.redirect) {
                             window.location.href = data.redirect;
+                            return;
+                        }
+
+                        if (res.ok && data.success) {
+                            const loginPanel = siteAuthModalEl.querySelector('[data-auth-panel="login"]');
+                            const loginForm = loginPanel?.querySelector('form');
+                            form.reset();
+                            setAuthTab('login');
+                            if (loginForm && data.message) {
+                                showSiteAuthFormAlert(loginForm, data.message, 'success');
+                            }
                             return;
                         }
 

@@ -17,6 +17,18 @@ class SiteAuthRepository implements SiteAuthRepositoryInterface
         return $this->customerModel->query()->where('phone', $phone)->first();
     }
 
+    public function findCustomerByEmail(string $email): ?Customer
+    {
+        return $this->customerModel->query()
+            ->whereRaw('LOWER(email) = ?', [mb_strtolower(trim($email))])
+            ->first();
+    }
+
+    public function updateCustomerPassword(Customer $customer, string $plainPassword): void
+    {
+        $customer->forceFill(['password' => $plainPassword])->save();
+    }
+
     public function findCustomerByEmailVerificationTokenHash(string $tokenHash): ?Customer
     {
         return $this->customerModel->query()
