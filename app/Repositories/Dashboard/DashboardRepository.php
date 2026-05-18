@@ -78,7 +78,11 @@ class DashboardRepository implements DashboardRepositoryInterface
     {
         $summary = $this->db->table('orders')
             ->selectRaw('COUNT(*) as orders_total')
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as pending_total', [OrderStatus::PENDING->value])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as confirmed_total', [OrderStatus::CONFIRMED->value])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as shipping_total', [OrderStatus::SHIPPING->value])
             ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as delivered_total', [OrderStatus::DELIVERED->value])
+            ->selectRaw('SUM(CASE WHEN status = ? THEN 1 ELSE 0 END) as cancelled_total', [OrderStatus::CANCELLED->value])
             ->selectRaw('SUM(CASE WHEN payment_status = ? THEN total_amount ELSE 0 END) as paid_revenue', [PaymentStatus::PAID->value])
             ->whereNull('deleted_at')
             ->whereBetween('created_at', [$from . ' 00:00:00', $to . ' 23:59:59'])
@@ -86,7 +90,11 @@ class DashboardRepository implements DashboardRepositoryInterface
 
         return [
             'orders_total' => (int) ($summary->orders_total ?? 0),
+            'pending_total' => (int) ($summary->pending_total ?? 0),
+            'confirmed_total' => (int) ($summary->confirmed_total ?? 0),
+            'shipping_total' => (int) ($summary->shipping_total ?? 0),
             'delivered_total' => (int) ($summary->delivered_total ?? 0),
+            'cancelled_total' => (int) ($summary->cancelled_total ?? 0),
             'paid_revenue' => (float) ($summary->paid_revenue ?? 0),
         ];
     }
