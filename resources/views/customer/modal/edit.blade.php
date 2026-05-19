@@ -9,7 +9,7 @@
           <form method="POST" class="row gap-3">
             @csrf
             <div class="col-12">
-              <label for="full_name" class="form-label">Họ tên</label>
+              <label for="full_name" class="form-label">Họ tên @include('component.required-mark')</label>
               <input type="text" class="form-control" id="full_name" name="full_name">
             </div>
             <div class="col-12">

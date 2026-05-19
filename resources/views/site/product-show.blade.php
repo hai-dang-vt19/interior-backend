@@ -132,7 +132,7 @@
                                 <input type="hidden" name="product_id" value="{{ $product->id }}">
                                 @if ($product->variants->isNotEmpty())
                                     <div class="col-12">
-                                        <label class="form-label">Chọn phiên bản</label>
+                                        <label class="form-label">Chọn phiên bản @include('component.required-mark')</label>
                                         <div class="list-group list-group-flush border rounded">
                                             @foreach ($product->variants as $variant)
                                                 <label class="list-group-item d-flex flex-wrap justify-content-between align-items-center gap-2 mb-0">
@@ -165,7 +165,7 @@
                                     </div>
                                 @endif
                                 <div class="col-md-4">
-                                    <label class="form-label">Số lượng</label>
+                                    <label class="form-label">Số lượng @include('component.required-mark')</label>
                                     <input type="number" class="form-control" name="quantity" id="spd-qty-input" min="1" max="{{ max(1, (int) $selectedStockAvail) }}" value="1">
                                 </div>
                                 <div class="col-md-8">
@@ -219,7 +219,7 @@
                                         <div class="alert alert-danger small mb-3">{{ $errors->first() }}</div>
                                     @endif
                                     <div class="mb-3">
-                                        <label class="form-label">Số sao</label>
+                                        <label class="form-label">Số sao @include('component.required-mark')</label>
                                         <select name="rating" class="form-select @error('rating') is-invalid @enderror" required>
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <option value="{{ $i }}" @selected((int) old('rating', $myProductReview->rating) === $i)>{{ $i }} sao</option>
@@ -227,7 +227,7 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Nội dung</label>
+                                        <label class="form-label">Nội dung @include('component.required-mark')</label>
                                         <textarea name="review" class="form-control @error('review') is-invalid @enderror" rows="4" required>{{ old('review', $myProductReview->review) }}</textarea>
                                     </div>
                                     <button type="submit" class="btn btn-dark">Cập nhật đánh giá</button>
@@ -240,7 +240,7 @@
                                         <div class="alert alert-danger small mb-3">{{ $errors->first() }}</div>
                                     @endif
                                     <div class="mb-3">
-                                        <label class="form-label">Số sao</label>
+                                        <label class="form-label">Số sao @include('component.required-mark')</label>
                                         <select name="rating" class="form-select @error('rating') is-invalid @enderror" required>
                                             @for ($i = 1; $i <= 5; $i++)
                                                 <option value="{{ $i }}" @selected((int) old('rating') === $i)>{{ $i }} sao</option>
@@ -248,7 +248,7 @@
                                         </select>
                                     </div>
                                     <div class="mb-3">
-                                        <label class="form-label">Nội dung</label>
+                                        <label class="form-label">Nội dung @include('component.required-mark')</label>
                                         <textarea name="review" class="form-control @error('review') is-invalid @enderror" rows="4" required placeholder="Chia sẻ trải nghiệm của bạn">{{ old('review') }}</textarea>
                                     </div>
                                     <button type="submit" class="btn btn-dark">Gửi đánh giá</button>

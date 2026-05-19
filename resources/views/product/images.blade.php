@@ -18,7 +18,7 @@
         <form action="{{ route('admin.product.images.store', $product->id) }}" method="POST" enctype="multipart/form-data" class="row g-3 align-items-end">
             @csrf
             <div class="col-md-10">
-                <label class="form-label">Chọn ảnh (giữ Ctrl/Cmd để chọn nhiều; mỗi file tối đa 5MB, tối đa 30 ảnh/lần)</label>
+                <label class="form-label">Chọn ảnh @include('component.required-mark') <span class="text-muted fw-normal">(giữ Ctrl/Cmd để chọn nhiều; mỗi file tối đa 5MB, tối đa 30 ảnh/lần)</span></label>
                 <input type="file" name="images[]" class="form-control" accept="image/*" multiple required>
             </div>
             <div class="col-md-2 d-grid">

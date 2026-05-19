@@ -5,15 +5,19 @@ declare(strict_types=1);
 namespace App\Services;
 
 use App\Enums\CustomerStatus;
+use App\Mail\CustomerCreatedByAdminMail;
 use App\Models\Customer;
 use App\Repositories\Customer\CustomerRepositoryInterface;
 use Exception;
 use Illuminate\Pagination\LengthAwarePaginator;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class CustomerService extends BaseService
 {
+    public const DEFAULT_PASSWORD = '12345678';
+
     public function __construct(
         private CustomerRepositoryInterface $customerRepository
     ) {}
@@ -26,7 +30,8 @@ class CustomerService extends BaseService
     // Chuẩn hóa dữ liệu và tạo mới khách hàng
     public function createCustomer(array $params): Customer
     {
-        $params['password'] = Hash::make('12345678');
+        $plainPassword = self::DEFAULT_PASSWORD;
+        $params['password'] = Hash::make($plainPassword);
         $params['loyalty_tier'] = $params['loyalty_tier'] ?? 'standard';
         $params['reward_points'] = $params['reward_points'] ?? 0;
         $params['email_verified_at'] = now();
@@ -37,7 +42,33 @@ class CustomerService extends BaseService
         }
         unset($params['status']);
 
-        return $this->customerRepository->createCustomer($params);
+        $customer = $this->customerRepository->createCustomer($params);
+        $this->sendCreatedByAdminNotification($customer, $plainPassword);
+
+        return $customer;
+    }
+
+    /** Gửi email thông báo tài khoản mới (không chặn luồng tạo khách nếu SMTP lỗi). */
+    private function sendCreatedByAdminNotification(Customer $customer, string $plainPassword): void
+    {
+        $email = trim((string) $customer->email);
+        if ($email === '') {
+            return;
+        }
+
+        try {
+            Mail::to($email)->send(new CustomerCreatedByAdminMail(
+                $customer,
+                $plainPassword,
+                route('site.login')
+            ));
+        } catch (\Throwable $e) {
+            Log::warning('Gửi mail thông báo tạo khách hàng không thành công', [
+                'customer_id' => $customer->id,
+                'email' => $email,
+                'message' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function updateCustomerByID(int $id, array $params)

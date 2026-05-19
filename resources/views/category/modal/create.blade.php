@@ -9,7 +9,7 @@
           <form action="{{ route('admin.category.store') }}" method="POST" class="row g-3">
             @csrf
             <div class="col-12">
-              <label class="form-label">Tên danh mục</label>
+              <label class="form-label">Tên danh mục @include('component.required-mark')</label>
               <input type="text" class="form-control" name="name" value="{{ old('name') }}">
             </div>
             <div class="col-12">

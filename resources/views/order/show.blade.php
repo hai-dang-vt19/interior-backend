@@ -163,7 +163,7 @@
                                 value="{{ $order->tracking_number }}" placeholder="Mã vận đơn">
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label small mb-0">Trạng thái đơn</label>
+                            <label class="form-label small mb-0">Trạng thái đơn @include('component.required-mark')</label>
                             <select class="form-select" name="status">
                                 @foreach (App\Enums\OrderStatus::cases() as $status)
                                     <option value="{{ $status->value }}"
@@ -204,14 +204,14 @@
                     <form action="{{ route('admin.order.return.store', $order->id) }}" method="POST" class="row g-2">
                         @csrf
                         <div class="col-md-4">
-                            <label class="form-label small mb-0">Loại</label>
+                            <label class="form-label small mb-0">Loại @include('component.required-mark')</label>
                             <select class="form-select" name="type">
                                 <option value="return">Trả hàng</option>
                                 <option value="exchange">Đổi hàng</option>
                             </select>
                         </div>
                         <div class="col-md-8">
-                            <label class="form-label small mb-0">Lý do</label>
+                            <label class="form-label small mb-0">Lý do @include('component.required-mark')</label>
                             <input type="text" class="form-control" name="reason" placeholder="Lý do" required>
                         </div>
                         <div class="col-12 d-grid">

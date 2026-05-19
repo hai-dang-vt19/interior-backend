@@ -11,11 +11,11 @@
                 <form action="{{ route('site.login.submit') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label class="form-label">Số điện thoại</label>
+                        <label class="form-label">Số điện thoại @include('component.required-mark')</label>
                         <input type="text" class="form-control" name="phone" value="{{ old('phone') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu</label>
+                        <label class="form-label">Mật khẩu @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="password" required>
                     </div>
                     <button type="submit" class="btn btn-primary w-100">Đăng nhập</button>

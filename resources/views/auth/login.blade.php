@@ -11,13 +11,13 @@
                     <form id="loginForm" action="{{ route('admin.login.submit') }}">
                         @csrf
                         <div class="mb-3">
-                            <label for="phone" class="form-label">Số điện thoại</label>
+                            <label for="phone" class="form-label">Số điện thoại @include('component.required-mark')</label>
                             <input type="text" class="form-control input-number" id="phone" name="phone"
                                 value="0947508288" required>
                             <div class="invalid-feedback" id="phone-error"></div>
                         </div>
                         <div class="mb-3">
-                            <label for="password" class="form-label">Mật khẩu</label>
+                            <label for="password" class="form-label">Mật khẩu @include('component.required-mark')</label>
                             <input type="password" class="form-control" id="password" name="password" value="12345678"
                                 required>
                             <div class="invalid-feedback" id="password-error"></div>

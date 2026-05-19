@@ -9,7 +9,7 @@
           <form action="{{ route('admin.product.store') }}" method="POST" class="row g-3">
             @csrf
             <div class="col-md-6">
-              <label class="form-label">Tên sản phẩm</label>
+              <label class="form-label">Tên sản phẩm @include('component.required-mark')</label>
               <input type="text" class="form-control" name="name" value="{{ old('name') }}">
             </div>
             <div class="col-md-6">
@@ -17,7 +17,7 @@
               <input type="text" class="form-control js-product-sku-display" value="Tự động tạo khi lưu" readonly>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Danh mục</label>
+              <label class="form-label">Danh mục @include('component.required-mark')</label>
               <select class="form-select" name="category_id">
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}" {{ old('category_id') == $category->id ? 'selected' : '' }}>{{ $category->name }}</option>
@@ -25,7 +25,7 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label">Giá</label>
+              <label class="form-label">Giá @include('component.required-mark')</label>
               <input type="number" class="form-control" name="price" min="0" value="{{ old('price') }}">
             </div>
             <div class="col-md-4">
@@ -38,7 +38,7 @@
               <p class="form-text mb-0">Nếu thêm phiên bản — nhập <strong>tồn kho</strong> trong từng dòng phiên bản.</p>
             </div>
             <div class="col-md-12">
-              <label class="form-label">Trạng thái</label>
+              <label class="form-label">Trạng thái @include('component.required-mark')</label>
               <select class="form-select" name="status">
                 @foreach (App\Enums\ProductStatus::cases() as $status)
                     <option value="{{ $status->value }}" {{ old('status', App\Enums\ProductStatus::ACTIVE->value) == $status->value ? 'selected' : '' }}>

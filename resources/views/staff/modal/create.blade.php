@@ -9,23 +9,23 @@
           <form action="{{ route('admin.staff.store') }}" method="POST" class="row g-3">
             @csrf
             <div class="col-md-6">
-              <label class="form-label">Username</label>
+              <label class="form-label">Username @include('component.required-mark')</label>
               <input type="text" class="form-control" name="username">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Họ tên</label>
+              <label class="form-label">Họ tên @include('component.required-mark')</label>
               <input type="text" class="form-control" name="full_name">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Email</label>
+              <label class="form-label">Email @include('component.required-mark')</label>
               <input type="email" class="form-control" name="email">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Số điện thoại</label>
+              <label class="form-label">Số điện thoại @include('component.required-mark')</label>
               <input type="text" class="form-control" name="phone">
             </div>
             <div class="col-12">
-              <label class="form-label">Mật khẩu</label>
+              <label class="form-label">Mật khẩu @include('component.required-mark')</label>
               <input type="password" class="form-control" name="password">
             </div>
           </form>

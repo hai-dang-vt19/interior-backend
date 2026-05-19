@@ -9,7 +9,7 @@
           <form method="POST" class="row g-3">
             @csrf
             <div class="col-md-6">
-              <label class="form-label">Khách hàng</label>
+              <label class="form-label">Khách hàng @include('component.required-mark')</label>
               <select class="form-select" name="customer_id">
                 @foreach ($customers as $customer)
                     <option value="{{ $customer->id }}">{{ $customer->full_name }} - {{ $customer->phone }}</option>
@@ -17,7 +17,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Số điện thoại giao hàng</label>
+              <label class="form-label">Số điện thoại giao hàng @include('component.required-mark')</label>
               <input type="text" class="form-control" name="shipping_phone">
             </div>
             <div class="col-md-6">
@@ -29,7 +29,7 @@
               <input type="text" class="form-control" name="tracking_number">
             </div>
             <div class="col-md-6">
-              <label class="form-label">Trạng thái đơn</label>
+              <label class="form-label">Trạng thái đơn @include('component.required-mark')</label>
               <select class="form-select" name="status">
                 @foreach (App\Enums\OrderStatus::cases() as $status)
                     <option value="{{ $status->value }}">{{ $status->label() }}</option>
@@ -37,7 +37,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Phương thức thanh toán</label>
+              <label class="form-label">Phương thức thanh toán @include('component.required-mark')</label>
               <select class="form-select" name="payment_method">
                 @foreach (App\Enums\PaymentMethod::forAdminOrderForm() as $method)
                     <option value="{{ $method->value }}">{{ $method->label() }}@if (! in_array($method, App\Enums\PaymentMethod::forSiteCheckout(), true)) (dữ liệu cũ)@endif</option>
@@ -45,7 +45,7 @@
               </select>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Trạng thái thanh toán</label>
+              <label class="form-label">Trạng thái thanh toán @include('component.required-mark')</label>
               <select class="form-select" name="payment_status">
                 @foreach (App\Enums\PaymentStatus::cases() as $payStatus)
                     <option value="{{ $payStatus->value }}">{{ $payStatus->label() }}</option>
@@ -53,7 +53,7 @@
               </select>
             </div>
             <div class="col-12">
-              <label class="form-label">Địa chỉ giao hàng</label>
+              <label class="form-label">Địa chỉ giao hàng @include('component.required-mark')</label>
               <textarea class="form-control" name="shipping_address" rows="2"></textarea>
             </div>
             <div class="col-12">
@@ -63,7 +63,7 @@
             <div class="col-12">
               @if (auth()->user()->role === \App\Enums\UserRole::ADMIN)
                 <div class="d-flex justify-content-between align-items-center mb-2">
-                  <label class="form-label mb-0">Sản phẩm trong đơn</label>
+                  <label class="form-label mb-0">Sản phẩm trong đơn @include('component.required-mark')</label>
                   <button type="button" class="btn btn-sm btn-outline-primary btn-add-order-item-edit">Thêm dòng</button>
                 </div>
                 <div class="order-items-edit"></div>

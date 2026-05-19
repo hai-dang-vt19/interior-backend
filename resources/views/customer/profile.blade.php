@@ -31,7 +31,7 @@
                 <form action="{{ route('admin.customer.address.store', $customer->id) }}" method="POST" class="row g-2 mb-3">
                     @csrf
                     <div class="col-12">
-                        <input type="text" class="form-control" name="address_line" placeholder="Địa chỉ cụ thể">
+                        <input type="text" class="form-control" name="address_line" placeholder="Địa chỉ cụ thể *" required>
                     </div>
                     <div class="col-md-4">
                         <input type="text" class="form-control" name="city" placeholder="Tỉnh/Thành phố">
@@ -94,6 +94,7 @@
                 <form action="{{ route('admin.customer.contact.store', $customer->id) }}" method="POST" class="row g-2 mb-3">
                     @csrf
                     <div class="col-md-4">
+                        <label class="form-label small mb-1">Kênh @include('component.required-mark')</label>
                         <select class="form-select" name="channel">
                             <option value="phone">Phone</option>
                             <option value="email">Email</option>
@@ -105,6 +106,7 @@
                         <input type="text" class="form-control" name="title" placeholder="Tiêu đề liên hệ">
                     </div>
                     <div class="col-12">
+                        <label class="form-label small mb-1">Nội dung @include('component.required-mark')</label>
                         <textarea class="form-control" name="message" rows="3" placeholder="Nội dung liên hệ/thông báo"></textarea>
                     </div>
                     <div class="col-12 d-grid">

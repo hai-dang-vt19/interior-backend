@@ -24,7 +24,7 @@
             @csrf
             @method('PATCH')
             <div class="mb-3">
-                <label class="form-label">Số sao (1–5)</label>
+                <label class="form-label">Số sao (1–5) @include('component.required-mark')</label>
                 <select name="rating" class="form-select @error('rating') is-invalid @enderror" required>
                     @for ($i = 1; $i <= 5; $i++)
                         <option value="{{ $i }}" @selected((int) old('rating', $review->rating) === $i)>{{ $i }} sao</option>
@@ -35,7 +35,7 @@
                 @enderror
             </div>
             <div class="mb-3">
-                <label class="form-label">Nội dung đánh giá</label>
+                <label class="form-label">Nội dung đánh giá @include('component.required-mark')</label>
                 <textarea name="review" class="form-control @error('review') is-invalid @enderror" rows="6" required>{{ old('review', $review->review) }}</textarea>
                 @error('review')
                     <div class="invalid-feedback">{{ $message }}</div>

@@ -173,9 +173,9 @@
                                 @csrf
                                 <input type="hidden" name="auth_form" value="login">
                                 <input type="text" class="form-control" name="phone"
-                                    value="{{ old('auth_form') === 'login' ? old('phone') : '' }}" placeholder="Số điện thoại"
+                                    value="{{ old('auth_form') === 'login' ? old('phone') : '' }}" placeholder="Số điện thoại *"
                                     required>
-                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu"
+                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu *"
                                     required>
                                 <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Đăng nhập</button>
                                 <div class="text-end mt-1">
@@ -191,7 +191,7 @@
                             <form action="{{ route('site.password.forgot') }}" method="POST" class="d-grid gap-2">
                                 @csrf
                                 <input type="hidden" name="auth_form" value="forgot">
-                                <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                <input type="email" class="form-control" name="email" placeholder="Email *" required>
                                 <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Gửi mật khẩu mới</button>
                             </form>
                         </div>
@@ -203,17 +203,17 @@
                                 <input type="hidden" name="auth_form" value="register">
                                 <input type="text" class="form-control" name="full_name"
                                     value="{{ old('auth_form') === 'register' ? old('full_name') : '' }}"
-                                    placeholder="Họ tên" required>
+                                    placeholder="Họ tên *" required>
                                 <input type="email" class="form-control" name="email"
-                                    value="{{ old('auth_form') === 'register' ? old('email') : '' }}" placeholder="Email"
+                                    value="{{ old('auth_form') === 'register' ? old('email') : '' }}" placeholder="Email *"
                                     required>
                                 <input type="text" class="form-control" name="phone"
                                     value="{{ old('auth_form') === 'register' ? old('phone') : '' }}"
-                                    placeholder="Số điện thoại">
-                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu"
+                                    placeholder="Số điện thoại *" required>
+                                <input type="password" class="form-control" name="password" placeholder="Mật khẩu *"
                                     required>
                                 <input type="password" class="form-control" name="password_confirmation"
-                                    placeholder="Xác nhận mật khẩu" required>
+                                    placeholder="Xác nhận mật khẩu *" required>
                                 <button type="submit" class="btn site-auth-submit-btn w-100 mt-1">Đăng ký</button>
                             </form>
                         </div>

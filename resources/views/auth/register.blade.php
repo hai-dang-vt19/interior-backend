@@ -9,11 +9,11 @@
                 <form method="POST" action="{{ route('admin.register.submit') }}">
                     @csrf
                     <div class="mb-3">
-                        <label class="form-label">Họ tên</label>
+                        <label class="form-label">Họ tên @include('component.required-mark')</label>
                         <input type="text" class="form-control" name="full_name" value="{{ old('full_name') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Số điện thoại</label>
+                        <label class="form-label">Số điện thoại @include('component.required-mark')</label>
                         <input type="text" class="form-control input-number" name="phone" value="{{ old('phone') }}" required>
                     </div>
                     <div class="mb-3">
@@ -21,11 +21,11 @@
                         <input type="email" class="form-control" name="email" value="{{ old('email') }}">
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu</label>
+                        <label class="form-label">Mật khẩu @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="password" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Xác nhận mật khẩu</label>
+                        <label class="form-label">Xác nhận mật khẩu @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="password_confirmation" required>
                     </div>
                     @if ($errors->any())

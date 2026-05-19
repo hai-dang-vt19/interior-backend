@@ -72,7 +72,7 @@
                 <input type="hidden" name="_tab" value="info">
 
                 <div class="site-account-field">
-                    <label for="full_name">Họ tên</label>
+                    <label for="full_name">Họ tên @include('component.required-mark')</label>
                     <input
                         id="full_name"
                         name="full_name"
@@ -108,17 +108,17 @@
                 <input type="hidden" name="_tab" value="password">
 
                 <div class="site-account-field">
-                    <label for="current_password">Mật khẩu hiện tại</label>
+                    <label for="current_password">Mật khẩu hiện tại @include('component.required-mark')</label>
                     <input id="current_password" name="current_password" type="password" required>
                 </div>
 
                 <div class="site-account-field">
-                    <label for="new_password">Mật khẩu mới</label>
+                    <label for="new_password">Mật khẩu mới @include('component.required-mark')</label>
                     <input id="new_password" name="new_password" type="password" required>
                 </div>
 
                 <div class="site-account-field">
-                    <label for="new_password_confirmation">Nhập lại mật khẩu mới</label>
+                    <label for="new_password_confirmation">Nhập lại mật khẩu mới @include('component.required-mark')</label>
                     <input id="new_password_confirmation" name="new_password_confirmation" type="password" required>
                 </div>
 
@@ -141,7 +141,7 @@
                     <input type="hidden" name="_tab" value="addresses">
 
                     <div class="site-account-field">
-                        <label for="new_address_line">Địa chỉ cụ thể</label>
+                        <label for="new_address_line">Địa chỉ cụ thể @include('component.required-mark')</label>
                         <input
                             id="new_address_line"
                             name="address_line"
@@ -186,7 +186,7 @@
                         <input type="hidden" name="_tab" value="addresses">
 
                         <div class="site-account-field">
-                            <label for="edit_address_line_{{ $address->id }}">Địa chỉ cụ thể</label>
+                            <label for="edit_address_line_{{ $address->id }}">Địa chỉ cụ thể @include('component.required-mark')</label>
                             <input
                                 id="edit_address_line_{{ $address->id }}"
                                 name="address_line"

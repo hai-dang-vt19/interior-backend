@@ -255,7 +255,7 @@ $(document).ready(function() {
         const $row = $(`
             <div class="row g-2 order-item-row mb-2 align-items-end">
                 <div class="col-md-5">
-                    <label class="form-label small mb-0">Sản phẩm</label>
+                    <label class="form-label small mb-0">Sản phẩm <span class="text-danger" title="Bắt buộc" aria-hidden="true">*</span></label>
                     <select class="form-select js-order-product" name="${prefix}[${index}][product_id]"></select>
                 </div>
                 <div class="col-md-4 js-variant-wrap" style="display:none">
@@ -263,7 +263,7 @@ $(document).ready(function() {
                     <select class="form-select js-order-variant" name="${prefix}[${index}][product_variant_id]"></select>
                 </div>
                 <div class="col-md-2">
-                    <label class="form-label small mb-0">SL</label>
+                    <label class="form-label small mb-0">SL <span class="text-danger" title="Bắt buộc" aria-hidden="true">*</span></label>
                     <input type="number" class="form-control" name="${prefix}[${index}][quantity]" min="1" value="${quantity}">
                 </div>
                 <div class="col-md-1 d-grid">

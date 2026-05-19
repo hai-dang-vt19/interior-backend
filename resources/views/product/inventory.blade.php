@@ -53,7 +53,7 @@
             @csrf
             @if ($hasVariants)
                 <div class="col-md-4">
-                    <label class="form-label">Phiên bản</label>
+                    <label class="form-label">Phiên bản @include('component.required-mark')</label>
                     <select name="product_variant_id" class="form-select @error('product_variant_id') is-invalid @enderror" required>
                         <option value="">— Chọn phiên bản —</option>
                         @foreach ($variants as $v)
@@ -66,7 +66,7 @@
                 </div>
             @endif
             <div class="{{ $hasVariants ? 'col-md-2' : 'col-md-3' }}">
-                <label class="form-label">Loại điều chỉnh</label>
+                <label class="form-label">Loại điều chỉnh @include('component.required-mark')</label>
                 <select name="type" class="form-select">
                     @foreach (App\Enums\InventoryType::cases() as $type)
                         <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -74,7 +74,7 @@
                 </select>
             </div>
             <div class="{{ $hasVariants ? 'col-md-2' : 'col-md-3' }}">
-                <label class="form-label">Số lượng</label>
+                <label class="form-label">Số lượng @include('component.required-mark')</label>
                 <input type="number" name="quantity" class="form-control @error('quantity') is-invalid @enderror" min="1" required value="{{ old('quantity') }}">
                 @error('quantity')
                     <div class="invalid-feedback">{{ $message }}</div>

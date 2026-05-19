@@ -9,7 +9,7 @@
           <form method="POST" class="row g-3">
             @csrf
             <div class="col-md-6">
-              <label class="form-label">Tên sản phẩm</label>
+              <label class="form-label">Tên sản phẩm @include('component.required-mark')</label>
               <input type="text" class="form-control" name="name">
             </div>
             <div class="col-md-6">
@@ -17,7 +17,7 @@
               <input type="text" class="form-control js-product-sku-display" maxlength="100" readonly>
             </div>
             <div class="col-md-6">
-              <label class="form-label">Danh mục</label>
+              <label class="form-label">Danh mục @include('component.required-mark')</label>
               <select class="form-select" name="category_id">
                 @foreach ($categories as $category)
                     <option value="{{ $category->id }}">{{ $category->name }}</option>
@@ -25,7 +25,7 @@
               </select>
             </div>
             <div class="col-md-4">
-              <label class="form-label">Giá</label>
+              <label class="form-label">Giá @include('component.required-mark')</label>
               <input type="number" class="form-control" name="price" min="0">
             </div>
             <div class="col-md-4">
@@ -38,7 +38,7 @@
               <p class="form-text mb-0">Có phiên bản — tồn nhập trong từng dòng; tổng SP đồng bộ sau khi lưu.</p>
             </div>
             <div class="col-md-12">
-              <label class="form-label">Trạng thái</label>
+              <label class="form-label">Trạng thái @include('component.required-mark')</label>
               <select class="form-select" name="status">
                 @foreach (App\Enums\ProductStatus::cases() as $status)
                     <option value="{{ $status->value }}">{{ $status->label() }}</option>

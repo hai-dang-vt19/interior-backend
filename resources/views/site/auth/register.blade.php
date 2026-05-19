@@ -11,23 +11,23 @@
                 <form action="{{ route('site.register.submit') }}" method="POST">
                     @csrf
                     <div class="mb-3">
-                        <label class="form-label">Họ tên</label>
+                        <label class="form-label">Họ tên @include('component.required-mark')</label>
                         <input type="text" class="form-control" name="full_name" value="{{ old('full_name') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Email</label>
+                        <label class="form-label">Email @include('component.required-mark')</label>
                         <input type="email" class="form-control" name="email" value="{{ old('email') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Số điện thoại</label>
-                        <input type="text" class="form-control" name="phone" value="{{ old('phone') }}">
+                        <label class="form-label">Số điện thoại @include('component.required-mark')</label>
+                        <input type="text" class="form-control" name="phone" value="{{ old('phone') }}" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Mật khẩu</label>
+                        <label class="form-label">Mật khẩu @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="password" required>
                     </div>
                     <div class="mb-3">
-                        <label class="form-label">Xác nhận mật khẩu</label>
+                        <label class="form-label">Xác nhận mật khẩu @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="password_confirmation" required>
                     </div>
                     <button type="submit" class="btn btn-success w-100">Đăng ký</button>

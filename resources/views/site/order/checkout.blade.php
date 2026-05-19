@@ -25,15 +25,15 @@
                             @csrf
                             <input type="hidden" name="selected_items" value="{{ old('selected_items', $selectedItemsCsv ?? '') }}">
                             <div class="mb-3">
-                                <label class="form-label">Địa chỉ nhận hàng</label>
+                                <label class="form-label">Địa chỉ nhận hàng @include('component.required-mark')</label>
                                 <textarea class="form-control" name="shipping_address" rows="3" required>{{ old('shipping_address', $defaultShippingAddress ?? '') }}</textarea>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Số điện thoại nhận hàng</label>
+                                <label class="form-label">Số điện thoại nhận hàng @include('component.required-mark')</label>
                                 <input type="text" class="form-control" name="shipping_phone" value="{{ old('shipping_phone', auth()->guard('customer')->user()->phone) }}" required>
                             </div>
                             <div class="mb-3">
-                                <label class="form-label">Phương thức thanh toán</label>
+                                <label class="form-label">Phương thức thanh toán @include('component.required-mark')</label>
                                 <select class="form-select" name="payment_method" required>
                                     @foreach ($paymentMethods as $method)
                                         <option value="{{ $method->value }}" @selected(old('payment_method') === $method->value)>{{ $method->label() }}</option>

@@ -9,15 +9,15 @@
           <form action="{{ route('admin.customer.store') }}" method="POST" class="row gap-3">
             @csrf
             <div class="col-12">
-              <label for="create_full_name" class="form-label">Họ tên</label>
+              <label for="create_full_name" class="form-label">Họ tên @include('component.required-mark')</label>
               <input type="text" class="form-control" id="create_full_name" name="full_name" value="{{ old('full_name') }}">
             </div>
             <div class="col-12">
-              <label for="create_email" class="form-label">Email</label>
+              <label for="create_email" class="form-label">Email @include('component.required-mark')</label>
               <input type="email" class="form-control" id="create_email" name="email" value="{{ old('email') }}">
             </div>
             <div class="col-12">
-              <label for="create_phone" class="form-label">Số điện thoại</label>
+              <label for="create_phone" class="form-label">Số điện thoại @include('component.required-mark')</label>
               <input type="text" class="form-control input-number" id="create_phone" name="phone" value="{{ old('phone') }}">
             </div>
             <div class="col-12">
@@ -34,7 +34,7 @@
                 <input type="number" min="0" class="form-control" id="create_reward_points" name="reward_points" value="{{ old('reward_points', 0) }}">
             </div>
             <div class="col-12">
-                <label for="create_status" class="form-label">Trạng thái</label>
+                <label for="create_status" class="form-label">Trạng thái @include('component.required-mark')</label>
                 <select class="form-select" id="create_status" name="status">
                     <option value="{{ App\Enums\CustomerStatus::ACTIVE->value }}" {{ old('status') == App\Enums\CustomerStatus::ACTIVE->value ? 'selected' : '' }}>
                         {{ App\Enums\CustomerStatus::ACTIVE->label() }}

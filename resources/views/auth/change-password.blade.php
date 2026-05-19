@@ -19,15 +19,15 @@
                 <form action="{{ route('admin.change-password.submit') }}" method="POST" class="row g-3">
                     @csrf
                     <div class="col-12">
-                        <label class="form-label">Mật khẩu hiện tại</label>
+                        <label class="form-label">Mật khẩu hiện tại @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="current_password" required>
                     </div>
                     <div class="col-12">
-                        <label class="form-label">Mật khẩu mới</label>
+                        <label class="form-label">Mật khẩu mới @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="new_password" required>
                     </div>
                     <div class="col-12">
-                        <label class="form-label">Xác nhận mật khẩu mới</label>
+                        <label class="form-label">Xác nhận mật khẩu mới @include('component.required-mark')</label>
                         <input type="password" class="form-control" name="new_password_confirmation" required>
                     </div>
                     <div class="col-12">
