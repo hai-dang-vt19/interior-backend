@@ -31,12 +31,12 @@ return Application::configure(basePath: dirname(__DIR__))
             if ($e->getStatusCode() == 404) {
                 if (! config('app.use_domain_routing')) {
                     return $request->is('admin', 'admin/*')
-                        ? redirect()->route('admin.dashboard')
+                        ? redirect()->route('admin.home')
                         : redirect()->route('site.home');
                 }
                 $host = $request->getHost();
                 if ($host === config('app.admin_domain_host')) {
-                    return redirect()->route('admin.dashboard');
+                    return redirect()->route('admin.home');
                 }
                 if ($host === config('app.customer_domain_host')) {
                     return redirect()->route('site.home');

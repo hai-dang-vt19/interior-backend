@@ -14,4 +14,13 @@ enum UserRole: int
             self::STAFF => 'Staff',
         };
     }
+
+    /** Route đích sau đăng nhập / truy cập /admin */
+    public function defaultLandingRoute(): string
+    {
+        return match ($this) {
+            self::ADMIN => 'admin.dashboard',
+            self::STAFF => 'admin.order.index',
+        };
+    }
 } 

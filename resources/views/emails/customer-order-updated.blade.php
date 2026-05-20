@@ -46,7 +46,7 @@ Xin chào **{{ $order->customer?->full_name ?? 'Quý khách' }}**,
     Xem chi tiết đơn hàng
 </x-mail::button>
 
-Nếu bạn không thực hiện thay đổi nào mà nhận được email, vui lòng liên hệ cửa hàng ngay.
+{{ $footerLine }}
 
 Trân trọng,<br>
 {{ config('app.name') }}

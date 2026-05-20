@@ -380,8 +380,39 @@ $(document).ready(function() {
         $('#modalEditOrder form').submit();
     });
 
-    $('.btn-delete-order, .btn-restore-order, .btn-force-delete-order').on('click', function() {
-        $(this).closest('form').submit();
+    const confirmAndSubmit = ($form, options) => {
+        Alert.confirm(options).then((result) => {
+            if (result.isConfirmed) {
+                $form.submit();
+            }
+        });
+    };
+
+    $('.btn-delete-order').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa đơn hàng',
+            text: 'Bạn có chắc chắn muốn xóa đơn hàng này?',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-restore-order').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Khôi phục đơn hàng',
+            text: 'Bạn có muốn khôi phục đơn hàng này?',
+            confirmButtonText: 'Khôi phục',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-force-delete-order').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa vĩnh viễn đơn hàng',
+            text: 'Thao tác này không thể hoàn tác. Tiếp tục?',
+            confirmButtonText: 'Xóa vĩnh viễn',
+            cancelButtonText: 'Hủy',
+        });
     });
 });
 </script>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Middleware;
 
+use App\Enums\UserRole;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -17,7 +18,11 @@ class RoleMiddleware
 
         $currentRole = is_object($user->role) ? $user->role->name : (string) $user->role;
         if (!in_array($currentRole, $roles, true)) {
-            return redirect()->route('admin.dashboard')->with('dataError', 'Bạn không có quyền truy cập chức năng này');
+            $fallback = $user->role instanceof UserRole
+                ? $user->role->defaultLandingRoute()
+                : 'admin.login';
+
+            return redirect()->route($fallback)->with('dataError', 'Bạn không có quyền truy cập chức năng này');
         }
 
         return $next($request);

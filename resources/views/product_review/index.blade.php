@@ -78,10 +78,10 @@
                             <td>{{ $review->created_at?->format('d/m/Y H:i') }}</td>
                             <td class="text-center">
                                 <a href="{{ route('admin.product-review.edit', $review->id) }}" class="btn btn-sm btn-primary me-1">Sửa</a>
-                                <form action="{{ route('admin.product-review.destroy', $review->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Xóa đánh giá này?');">
+                                <form action="{{ route('admin.product-review.destroy', $review->id) }}" method="POST" class="d-inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger">Xóa</button>
+                                    <button type="button" class="btn btn-sm btn-danger btn-delete-review">Xóa</button>
                                 </form>
                             </td>
                         </tr>
@@ -98,4 +98,24 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script type="module">
+$(document).ready(function () {
+    $('.btn-delete-review').on('click', function () {
+        const $form = $(this).closest('form');
+        Alert.confirm({
+            title: 'Xóa đánh giá',
+            text: 'Bạn có chắc chắn muốn xóa đánh giá này?',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $form.submit();
+            }
+        });
+    });
+});
+</script>
 @endsection

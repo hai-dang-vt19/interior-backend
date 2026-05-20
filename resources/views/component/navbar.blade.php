@@ -1,6 +1,6 @@
 <nav class="navbar navbar-expand-lg custom-navbar">
     <div class="container-fluid">
-        <a class="navbar-brand" href="{{ route('admin.dashboard') }}">Chung Si Interior</a>
+        <a class="navbar-brand" href="{{ route('admin.home') }}">Chung Si Interior</a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarText"
             aria-controls="navbarText" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -9,15 +9,17 @@
             @php($currentUser = auth()->user())
             @php($isAdmin = $currentUser && $currentUser->role === \App\Enums\UserRole::ADMIN)
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
-                <li class="nav-item">
-                    <a class="nav-link {{ Route::is('admin.dashboard*') ? 'active' : '' }}"
-                        href="{{ route('admin.dashboard') }}">Dashboard</a>
-                </li>
                 @if ($isAdmin)
                     <li class="nav-item">
-                        <a class="nav-link {{ Route::is('admin.product.*') ? 'active' : '' }}"
-                            href="{{ route('admin.product.index') }}">Sản phẩm</a>
+                        <a class="nav-link {{ Route::is('admin.dashboard*') ? 'active' : '' }}"
+                            href="{{ route('admin.dashboard') }}">Dashboard</a>
                     </li>
+                @endif
+                <li class="nav-item">
+                    <a class="nav-link {{ Route::is('admin.product.*') ? 'active' : '' }}"
+                        href="{{ route('admin.product.index') }}">Sản phẩm</a>
+                </li>
+                @if ($isAdmin)
                     <li class="nav-item">
                         <a class="nav-link {{ Route::is('admin.category.*') ? 'active' : '' }}"
                             href="{{ route('admin.category.index') }}">Danh mục</a>

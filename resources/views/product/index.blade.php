@@ -123,12 +123,14 @@
                             <td>{!! $product->formatStatus() !!}</td>
                             <td>{{ $product->formatCreatedAt() }}</td>
                             <td class="text-center">
+                                @if (auth()->user()?->role === \App\Enums\UserRole::ADMIN)
                                 <a href="{{ route('admin.product-review.index', ['product_id' => $product->id]) }}" class="btn btn-outline-secondary btn-sm" title="Xem đánh giá">
                                     <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" fill="currentColor" class="bi bi-chat-left-text" viewBox="0 0 24 24">
                                         <path d="M14 1a1 1 0 0 1 1 1v8a1 1 0 0 1-1 1H4.414A2 2 0 0 0 3 11.586l-2 2V2a1 1 0 0 1 1-1zM2 0a2 2 0 0 0-2 2v12.793a.5.5 0 0 0 .854.353l2.853-2.853A1 1 0 0 1 4.414 12H14a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2z"/>
                                         <path d="M3 3.5a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9a.5.5 0 0 1-.5-.5M3 6a.5.5 0 0 1 .5-.5h9a.5.5 0 0 1 0 1h-9A.5.5 0 0 1 3 6m0 2.5a.5.5 0 0 1 .5-.5h5a.5.5 0 0 1 0 1h-5a.5.5 0 0 1-.5-.5"/>
                                     </svg>
                                 </a>
+                                @endif
                             </td>
                             <td>
                                 <div class="d-flex flex-warp justify-content-center align-items-center gap-1">
@@ -489,43 +491,44 @@
             $('#modalEditProduct form').submit();
         });
 
-        $('.btn-delete-product').on('click', function() {
+        $('.btn-delete-product').on('click', function () {
+            const $form = $(this).closest('form');
             Alert.confirm({
                 title: 'Xóa sản phẩm',
                 text: 'Bạn có chắc chắn muốn xóa sản phẩm này?',
                 confirmButtonText: 'Xóa',
-                denyButtonText: 'Hủy',
+                cancelButtonText: 'Hủy',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $(this).closest('form').submit();
-                } else {
-                    Alert.error('Xóa không thành công');
+                    $form.submit();
                 }
             });
         });
 
-        $('.btn-restore-product').on('click', function() {
+        $('.btn-restore-product').on('click', function () {
+            const $form = $(this).closest('form');
             Alert.confirm({
                 title: 'Khôi phục sản phẩm',
                 text: 'Bạn có muốn khôi phục sản phẩm này?',
                 confirmButtonText: 'Khôi phục',
-                denyButtonText: 'Hủy',
+                cancelButtonText: 'Hủy',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $(this).closest('form').submit();
+                    $form.submit();
                 }
             });
         });
 
-        $('.btn-force-delete-product').on('click', function() {
+        $('.btn-force-delete-product').on('click', function () {
+            const $form = $(this).closest('form');
             Alert.confirm({
                 title: 'Xóa vĩnh viễn sản phẩm',
                 text: 'Thao tác này không thể hoàn tác. Tiếp tục?',
                 confirmButtonText: 'Xóa vĩnh viễn',
-                denyButtonText: 'Hủy',
+                cancelButtonText: 'Hủy',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $(this).closest('form').submit();
+                    $form.submit();
                 }
             });
         });

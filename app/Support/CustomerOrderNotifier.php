@@ -14,6 +14,9 @@ use Illuminate\Support\Facades\Mail;
  */
 final class CustomerOrderNotifier
 {
+    /** Tạo đơn mới từ trang quản trị */
+    public const CONTEXT_ADMIN_CREATED = 'admin_created';
+
     /** Cập nhật toàn bộ đơn từ trang quản trị */
     public const CONTEXT_ADMIN_FULL = 'admin_full';
 

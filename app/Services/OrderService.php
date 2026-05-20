@@ -33,7 +33,10 @@ class OrderService extends BaseService
 
     public function createOrder(array $params): Order
     {
-        return $this->orderRepository->createOrder($params);
+        $order = $this->orderRepository->createOrder($params);
+        CustomerOrderNotifier::sendOrderUpdatedEmail($order, CustomerOrderNotifier::CONTEXT_ADMIN_CREATED);
+
+        return $order;
     }
 
     public function getOrderByID(int $id): Order

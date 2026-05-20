@@ -143,8 +143,18 @@
 @section('scripts')
 <script type="module">
 $(document).ready(function() {
-    $('.btn-delete-address').on('click', function() {
-        $(this).closest('form').submit();
+    $('.btn-delete-address').on('click', function () {
+        const $form = $(this).closest('form');
+        Alert.confirm({
+            title: 'Xóa địa chỉ',
+            text: 'Bạn có chắc chắn muốn xóa địa chỉ này?',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $form.submit();
+            }
+        });
     });
 });
 </script>

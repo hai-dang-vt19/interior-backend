@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\UserRole;
 use Illuminate\Http\Request;
 use App\Http\Controllers\BaseController;
 use App\Http\Requests\ChangePasswordRequest;
@@ -55,9 +56,14 @@ class AuthAdminController extends BaseController
             ], (int) $result['code']);
         }
 
-        Auth::login($result['user']);
+        $user = $result['user'];
+        Auth::login($user);
 
-        return $this->sendRedirectAjax('admin.dashboard');
+        $landingRoute = $user->role instanceof UserRole
+            ? $user->role->defaultLandingRoute()
+            : 'admin.order.index';
+
+        return $this->sendRedirectAjax($landingRoute);
     }
 
     public function logout(Request $request)

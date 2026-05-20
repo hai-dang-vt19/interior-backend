@@ -205,17 +205,16 @@
 @section('scripts')
 <script type="module">
     $(document).ready(function() {
-        $('.btn-delete').on('click', function() {
+        $('.btn-delete').on('click', function () {
+            const $form = $(this).closest('form');
             Alert.confirm({
                 title: 'Xóa khách hàng',
                 text: 'Bạn có chắc chắn muốn xóa khách hàng này?',
                 confirmButtonText: 'Xóa',
-                denyButtonText: 'Hủy',
+                cancelButtonText: 'Hủy',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $(this).closest('form').submit();
-                } else {
-                    Alert.error('Xóa không thành công');
+                    $form.submit();
                 }
             });
         });
@@ -247,19 +246,30 @@
             $('#modalCreate form').submit();
         });
 
-        $('.btn-restore-customer').on('click', function() {
-            $(this).closest('form').submit();
+        $('.btn-restore-customer').on('click', function () {
+            const $form = $(this).closest('form');
+            Alert.confirm({
+                title: 'Khôi phục khách hàng',
+                text: 'Bạn có muốn khôi phục khách hàng này?',
+                confirmButtonText: 'Khôi phục',
+                cancelButtonText: 'Hủy',
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $form.submit();
+                }
+            });
         });
 
-        $('.btn-force-delete-customer').on('click', function() {
+        $('.btn-force-delete-customer').on('click', function () {
+            const $form = $(this).closest('form');
             Alert.confirm({
                 title: 'Xóa vĩnh viễn khách hàng',
                 text: 'Thao tác này không thể hoàn tác. Tiếp tục?',
                 confirmButtonText: 'Xóa vĩnh viễn',
-                denyButtonText: 'Hủy',
+                cancelButtonText: 'Hủy',
             }).then((result) => {
                 if (result.isConfirmed) {
-                    $(this).closest('form').submit();
+                    $form.submit();
                 }
             });
         });

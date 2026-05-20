@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\UserRole;
 use App\Http\Controllers\Admin\CategoryController;
 use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\DashboardController;
@@ -20,10 +21,21 @@ Route::prefix('admin')->group(function () {
 
     Route::middleware(['auth:web'])->group(function () {
         Route::middleware('role:ADMIN,STAFF')->group(function () {
-            Route::get('', [DashboardController::class, 'index'])->name('admin.dashboard');
-            Route::get('dashboard/export-revenue', [DashboardController::class, 'exportRevenue'])->name('admin.dashboard.export-revenue');
+            Route::get('', function () {
+                $user = auth()->user();
+
+                return redirect()->route(
+                    $user?->role?->defaultLandingRoute() ?? 'admin.login'
+                );
+            })->name('admin.home');
+
             Route::get('change-password', [AuthAdminController::class, 'showChangePasswordForm'])->name('admin.change-password');
             Route::post('change-password', [AuthAdminController::class, 'changePassword'])->name('admin.change-password.submit');
+        });
+
+        Route::middleware('role:ADMIN')->group(function () {
+            Route::get('dashboard', [DashboardController::class, 'index'])->name('admin.dashboard');
+            Route::get('dashboard/export-revenue', [DashboardController::class, 'exportRevenue'])->name('admin.dashboard.export-revenue');
             Route::get('auth-activity-logs', [AuthAdminController::class, 'activityLogs'])->name('admin.auth-activity-logs');
         });
 
@@ -41,7 +53,7 @@ Route::prefix('admin')->group(function () {
             Route::get('', [CustomerController::class, 'index'])->name('index');
         });
 
-        Route::middleware('role:ADMIN')->prefix('product')->name('admin.product.')->group(function () {
+        Route::middleware('role:ADMIN,STAFF')->prefix('product')->name('admin.product.')->group(function () {
             Route::post('', [ProductController::class, 'store'])->name('store');
             Route::post('banner-products', [ProductController::class, 'updateBannerProducts'])->name('banner-products.update');
             Route::get('{id}/images', [ProductController::class, 'images'])->name('images');

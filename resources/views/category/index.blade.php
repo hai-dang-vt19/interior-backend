@@ -145,8 +145,39 @@ $(document).ready(function() {
         $('#modalEditCategory form').submit();
     });
 
-    $('.btn-delete-category, .btn-restore-category, .btn-force-delete-category').on('click', function() {
-        $(this).closest('form').submit();
+    const confirmAndSubmit = ($form, options) => {
+        Alert.confirm(options).then((result) => {
+            if (result.isConfirmed) {
+                $form.submit();
+            }
+        });
+    };
+
+    $('.btn-delete-category').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa danh mục',
+            text: 'Bạn có chắc chắn muốn xóa danh mục này?',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-restore-category').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Khôi phục danh mục',
+            text: 'Bạn có muốn khôi phục danh mục này?',
+            confirmButtonText: 'Khôi phục',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-force-delete-category').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa vĩnh viễn danh mục',
+            text: 'Thao tác này không thể hoàn tác. Tiếp tục?',
+            confirmButtonText: 'Xóa vĩnh viễn',
+            cancelButtonText: 'Hủy',
+        });
     });
 });
 </script>

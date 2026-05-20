@@ -140,8 +140,39 @@ $(document).ready(function() {
         $('#modalEditStaff form').submit();
     });
 
-    $('.btn-delete-staff, .btn-restore-staff, .btn-force-delete-staff').on('click', function() {
-        $(this).closest('form').submit();
+    const confirmAndSubmit = ($form, options) => {
+        Alert.confirm(options).then((result) => {
+            if (result.isConfirmed) {
+                $form.submit();
+            }
+        });
+    };
+
+    $('.btn-delete-staff').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa nhân viên',
+            text: 'Bạn có chắc chắn muốn xóa nhân viên này?',
+            confirmButtonText: 'Xóa',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-restore-staff').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Khôi phục nhân viên',
+            text: 'Bạn có muốn khôi phục nhân viên này?',
+            confirmButtonText: 'Khôi phục',
+            cancelButtonText: 'Hủy',
+        });
+    });
+
+    $('.btn-force-delete-staff').on('click', function () {
+        confirmAndSubmit($(this).closest('form'), {
+            title: 'Xóa vĩnh viễn nhân viên',
+            text: 'Thao tác này không thể hoàn tác. Tiếp tục?',
+            confirmButtonText: 'Xóa vĩnh viễn',
+            cancelButtonText: 'Hủy',
+        });
     });
 });
 </script>

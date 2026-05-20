@@ -22,7 +22,9 @@
                         <a href="{{ route('admin.product.index') }}" class="btn btn-sm btn-outline-primary">Danh sách / lọc</a>
                         <a href="{{ route('admin.product.index') }}" class="btn btn-sm btn-outline-success">Thêm mới</a>
                         <a href="{{ route('admin.product.index') }}" class="btn btn-sm btn-outline-secondary">Giá / khuyến mãi</a>
-                        <a href="{{ route('admin.category.index') }}" class="btn btn-sm btn-outline-dark">Danh mục</a>
+                        @if (auth()->user()?->role === \App\Enums\UserRole::ADMIN)
+                            <a href="{{ route('admin.category.index') }}" class="btn btn-sm btn-outline-dark">Danh mục</a>
+                        @endif
                     </div>
                 </div>
             </div>
